@@ -1,0 +1,48 @@
+﻿@page "/currency"
+
+@using MudBlazor
+@using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs
+
+<MudGrid Style="height:90vh;">
+	<MudItem Class="d-flex align-center justify-center mud-width-full" xs="12">
+@* <MudGrid Class="d-flex justify-center mt-5">
+	<MudItem xs="12" sm="6" md="5" lg="4">
+
+ *@		<MudPaper Class="pa-6 ma-2" Elevation="5" Width="400px">
+			<EditForm Model="@State" OnValidSubmit="OnValidSubmit">
+				<DataAnnotationsValidator />
+				<MudStack Spacing="5">
+					<MudStack Justify="Justify.SpaceBetween" Row>
+						<MudTooltip Text="This component demonstrates fetching exchange rate from public API and doing currency conversion." Color="Color.Success" Arrow Placement="Placement.Top" Style="font-style: italic; font-weight: normal !important;">
+							<MudText Typo="Typo.h6" Align="Align.Left">Currency Conversion</MudText>
+							@* <MudIcon Icon="@Icons.Material.Filled.HelpCenter" Color="Color.Primary" /> *@
+						</MudTooltip>
+					</MudStack>
+					<MudAutocomplete T="CurrencyType" Label="From Currency" @bind-Value="State.FromCurrency" For="(() => State.FromCurrency)"
+						SearchFunc="@SearchCurrencyDropDown" ToStringFunc="@(x => x?.iso_code)" Variant="Variant.Text" Placeholder="Currency code or name" HelperText="@(State.FromCurrency?.name)" ResetValueOnEmptyText SelectValueOnTab ShrinkLabel />
+					<MudAutocomplete T="CurrencyType" Label="To Currency" @bind-Value="State.ToCurrency" For="(() => State.ToCurrency)"
+						SearchFunc="@SearchCurrencyDropDown" ToStringFunc="@(x => x?.iso_code)" Variant="Variant.Text" Placeholder="Currency code or name" HelperText="@(State.ToCurrency?.name)" ResetValueOnEmptyText SelectValueOnTab ShrinkLabel />
+					<MudDatePicker Label="Exchange Rate Date" Editable="true" @bind-Date="State.ExchangeRateDate" For="(() => State.ExchangeRateDate)"
+						Mask="@(new DateMask("0000-00-00"))" DateFormat="yyyy-MM-dd" Placeholder="Date in format yyyy-mm-dd" Variant="Variant.Text" Disabled="State.AreCurrenciesEqual" MaxDate="@DateTime.Today" AdornmentColor="Color.Primary" />
+					<MudNumericField T="decimal?" HideSpinButtons="true" @bind-Value="State.FromAmount" @oninput="OnFromAmountInput" For="(() => State.FromAmount)"
+						Label="From Amount" Variant="Variant.Text" Placeholder="Amount to be converted" Min="0" Max="999999999" FullWidth Format="N2" />
+					<MudProgressButton Variant="Variant.Filled" ButtonType="ButtonType.Submit" Size="Size.Large" Color="Color.Primary" IsProcessing="@isProcessing">Convert</MudProgressButton>
+					@if (State.ToAmount.HasValue)
+					{
+						<MudText Inline Class="pt-6">
+							As of @State.ExchangeRateDate?.ToString("MMMM d, yyyy"), converting 
+							<MudTooltip Text="Click to copy" Color="Color.Success" Arrow Placement="Placement.Top" Style="font-style: italic; font-weight: normal !important;">
+								<MudText Inline Class="cursor-pointer" @onclick="@(x => CopyToClipboard(State.FromAmount))"><b>@State.FromAmount?.ToString("N2")</b></MudText>
+							</MudTooltip>
+							@Pluralize(State.FromCurrency?.name, State.FromAmount) results in 
+							<MudTooltip Text="Click to copy" Color="Color.Success" Arrow Placement="Placement.Top" Style="font-style: italic; font-weight: normal !important;">
+								<MudText Inline Class="cursor-pointer" @onclick="@(x => CopyToClipboard(State.ToAmount))"><b>@State.ToAmount?.ToString("N2")</b></MudText>
+							</MudTooltip>
+							@Pluralize(State.ToCurrency?.name, State.ToAmount)
+						</MudText>
+					}
+				</MudStack>
+			</EditForm>
+		</MudPaper>
+	</MudItem>
+</MudGrid>

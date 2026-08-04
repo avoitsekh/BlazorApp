@@ -1,0 +1,9 @@
+﻿@if (!string.IsNullOrWhiteSpace(Title))
+{
+    <PageTitle>@Title</PageTitle>
+    <MudText Typo="Typo.h3" GutterBottom="true">@Title</MudText>
+}
+@if (!string.IsNullOrWhiteSpace(Description))
+{
+    <MudText Typo="Typo.body1" Class="mb-8">@Description</MudText>
+}

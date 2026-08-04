@@ -1,0 +1,183 @@
+﻿@using SkiaSharp.QrCode
+@using SkiaSharp.QrCode.Image
+
+@inject IJSRuntime JS
+@inject ISnackbar snackbar
+
+<div>
+	<img id="qrcode" height="@PreviewImageSize" width="@PreviewImageSize" />
+</div>
+
+
+<script>
+
+	// Set QR Code image blob from byte array
+	window.setPreviewImage = async (elementId, contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		const url = URL.createObjectURL(blob);
+		const element = document.getElementById(elementId);
+		element.addEventListener('contextmenu', event => event.preventDefault());
+		element.onload = () => {
+			URL.revokeObjectURL(url);
+		}
+		element.src = url;
+	}
+
+	// Client-side file download helper used by the Download PNG/SVG buttons
+	window.downloadFile = (fileName, contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = fileName;
+		anchor.click();
+		URL.revokeObjectURL(url);
+	};
+
+	// Copy QR Code image to clipboard
+	window.copyToClipboard = async (contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		await navigator.clipboard.write([new ClipboardItem({ [contentType]: blob })]);
+	}
+
+</script>
+
+
+@code {
+
+	[Parameter]
+	public QRCodeOptions Options { get; set; }
+
+	[Parameter]
+	public EventCallback<Exception> OnError { get; set; }
+
+	[Parameter]
+	public int PreviewImageSize { get; set; } = 240;
+
+	int ExportImageSize => Math.Clamp(Options.Size, 64, 2048);
+
+	public Action Generate = () => { };
+	QRCodeData? qrCodeData;
+	MicroQRCodeData? microQrCodeData;
+
+	protected override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			Generate = GenerateCore;
+			Generate();
+		}
+		return base.OnAfterRenderAsync(firstRender);
+	}
+
+	QRCodeImageBuilder GetQRCodeImageBuilder(int size)
+		=> new QRCodeImageBuilder(qrCodeData!)
+			.WithSize(size, size)
+			.WithFinderPatternShape(Options.FinderPatternShape)
+			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
+			;
+
+
+	MicroQRCodeImageBuilder GetMicroQRCodeImageBuilder(int size)
+		=> new MicroQRCodeImageBuilder(microQrCodeData!)
+			.WithSize(size, size)
+			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
+			;
+
+	void SaveTo(int size, Stream stream)
+	{
+		if (Options!.Symbology == SymbologyKind.QrCode)
+		{
+			GetQRCodeImageBuilder(size).SaveTo(stream);
+		}
+		else
+		{
+			GetMicroQRCodeImageBuilder(size).SaveTo(stream);
+		}
+	}
+
+	void SaveToSvg(int size, Stream stream)
+	{
+		if (Options!.Symbology == SymbologyKind.QrCode)
+		{
+			GetQRCodeImageBuilder(size).SaveToSvg(stream);
+		}
+		else
+		{
+			GetMicroQRCodeImageBuilder(size).SaveToSvg(stream);
+		}
+	}
+
+	async void GenerateCore()
+	{
+		try
+		{
+			if (Options != null)
+			{
+				var quietZoneSize = Math.Clamp(Options.QuietZone, 0, 10);
+
+				if (Options.Symbology == SymbologyKind.QrCode)
+				{
+					qrCodeData = SkiaSharp.QrCode.QRCodeGenerator.CreateQrCode(Options.Content.AsSpan(), Options.Ecc,
+						requestedVersion: Options.Version, quietZoneSize: Math.Clamp(Options.QuietZone, 0, 10));
+				}
+				else
+				{
+					microQrCodeData = SkiaSharp.QrCode.MicroQRCodeGenerator.CreateMicroQRCode(Options.Content.AsSpan(), Options.MicroEcc,
+						Options.Version is >= 1 and <= 4 ? (MicroQRVersion)Options.Version : null, quietZoneSize);
+				}
+
+				using var stream = new MemoryStream();
+				SaveTo(PreviewImageSize, stream);
+				await JS.InvokeVoidAsync("setPreviewImage", "qrcode", "image/png", stream.ToArray());
+			}
+		}
+		catch (Exception ex)
+		{
+			await OnError.InvokeAsync(ex);
+		}
+	}
+
+	public async Task DownloadPngAsync()
+	{
+		try
+		{
+			using var stream = new MemoryStream();
+			SaveTo(ExportImageSize, stream);
+			await JS.InvokeVoidAsync("downloadFile", "qrcode.png", "image/png", stream.ToArray());
+		}
+		catch (Exception ex)
+		{
+			await OnError.InvokeAsync(ex);
+		}
+	}
+
+	public async Task DownloadSvgAsync()
+	{
+		try
+		{
+			using var stream = new MemoryStream();
+			SaveToSvg(ExportImageSize, stream);
+			await JS.InvokeVoidAsync("downloadFile", "qrcode.svg", "image/svg+xml", stream.ToArray());
+		}
+		catch (Exception ex)
+		{
+			await OnError.InvokeAsync(ex);
+		}
+	}
+
+	public async Task CopyToClipboardAsync()
+	{
+		try
+		{
+			using var stream = new MemoryStream();
+			SaveTo(ExportImageSize, stream);
+			await JS.InvokeVoidAsync("copyToClipboard", "image/png", stream.ToArray());
+			snackbar.Add("QR Code copied to clipboard", Severity.Info);
+		}
+		catch (Exception ex)
+		{
+			await OnError.InvokeAsync(ex);
+		}
+	}
+}

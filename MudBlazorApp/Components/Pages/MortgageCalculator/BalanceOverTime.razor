@@ -1,0 +1,83 @@
+﻿@using MudBlazor.Charts
+
+<MudChart ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels"
+		  ChartOptions="@options" Width="100%" Height="100%" MatchBoundsToSize Style="pointer-events: none;" />
+
+@code {
+
+	[Parameter]
+	public List<Payment>? AmortizationSchedule { get; set; }
+
+	LineChartOptions options = new()
+	{
+		XAxisTitle = "Time",
+		YAxisTitle = "Balance",
+		YAxisFormat = "N0",
+		XAxisLabelRotation = 45,
+		ChartPalette = [Colors.Blue.Default, Colors.DeepOrange.Default],
+		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
+		ShowLegend = false,
+		ShowToolTips = false,
+	};
+
+	List<ChartSeries<double>> series = [];
+	string[] XAxisLabels = [];
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+
+		if (AmortizationSchedule?.Count > 0)
+		{
+			SetGraphValues();
+			SetXAxisLabels();
+			SetYAxisLabels();
+		}
+	}
+
+	void SetGraphValues()
+	{
+		series = new()
+			{
+				new ChartSeries<double>() { Name = "Balance", Data = AmortizationSchedule!.Select(x => x.Balance).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
+				//new ChartSeries<double>() { Name = "Balance (with extra payments)", Data = AmortizationSchedule.Select(x => x.Balance + 10000D).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
+			};
+
+		options.ShowLegend = series.Count > 1;
+
+		options.SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>(series.Count);
+		series.ForEach(x => options.SeriesDisplayOverrides.Add(x, new() { LineDisplayType = LineDisplayType.Area }));
+	}
+
+	void SetXAxisLabels()
+	{
+		var amortizationPeriodInYears = AmortizationSchedule!.Max(x => x.Year);
+		var denominator = amortizationPeriodInYears switch
+		{
+			<= 5 => 1,
+			<= 60 => 5,
+			_ => 10
+		};
+		XAxisLabels = AmortizationSchedule!.Select(x => x.Year.HasValue && x.Year % denominator == 0 ? x.PaymentDate.Year.ToString() : string.Empty).ToArray();
+	}
+
+	void SetYAxisLabels()
+	{
+		var firstPayment = AmortizationSchedule!.FirstOrDefault(x => x.Number == 1);
+		if (firstPayment != null)
+		{
+			var loanAmount = firstPayment.Balance + firstPayment.PrincipalPaid;
+			options.YAxisTicks = loanAmount switch
+			{
+				<= 1000 => 100,
+				<= 2000 => 250,
+				<= 10000 => 1000,
+				<= 50000 => 5000,
+				<= 100000 => 10000,
+				<= 500000 => 50000,
+				<= 1000000 => 100000,
+				_ => 250000
+			};
+		}
+	}
+}

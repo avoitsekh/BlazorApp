@@ -1,0 +1,97 @@
+﻿@inherits MudButton
+
+@{
+	base.BuildRenderTree(__builder);
+}
+
+
+@code {
+
+	[Category("Behavior")]
+	[Parameter]
+	public bool? IsProcessing { get; set; }
+
+	bool EnableRendering { get; set; } = true;
+
+	RenderFragment? processingContent;
+	RenderFragment? childContent;
+
+	protected override void OnInitialized()
+	{
+		childContent = ChildContent;
+
+		var size = Size switch
+		{
+			Size.Large => "20px",
+			Size.Medium => "19px",
+			Size.Small => "17px",
+			_ => "24px"
+		};
+		var style = $"height:{size};width:{size};";
+
+		processingContent = (__builder) =>
+		{
+			<MudProgressCircular Style="@style" Indeterminate="true" Color="Color.Inherit" />
+		};
+
+		base.OnInitialized();
+	}
+
+	protected override Task OnParametersSetAsync()
+	{
+		if (IsProcessing.HasValue)
+		{
+			if (IsProcessing.Value)
+			{
+				OnProcessingStart();
+			}
+			else
+			{
+				OnProcessingEnd();
+			}
+		}
+
+		return base.OnParametersSetAsync();
+	}
+
+	void OnProcessingStart()
+	{
+		ChildContent = processingContent;
+		StateHasChanged();
+		EnableRendering = false;
+	}
+
+	void OnProcessingEnd()
+	{
+		EnableRendering = true;
+		ChildContent = childContent;
+		StateHasChanged();
+	}
+
+	protected override bool ShouldRender()
+	{
+		return EnableRendering && base.ShouldRender();
+	}
+
+	protected override async Task OnClickHandler(MouseEventArgs ev)
+	{
+		if (!IsProcessing.HasValue)
+		{
+			try
+			{
+				await Task.Delay(50);
+				OnProcessingStart();
+				await base.OnClickHandler(ev);
+			}
+			finally
+			{
+				OnProcessingEnd();
+			}
+		}
+		else
+		{
+			await base.OnClickHandler(ev);
+		}
+	}
+
+}
