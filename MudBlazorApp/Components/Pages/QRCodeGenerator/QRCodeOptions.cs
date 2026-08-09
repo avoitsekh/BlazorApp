@@ -57,7 +57,9 @@ public sealed class QRCodeOptions
 	};
 
 	/// <summary>Module color as #RRGGBB. Ignored while the gradient is enabled.</summary>
-	public string Foreground { get; set; } = "#000000";
+	public string ModuleColor1 { get; set; } = "#000000";
+
+	public string ModuleColor2 { get; set; } = "#000000";
 
 	/// <summary>Background color as #RRGGBB. Ignored while <see cref="TransparentBackground"/> is set.</summary>
 	public string Background { get; set; } = "#ffffff";
@@ -65,7 +67,20 @@ public sealed class QRCodeOptions
 	public bool GradientEnabled { get; set; } = true;
 	public string GradientStart { get; set; } = "#fa7e1e";
 	public string GradientEnd { get; set; } = "#962fbf";
-	public GradientDirection GradientDirection { get; set; } = GradientDirection.TopLeftToBottomRight;
+	
+	
+	public GradientDirection GradientDirection { get; set; } = GradientDirection.None;
+
+	public static Dictionary<string, GradientDirection> GradientOptions = new()
+	{
+		{ "None", GradientDirection.None },
+		{ "Gradient (Left → Right)", GradientDirection.LeftToRight },
+		{ "Gradient (Top → Bottom)", GradientDirection.TopToBottom },
+		{ "Gradient (Top-left → Bottom-right)", GradientDirection.TopLeftToBottomRight },
+		{ "Gradient (Top-right → Bottom-left)", GradientDirection.TopRightToBottomLeft },
+	};
+
+
 	public LogoMode LogoMode { get; set; } = LogoMode.BuiltIn;
 
 	/// <summary>Logo size as a percentage of the QR side length (1-40).</summary>

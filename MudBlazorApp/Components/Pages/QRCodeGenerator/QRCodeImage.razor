@@ -1,4 +1,5 @@
-﻿@using SkiaSharp.QrCode
+﻿@using SkiaSharp
+@using SkiaSharp.QrCode
 @using SkiaSharp.QrCode.Image
 
 @inject IJSRuntime JS
@@ -75,6 +76,8 @@
 			.WithSize(size, size)
 			.WithFinderPatternShape(Options.FinderPatternShape)
 			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
+			.WithColors(ParseColor(Options.ModuleColor1), Options.TransparentBackground ? SKColors.Transparent : SKColors.White)
+			.WithGradient(CreateGradient())
 			;
 
 
@@ -82,7 +85,21 @@
 		=> new MicroQRCodeImageBuilder(microQrCodeData!)
 			.WithSize(size, size)
 			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
+			.WithColors(ParseColor(Options.ModuleColor1), Options.TransparentBackground ? SKColors.Transparent : SKColors.White)
+			.WithGradient(CreateGradient())
 			;
+
+	SKColor ParseColor(string value) => SKColor.TryParse(value, out var color) ? color : SKColors.Black;
+
+	public GradientOptions? CreateGradient()
+	{
+		if (Options.GradientDirection == GradientDirection.None)
+		{
+			return null;
+		}
+
+		return new GradientOptions([ParseColor(Options.ModuleColor1), ParseColor(Options.ModuleColor2)], Options.GradientDirection);
+	}
 
 	void SaveTo(int size, Stream stream)
 	{

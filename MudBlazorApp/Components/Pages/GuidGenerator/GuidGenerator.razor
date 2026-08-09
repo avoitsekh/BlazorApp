@@ -2,70 +2,53 @@
 
 <PageHeader Title="Guid Generator" Description="This component demonstrates generating guids with user specified parameters." />
 
-<MudGrid Spacing="2">
+<MudStack Spacing="2">
 
-	<MudItem>
-		<MudText>Number of GUIDs to generate:</MudText>
-	</MudItem>
-	<MudFlexBreak />
-	<MudItem xs="5" sm="3" md="2">
-		<MudNumericField T="int" HideSpinButtons="true" @bind-value="factory.GuidsToGenerate" Variant="Variant.Text" Min="1" Max="1000" HelperText="1 - 1000" />
-	</MudItem>
-	<MudFlexBreak Style="padding-bottom: .5cm" />
-	<MudItem>
-		<MudText>Format:</MudText>
-	</MudItem>
-	<MudFlexBreak />
-	<MudItem xs="3" sm="3" md="2">
+	<MudText>Number of GUIDs to generate:</MudText>
+	<MudNumericField T="int" HideSpinButtons="true" @bind-value="factory.GuidsToGenerate" Variant="Variant.Text" Min="1" Max="1000" HelperText="1 - 1000" Style="width: 80px" />
+	
+	<MudElement Style="height: 20px" />
+
+	<MudText>Format:</MudText>
+	<MudStack Row Class="flex-wrap">
 		<MudSwitch T="bool" @bind-Value="format.Hyphens" Color="Color.Primary" Disabled="format.Base64">Hyphens</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.CurlyBraces" Color="Color.Primary" Disabled="format.Base64">Curly Braces</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.Uppercase" Color="Color.Primary" Disabled="format.Base64">Uppercase</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.Quotes" Color="Color.Primary">Quotes</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.DoubleQuotes" Color="Color.Primary">Double Quotes</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.Commas" Color="Color.Primary">Commas</MudSwitch>
-	</MudItem>
-	<MudFlexBreak Style="padding-bottom: .5cm" />
-	<MudItem>
-		<MudText>Encoding:</MudText>
-	</MudItem>
-	<MudFlexBreak />
-	<MudItem xs="3" sm="3" md="2">
+	</MudStack>
+
+	<MudElement Style="height: 20px" />
+
+	<MudText>Encoding:</MudText>
+	<MudStack Row Class="flex-wrap">
 		<MudSwitch T="bool" @bind-Value="format.Base64" Color="Color.Primary">Base64</MudSwitch>
-	</MudItem>
-	<MudItem xs="3" sm="3" md="2">
 		<MudSwitch T="bool" @bind-Value="format.UrlEncode" Color="Color.Primary" Disabled="!format.Base64">URL Encode</MudSwitch>
-	</MudItem>
-	<MudFlexBreak Style="padding-bottom: .5cm" />
-	<MudItem>
+	</MudStack>
+
+	<MudElement Style="height: 20px" />
+
+	<MudStack Row Class="flex-wrap">
 		<MudButton Variant="Variant.Filled" OnClick="GenerateButtonClick" Size="Size.Large" Color="Color.Primary">Generate</MudButton>
 		@if (CopyToClipboardButtonEnabled)
 		{
-			<MudButton Variant="Variant.Filled" OnClick="CopyToClipboardButtonClick" Size="Size.Large" Color="Color.Secondary" Style="margin-left: 5px">Copy To Clipboard</MudButton>
+			<MudButton Variant="Variant.Filled" OnClick="CopyToClipboardButtonClick" Size="Size.Large" Color="Color.Secondary">Copy To Clipboard</MudButton>
 		}
-	</MudItem>
-	<MudFlexBreak Style="padding-bottom: .5cm" />
-	<MudItem xs="12" sm="9" md="6">
-		<MudTextField T="string"
-			@bind-Value="GeneratedGuids"
-			Label="GUIDs"
-			Variant="Variant.Outlined"
-			Lines="5"
-			MaxLines="2000"
-			Sizing="InputSizing.Auto"
-			spellcheck="false"
-			ReadOnly
-			Style="font-family: 'Lucida Console', 'Courier New', monospace;" />
-	</MudItem>
+	</MudStack>
 
-</MudGrid>
+	<MudElement Style="height: 20px" />
+
+	<MudTextField T="string"
+		@bind-Value="GeneratedGuids"
+		Label="GUIDs"
+		Variant="Variant.Outlined"
+		Lines="5"
+		MaxLines="2000"
+		Sizing="InputSizing.Auto"
+		spellcheck="false"
+		ReadOnly
+		Style="font-family: 'Lucida Console', 'Courier New', monospace; width: 400px" />
+
+</MudStack>
 
