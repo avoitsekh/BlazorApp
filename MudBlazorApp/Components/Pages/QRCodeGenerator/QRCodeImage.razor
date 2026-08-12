@@ -57,15 +57,15 @@
 
 	int ExportImageSize => Math.Clamp(Options.Size, 64, 2048);
 
-	public Action Generate = () => { };
 	QRCodeData? qrCodeData;
 	MicroQRCodeData? microQrCodeData;
+	bool hasRendered;
 
 	protected override Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
-			Generate = GenerateCore;
+			hasRendered = true;
 			Generate();
 		}
 		return base.OnAfterRenderAsync(firstRender);
@@ -77,8 +77,7 @@
 			.WithFinderPatternShape(Options.FinderPatternShape)
 			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
 			.WithColors(ParseColor(Options.ModuleColor1), Options.TransparentBackground ? SKColors.Transparent : SKColors.White)
-			.WithGradient(CreateGradient())
-			;
+			.WithGradient(CreateGradient());
 
 
 	MicroQRCodeImageBuilder GetMicroQRCodeImageBuilder(int size)
@@ -86,50 +85,31 @@
 			.WithSize(size, size)
 			.WithModuleShape(Options.ModuleShape is RoundedRectangleModuleShape ? new RoundedRectangleModuleShape(Options.ModuleShapeCornerRadius) : Options.ModuleShape, Math.Clamp(Options.ModuleSizePercent, 0.5f, 1.0f))
 			.WithColors(ParseColor(Options.ModuleColor1), Options.TransparentBackground ? SKColors.Transparent : SKColors.White)
-			.WithGradient(CreateGradient())
-			;
+			.WithGradient(CreateGradient());
 
-	SKColor ParseColor(string value) => SKColor.TryParse(value, out var color) ? color : SKColors.Black;
+	SKColor ParseColor(string value)
+		=> SKColor.TryParse(value, out var color) ? color : SKColors.Black;
 
-	public GradientOptions? CreateGradient()
-	{
-		if (Options.GradientDirection == GradientDirection.None)
-		{
-			return null;
-		}
+	GradientOptions? CreateGradient()
+		=> Options.GradientDirection == GradientDirection.None ? null : new GradientOptions([ParseColor(Options.ModuleColor1), ParseColor(Options.ModuleColor2)], Options.GradientDirection);
 
-		return new GradientOptions([ParseColor(Options.ModuleColor1), ParseColor(Options.ModuleColor2)], Options.GradientDirection);
-	}
-
-	void SaveTo(int size, Stream stream)
+	void RenderToStream(int imageSize, Stream stream)
 	{
 		if (Options!.Symbology == SymbologyKind.QrCode)
 		{
-			GetQRCodeImageBuilder(size).SaveTo(stream);
+			GetQRCodeImageBuilder(imageSize).SaveTo(stream);
 		}
 		else
 		{
-			GetMicroQRCodeImageBuilder(size).SaveTo(stream);
+			GetMicroQRCodeImageBuilder(imageSize).SaveTo(stream);
 		}
 	}
 
-	void SaveToSvg(int size, Stream stream)
-	{
-		if (Options!.Symbology == SymbologyKind.QrCode)
-		{
-			GetQRCodeImageBuilder(size).SaveToSvg(stream);
-		}
-		else
-		{
-			GetMicroQRCodeImageBuilder(size).SaveToSvg(stream);
-		}
-	}
-
-	async void GenerateCore()
+	public async void Generate()
 	{
 		try
 		{
-			if (Options != null)
+			if (Options != null && hasRendered)
 			{
 				var quietZoneSize = Math.Clamp(Options.QuietZone, 0, 10);
 
@@ -145,7 +125,7 @@
 				}
 
 				using var stream = new MemoryStream();
-				SaveTo(PreviewImageSize, stream);
+				RenderToStream(PreviewImageSize, stream);
 				await JS.InvokeVoidAsync("setPreviewImage", "qrcode", "image/png", stream.ToArray());
 			}
 		}
@@ -160,7 +140,7 @@
 		try
 		{
 			using var stream = new MemoryStream();
-			SaveTo(ExportImageSize, stream);
+			RenderToStream(ExportImageSize, stream);
 			await JS.InvokeVoidAsync("downloadFile", "qrcode.png", "image/png", stream.ToArray());
 		}
 		catch (Exception ex)
@@ -174,7 +154,14 @@
 		try
 		{
 			using var stream = new MemoryStream();
-			SaveToSvg(ExportImageSize, stream);
+			if (Options!.Symbology == SymbologyKind.QrCode)
+			{
+				GetQRCodeImageBuilder(ExportImageSize).SaveToSvg(stream);
+			}
+			else
+			{
+				GetMicroQRCodeImageBuilder(ExportImageSize).SaveToSvg(stream);
+			}
 			await JS.InvokeVoidAsync("downloadFile", "qrcode.svg", "image/svg+xml", stream.ToArray());
 		}
 		catch (Exception ex)
@@ -188,7 +175,7 @@
 		try
 		{
 			using var stream = new MemoryStream();
-			SaveTo(ExportImageSize, stream);
+			RenderToStream(ExportImageSize, stream);
 			await JS.InvokeVoidAsync("copyToClipboard", "image/png", stream.ToArray());
 			snackbar.Add("QR Code copied to clipboard", Severity.Info);
 		}
