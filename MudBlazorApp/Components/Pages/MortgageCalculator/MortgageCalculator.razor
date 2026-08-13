@@ -6,8 +6,8 @@
  
 <MudGrid Spacing="0">
 	<MudItem xs="12" sm="12" md="4">
-		@* <MudPaper Style="margin-bottom: 10px; padding: 10px"> *@
-		<MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight">
+		@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
+		<MudPaper Class="pa-6 ma-2">
 			<MudForm @ref="@form" Spacing="4">
 				<MudText Typo="Typo.h6">Mortgage Information</MudText>
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
@@ -38,7 +38,8 @@
 	@if (amortizationSchedule.Count > 0)
 	{
 		<MudItem xs="12" sm="12" md="8">
-				<MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight">
+				@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
+				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h6" >Balance Over Time</MudText>
 						<BalanceOverTime AmortizationSchedule="amortizationSchedule" />
@@ -79,7 +80,7 @@
 		List<Payment> amortizationSchedule = [];
 		MortgageSettings mortgageSettings = new MortgageSettings();
 
-		string mortgageInfoHeight = "480px";
+		//string mortgageInfoHeight = "480px";
 
 		async Task CalculateButtonClick()
 		{

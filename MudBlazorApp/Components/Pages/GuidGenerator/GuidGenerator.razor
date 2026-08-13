@@ -39,16 +39,19 @@
 
 	<MudElement Style="height: 20px" />
 
-	<MudTextField T="string"
-		@bind-Value="GeneratedGuids"
-		Label="GUIDs"
-		Variant="Variant.Outlined"
-		Lines="5"
-		MaxLines="2000"
-		Sizing="InputSizing.Auto"
-		spellcheck="false"
-		ReadOnly
-		Style="font-family: 'Lucida Console', 'Courier New', monospace; width: 400px" />
+	@if (!string.IsNullOrEmpty(GeneratedGuids))
+	{
+		<MudTextField T="string"
+			@bind-Value="GeneratedGuids"
+			Label="GUIDs"
+			Variant="Variant.Outlined"
+			Lines="5"
+			MaxLines="2000"
+			Sizing="InputSizing.Auto"
+			spellcheck="false"
+			ReadOnly
+			Style="font-family: 'Lucida Console', 'Courier New', monospace; width: 400px" />
+	}
 
 </MudStack>
 

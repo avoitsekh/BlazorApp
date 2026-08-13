@@ -114,13 +114,13 @@
 								}
 							</MudSelect>
 							<MudStack Row>
-								<MudSelect Label="Finder Pattern" @bind-Value="options.FinderPatternShape" @bind-Value:after="RegenerateWithNoPreset" Variant="Variant.Text" Disabled="@(options.Symbology is not SymbologyKind.QrCode)" Dense>
+								<MudSelect Label="Finder Pattern" @bind-Value="options.FinderPatternShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Disabled="@(options.Symbology is not SymbologyKind.QrCode)" Dense>
 									@foreach (var keyValuePair in QRCodeOptions.FinderPatternShapes)
 									{
 										<MudSelectItem T="FinderPatternShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
-								<MudSelect Label="Module Shape" @bind-Value="options.ModuleShape" @bind-Value:after="RegenerateWithNoPreset" Variant="Variant.Text" Dense>
+								<MudSelect Label="Module Shape" @bind-Value="options.ModuleShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
 									@foreach (var keyValuePair in QRCodeOptions.ModuleShapes)
 									{
 										<MudSelectItem T="ModuleShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -129,23 +129,23 @@
 							</MudStack>
 
 							<MudStack Row>
-								<MudSlider T="float" @bind-Value="options.ModuleShapeCornerRadius" @bind-Value:after="RegenerateWithNoPreset" Variant="@(options.ModuleShape is not RoundedRectangleModuleShape ? Variant.Outlined : Variant.Filled)" Min="0f" Max="0.5f" Step="0.01f" Disabled="@(options.ModuleShape is not RoundedRectangleModuleShape)">Corner Radius: @options.ModuleShapeCornerRadius.ToString("P0")</MudSlider>
-								<MudSlider T="float" @bind-Value="options.ModuleSizePercent" @bind-Value:after="RegenerateWithNoPreset" Variant="Variant.Filled" Color="@(OnMudSliderColorTreshold(options.ModuleSizePercent, 0.65f, 0.85f))" Min="0.5f" Max="1.0f" Step="0.01f">Module Size: @options.ModuleSizePercent.ToString("P0")</MudSlider>
+								<MudSlider T="float" @bind-Value="options.ModuleShapeCornerRadius" @bind-Value:after="OnStyleChanged" Variant="@(options.ModuleShape is not RoundedRectangleModuleShape ? Variant.Outlined : Variant.Filled)" Min="0f" Max="0.5f" Step="0.01f" Disabled="@(options.ModuleShape is not RoundedRectangleModuleShape)">Corner Radius: @options.ModuleShapeCornerRadius.ToString("P0")</MudSlider>
+								<MudSlider T="float" @bind-Value="options.ModuleSizePercent" @bind-Value:after="OnStyleChanged" Variant="Variant.Filled" Color="@(OnMudSliderColorTreshold(options.ModuleSizePercent, 0.65f, 0.85f))" Min="0.5f" Max="1.0f" Step="0.01f">Module Size: @options.ModuleSizePercent.ToString("P0")</MudSlider>
 							</MudStack>
 
 							<MudStack Row>
-								<MudColorPicker Label="Module Color 1" @bind-Value="moduleColor1" @bind-Value:after="RegenerateWithNoPreset" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" />
-								<MudColorPicker Label="Module Color 2" @bind-Value="moduleColor2" @bind-Value:after="RegenerateWithNoPreset" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" Disabled="@(options.GradientDirection == GradientDirection.None)" />
+								<MudColorPicker Label="Module Color 1" @bind-Value="moduleColor1" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" />
+								<MudColorPicker Label="Module Color 2" @bind-Value="moduleColor2" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" Disabled="@(options.GradientDirection == GradientDirection.None)" />
 							</MudStack>
 
 							<MudStack Row>
-								<MudSelect Label="Gradient Options" @bind-Value="options.GradientDirection" @bind-Value:after="RegenerateWithNoPreset" Variant="Variant.Text" Dense>
+								<MudSelect Label="Gradient Options" @bind-Value="options.GradientDirection" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
 									@foreach (var keyValuePair in QRCodeOptions.GradientOptions)
 									{
 										<MudSelectItem T="GradientDirection" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
-								<MudCheckBox @bind-Value="options.TransparentBackground" @bind-Value:after="RegenerateWithNoPreset" Color="Color.Primary" Style="width:30%">Transparent Background</MudCheckBox>
+								<MudCheckBox @bind-Value="options.TransparentBackground" @bind-Value:after="OnStyleChanged" Color="Color.Primary" Style="width:30%">Transparent Background</MudCheckBox>
 							</MudStack>
 						</MudStack>
 
@@ -194,15 +194,6 @@
 		qrCodeImage?.Generate();
 	}
 
-	void RegenerateWithNoPreset()
-	{
-		if (options.Preset != Preset.Custom)
-		{
-			options.Preset = Preset.Custom;
-		}
-		Regenerate();
-	}
-
 	Color OnMudSliderColorTreshold(float currentValue, float? errorTreshold, float? warningTreshold)
 	{
 		if (errorTreshold.HasValue && currentValue < errorTreshold)
@@ -221,6 +212,16 @@
 	{
 		options.QuietZone = options.Symbology == SymbologyKind.MicroQR ? 2 : 4;
 		options.FinderPatternShape = null;
+		Regenerate();
+	}
+
+	void OnStyleChanged()
+	{
+		if (options.Preset != Preset.Custom)
+		{
+			options.Preset = Preset.Custom;
+		}
+
 		Regenerate();
 	}
 

@@ -7,7 +7,7 @@
 		public int AmortizationPeriodInYears = 25;							// term
 		public DateTime? FirstPaymentDate = new DateTime(2020, 01, 31);     // fpdate - first payment date
 		public int CompoundPeriod = 2;										// cp - interest compound period
-		public int PaymentFrequency = 24;                                   // ppy - payments per year
+		public int PaymentFrequency = 12;                                   // ppy - payments per year
 
 		public async Task<List<Payment>> CalculateAmortizationScheduleAsync()
 		{
@@ -20,13 +20,20 @@
 			List<Payment> result = new List<Payment>(totalNumberOfPayments);
 
 			double ratePerPayment = Math.Pow(1D + AnnualRate / 100 / CompoundPeriod, (double)CompoundPeriod / PaymentFrequency) - 1;
-			double paymentAmount = PMT(ratePerPayment, totalNumberOfPayments, LoanAmount);
 
 			double balance = LoanAmount;
+			double paymentAmount = PMT(ratePerPayment, totalNumberOfPayments, balance);
 			DateTime paymentDate = FirstPaymentDate ?? DateTime.MinValue;
 
 			for (int i = 1; i <= totalNumberOfPayments; i++)
 			{
+				//if (i > 60)
+				//{
+				//	AnnualRate = 8.5;
+				//}
+				//ratePerPayment = Math.Pow(1D + AnnualRate / 100 / CompoundPeriod, (double)CompoundPeriod / PaymentFrequency) - 1;
+				//paymentAmount = PMT(ratePerPayment, totalNumberOfPayments-i+1, balance);
+
 				double interestPaid = RoundToCents(balance * ratePerPayment);
 
 				if (i == totalNumberOfPayments)
@@ -55,9 +62,9 @@
 			return result;
 		}
 
-		double PMT(double rate, int totalNumberOfMonths, double loanAmount)
+		double PMT(double rate, int numberOfPayments, double loanAmount)
 		{
-			var denominator = Math.Pow(1 + rate, totalNumberOfMonths) - 1;
+			var denominator = Math.Pow(1 + rate, numberOfPayments) - 1;
 			return RoundToCents((rate + (rate / denominator)) * loanAmount);
 		}
 
