@@ -15,7 +15,9 @@ namespace MudBlazorApp.Components.Pages.CurrencyConverter
 		CurrencyConverterState State { get; set; } = default!;
 
 		[Inject]
-		ClipboardService clipboardService { get; set; } = default!;
+		ClipboardService ClipboardService { get; set; } = default!;
+
+		MudMessageBox messageBox;
 
 		bool isProcessing = false;
 
@@ -49,12 +51,12 @@ namespace MudBlazorApp.Components.Pages.CurrencyConverter
 
 		void CopyToClipboard(decimal? amount)
 		{
-			clipboardService.Write(amount, "Amount copied to clipboard");
+			ClipboardService.Write(amount, "Amount copied to clipboard");
 		}
 
 		string Pluralize(string currencyName, decimal? amount)
 		{
-			if (amount > 1m && !string.IsNullOrWhiteSpace(currencyName))
+			if (!string.IsNullOrWhiteSpace(currencyName) && amount > 1m)
 			{
 				if (currencyName.EndsWith("ch") ||
 					currencyName.EndsWith("s") ||
@@ -68,6 +70,11 @@ namespace MudBlazorApp.Components.Pages.CurrencyConverter
 				return currencyName + "s";
 			}
 			return currencyName;
+		}
+
+		async Task OnInformationClicked()
+		{
+			await messageBox.ShowAsync();
 		}
 	}
 }
