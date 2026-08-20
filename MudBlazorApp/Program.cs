@@ -21,7 +21,7 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<ICurrencyConverterDataService, CurrencyConverterDataService>();
+builder.Services.AddHttpClient<CurrencyConverterDataService>();
 builder.Services.AddScoped<CurrencyConverterState>();
 
 builder.Services.AddScoped<ISnackbar, SnackbarService>();

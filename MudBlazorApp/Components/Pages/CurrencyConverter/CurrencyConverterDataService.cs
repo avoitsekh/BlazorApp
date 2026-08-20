@@ -1,64 +1,43 @@
-﻿using MudBlazor;
-using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
+﻿using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
 
-namespace MudBlazorApp.Components.Pages.CurrencyConverter
+namespace MudBlazorApp.Components.Pages.CurrencyConverter;
+
+public class CurrencyConverterDataService(HttpClient httpClient, IConfiguration config)
 {
-	public class CurrencyConverterDataService(HttpClient httpClient, IConfiguration config, ISnackbar snackbar) : ICurrencyConverterDataService
+	readonly string apiUrl = config["ExchangeRateApi:BaseUrl"]!;
+	readonly Dictionary<(CurrencyType?, CurrencyType?, DateTime?), decimal?> exchangeRateCache = new();
+
+	public async Task<CurrencyType[]> GetSupportedCurrenciesAsync()
 	{
-		readonly string apiUrl = config["ExchangeRateApi:BaseUrl"]!;
+		return await httpClient.GetFromJsonAsync<CurrencyType[]>($"{apiUrl}/currencies");
+	}
 
-		public CurrencyType[]? SupportedCurrencies => supportedCurrencies ??= GetSupportedCurrencies();
-		CurrencyType[]? supportedCurrencies = null;
+	public async Task<decimal?> GetExchangeRate(CurrencyType? fromCurrency, CurrencyType? toCurrency, DateTime? exchangeRateDate)
+	{
+		decimal? result = null;
 
-		Dictionary<(CurrencyType?, CurrencyType?, DateTime?), decimal?> exchangeRateCache = new();
-
-		CurrencyType[] GetSupportedCurrencies()
+		if (fromCurrency != null && toCurrency != null)
 		{
-			try
+			if (fromCurrency == toCurrency)
 			{
-				return httpClient.GetFromJsonAsync<CurrencyType[]>($"{apiUrl}/currencies").Result;
+				result = 1m;
 			}
-			catch
+			else if (exchangeRateDate != null)
 			{
-				snackbar?.Add("Error fetching currency list from public API", Severity.Error, config => config.VisibleStateDuration = int.MaxValue);
-			}
-			return [];
-		}
-
-		public async Task<decimal?> GetExchangeRate(CurrencyType? fromCurrency, CurrencyType? toCurrency, DateTime? exchangeRateDate)
-		{
-			decimal? result = null;
-
-			if (fromCurrency != null && toCurrency != null)
-			{
-				if (fromCurrency == toCurrency)
+				var key = (fromCurrency, toCurrency, exchangeRateDate);
+				if (exchangeRateCache.ContainsKey(key))
 				{
-					result = 1m;
+					result = exchangeRateCache[key];
 				}
-				else if (exchangeRateDate != null)
+				else
 				{
-					var key = (fromCurrency, toCurrency, exchangeRateDate);
-					if (exchangeRateCache.ContainsKey(key))
-					{
-						result = exchangeRateCache[key];
-					}
-					else
-					{
-						try
-						{
-							var rates = await httpClient.GetFromJsonAsync<ExchangeRate[]>($"{apiUrl}/rates?base={fromCurrency}&quotes={toCurrency}&date={exchangeRateDate:yyyy-MM-dd}");
-							result = rates?.FirstOrDefault()?.rate;
-							exchangeRateCache[key] = result;
-						}
-						catch
-						{
-							snackbar?.Add("Error fetching exchange rate from public API", Severity.Error, config => config.VisibleStateDuration = int.MaxValue);
-						}
-					}
+					var rates = await httpClient.GetFromJsonAsync<ExchangeRate[]>($"{apiUrl}/rates?base={fromCurrency}&quotes={toCurrency}&date={exchangeRateDate:yyyy-MM-dd}");
+					result = rates?.FirstOrDefault()?.rate;
+					exchangeRateCache[key] = result;
 				}
 			}
-
-			return result;
 		}
+
+		return result;
 	}
 }

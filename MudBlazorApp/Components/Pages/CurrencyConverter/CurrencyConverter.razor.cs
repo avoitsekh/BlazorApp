@@ -3,78 +3,166 @@ using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
 using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
 using MudBlazorApp.Services;
+using System.Globalization;
 
-namespace MudBlazorApp.Components.Pages.CurrencyConverter
+namespace MudBlazorApp.Components.Pages.CurrencyConverter;
+
+public partial class CurrencyConverter
 {
-	public partial class CurrencyConverter
+	[Inject]
+	CurrencyConverterDataService DataService { get; set; } = default!;
+
+	[Inject]
+	CurrencyConverterState State { get; set; } = default!;
+
+	[Inject]
+	ClipboardService ClipboardService { get; set; } = default!;
+
+	[Inject]
+	NavigationManager NavigationManager { get; set; } = default!;
+
+	[Inject]
+	ISnackbar Snackbar { get; set; } = default!;
+
+
+	[SupplyParameterFromQuery(Name = "from")]
+	public string? FromCurrency { get; set; }
+
+	[SupplyParameterFromQuery(Name = "to")]
+	public string? ToCurrency { get; set; }
+
+	[SupplyParameterFromQuery()]
+	public string? Date { get; set; }
+
+	[SupplyParameterFromQuery()]
+	public string? Amount { get; set; }
+
+
+	MudMessageBox messageBox = default!;
+	bool isProcessing = false;
+	string? exampleUri;
+
+	protected async override Task OnAfterRenderAsync(bool firstRender)
 	{
-		[Inject]
-		ICurrencyConverterDataService DataService { get; set; } = default!;
-
-		[Inject]
-		CurrencyConverterState State { get; set; } = default!;
-
-		[Inject]
-		ClipboardService ClipboardService { get; set; } = default!;
-
-		MudMessageBox messageBox;
-
-		bool isProcessing = false;
-
-		async void OnValidSubmit(EditContext context)
+		if (firstRender)
 		{
-			try
+			var uriQueryString = new Dictionary<string, object?>
 			{
-				isProcessing = true;
-				await Task.Delay(150);
-				var exchangeRate = await DataService.GetExchangeRate(State.FromCurrency, State.ToCurrency, State.ExchangeRateDate);
-				State.Calculate(exchangeRate);
+				{ "from", "CAD" },
+				{ "to", "USD" },
+				{ "date", DateTime.Today.ToString("yyyy-MM-dd") },
+				{ "amount", 123.45 },
+			};
+			exampleUri = NavigationManager.GetUriWithQueryParameters(uriQueryString);
+
+			var hasQueryString = !string.IsNullOrWhiteSpace(FromCurrency) ||
+				!string.IsNullOrWhiteSpace(ToCurrency) ||
+				!string.IsNullOrWhiteSpace(Date) ||
+				!string.IsNullOrWhiteSpace(Amount);
+
+			if (!hasQueryString)
+			{
+				// Prefetch supported currencies
+				GetSupportedCurrenciesAsync();
 			}
-			finally
+			else
 			{
-				isProcessing = false;
+				if (!string.IsNullOrWhiteSpace(FromCurrency))
+				{
+					await GetSupportedCurrenciesAsync();
+					State.FromCurrency = State.SupportedCurrencies.FirstOrDefault(x => x.iso_code == FromCurrency);
+				}
+				if (!string.IsNullOrWhiteSpace(ToCurrency))
+				{
+					await GetSupportedCurrenciesAsync();
+					State.ToCurrency = State.SupportedCurrencies.FirstOrDefault(x => x.iso_code == ToCurrency);
+				}
+				if (!string.IsNullOrWhiteSpace(Date) && DateTime.TryParseExact(Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+				{
+					State.ExchangeRateDate = date;
+				}
+				if (!string.IsNullOrWhiteSpace(Amount) && decimal.TryParse(Amount, out var amount))
+				{
+					State.FromAmount = amount;
+				}
+
 				StateHasChanged();
 			}
 		}
+	}
 
-		async Task<IEnumerable<CurrencyType>> SearchCurrencyDropDown(string text, CancellationToken token)
+	async void OnValidSubmit(EditContext context)
+	{
+		try
 		{
-			await Task.Delay(50, token);
-			var currencies = DataService.SupportedCurrencies;
-			return string.IsNullOrWhiteSpace(text) ? currencies : currencies.Where(x => x.iso_code.StartsWith(text, StringComparison.InvariantCultureIgnoreCase) || x.name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+			isProcessing = true;
+			await Task.Delay(150);
+			var exchangeRate = await DataService.GetExchangeRate(State.FromCurrency, State.ToCurrency, State.ExchangeRateDate);
+			State.Calculate(exchangeRate);
 		}
-
-		async Task OnFromAmountInput(ChangeEventArgs args)
+		catch
 		{
-			State.ResetToAmount();
+			Snackbar?.Add("Error fetching exchange rate from public API", Severity.Error, config => config.VisibleStateDuration = int.MaxValue);
 		}
-
-		void CopyToClipboard(decimal? amount)
+		finally
 		{
-			ClipboardService.Write(amount, "Amount copied to clipboard");
+			isProcessing = false;
+			StateHasChanged();
 		}
+	}
 
-		string Pluralize(string currencyName, decimal? amount)
+	async Task<IEnumerable<CurrencyType>> SearchCurrencyDropDown(string text, CancellationToken token)
+	{
+		await Task.Delay(50, token);
+		return string.IsNullOrWhiteSpace(text) ? State.SupportedCurrencies : State.SupportedCurrencies.Where(x => x.iso_code.StartsWith(text, StringComparison.InvariantCultureIgnoreCase) || x.name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+	}
+
+	async Task OnFromAmountInput(ChangeEventArgs args)
+	{
+		State.ResetToAmount();
+	}
+
+	void CopyToClipboard(decimal? amount)
+	{
+		ClipboardService.Write(amount, "Amount copied to clipboard");
+	}
+
+	string Pluralize(string currencyName, decimal? amount)
+	{
+		if (!string.IsNullOrWhiteSpace(currencyName) && amount > 1m)
 		{
-			if (!string.IsNullOrWhiteSpace(currencyName) && amount > 1m)
+			if (currencyName.EndsWith("ch") ||
+				currencyName.EndsWith("s") ||
+				currencyName.EndsWith("sh") ||
+				currencyName.EndsWith("ss") ||
+				currencyName.EndsWith("x") ||
+				currencyName.EndsWith("z"))
 			{
-				if (currencyName.EndsWith("ch") ||
-					currencyName.EndsWith("s") ||
-					currencyName.EndsWith("sh") ||
-					currencyName.EndsWith("ss") ||
-					currencyName.EndsWith("x") ||
-					currencyName.EndsWith("z"))
-				{
-					return currencyName + "es";
-				}
-				return currencyName + "s";
+				return currencyName + "es";
 			}
-			return currencyName;
+			return currencyName + "s";
 		}
+		return currencyName;
+	}
 
-		async Task OnInformationClicked()
+	async Task OnInformationClicked()
+	{
+		await messageBox.ShowAsync();
+	}
+
+	async Task GetSupportedCurrenciesAsync()
+	{
+		try
 		{
-			await messageBox.ShowAsync();
+			if (State.SupportedCurrencies == null)
+			{
+				State.SupportedCurrencies = await DataService.GetSupportedCurrenciesAsync();
+			}
+		}
+		catch
+		{
+			Snackbar.Add("Error fetching currency list from public API", Severity.Error, config => config.VisibleStateDuration = int.MaxValue);
+			State.SupportedCurrencies = [];
 		}
 	}
 }

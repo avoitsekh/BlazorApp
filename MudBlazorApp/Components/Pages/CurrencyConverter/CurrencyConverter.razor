@@ -6,9 +6,8 @@
 <MudGrid Style="height:90vh;">
 	<MudItem Class="d-flex align-center justify-center mud-width-full" xs="12">
 @* <MudGrid Class="d-flex justify-center mt-5">
-	<MudItem xs="12" sm="6" md="5" lg="4">
-
- *@		<MudPaper Class="pa-6 ma-2" Elevation="5" Width="360px">
+	<MudItem xs="12" sm="6" md="5" lg="4">*@
+		<MudPaper Class="pa-6 ma-2" Elevation="5" Width="360px">
 			<EditForm Model="@State" OnValidSubmit="OnValidSubmit">
 				<DataAnnotationsValidator />
 				<MudStack Spacing="5">
@@ -46,11 +45,14 @@
 	</MudItem>
 </MudGrid>
 
-<MudMessageBox @ref="messageBox" Title="Information">
+<MudMessageBox @ref="messageBox" Title="Information" YesText="Close">
 	<MessageContent>
-		<MudText Inline>This component demonstrates fetching exchange rates from <a href="https://frankfurter.dev" target="_blank"><u>the public API</u></a> and performs currency conversion with some caching. The state of the search is preserved across this web application.</MudText>
+		<MudStack>
+			<MudText>This component demonstrates fetching currency codes and exchange rates from <MudLink Href="https://frankfurter.dev" Target="_blank">public API</MudLink> and performs currency conversion. There is some caching in place so the exchange rate is never fetched twice and the state of the search form is preserved across this web application.</MudText>
+			<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="@exampleUri" Target="_blank">@exampleUri</MudLink>.</MudText>
+		</MudStack>
 	</MessageContent>
-	<YesButton>
-		<MudButton Variant="Variant.Filled" Color="Color.Secondary">OK</MudButton>
-	</YesButton>
+	@* <YesButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Secondary">CLOSE</MudButton>
+	</YesButton> *@
 </MudMessageBox>
