@@ -6,7 +6,7 @@
 @code {
 
 	[Parameter]
-	public List<Payment>? AmortizationSchedule { get; set; }
+	public List<Payment>? Payments { get; set; }
 
 	LineChartOptions options = new()
 	{
@@ -27,7 +27,7 @@
 	{
 		base.OnParametersSet();
 
-		if (AmortizationSchedule?.Count > 0)
+		if (Payments?.Count > 0)
 		{
 			SetGraphValues();
 			SetXAxisLabels();
@@ -39,7 +39,7 @@
 	{
 		series = new()
 			{
-				new ChartSeries<double>() { Name = "Balance", Data = AmortizationSchedule!.Select(x => x.Balance).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
+				new ChartSeries<double>() { Name = "Balance", Data = Payments!.Select(x => x.Balance).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
 				//new ChartSeries<double>() { Name = "Balance (with extra payments)", Data = AmortizationSchedule.Select(x => x.Balance + 10000D).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
 			};
 
@@ -51,22 +51,22 @@
 
 	void SetXAxisLabels()
 	{
-		var amortizationPeriodInYears = AmortizationSchedule!.Max(x => x.Year);
+		var amortizationPeriodInYears = Payments!.Max(x => x.Year);
 		var denominator = amortizationPeriodInYears switch
 		{
 			<= 5 => 1,
 			<= 60 => 5,
 			_ => 10
 		};
-		XAxisLabels = AmortizationSchedule!.Select(x => x.Year.HasValue && x.Year % denominator == 0 ? x.PaymentDate.Year.ToString() : string.Empty).ToArray();
+		XAxisLabels = Payments!.Select(x => x.Year.HasValue && x.Year % denominator == 0 ? x.PaymentDate.Year.ToString() : string.Empty).ToArray();
 	}
 
 	void SetYAxisLabels()
 	{
-		var firstPayment = AmortizationSchedule!.FirstOrDefault(x => x.Number == 1);
+		var firstPayment = Payments!.FirstOrDefault(x => x.Number == 1);
 		if (firstPayment != null)
 		{
-			var loanAmount = firstPayment.Balance + firstPayment.PrincipalPaid;
+			var loanAmount = firstPayment.Balance + firstPayment.PrincipalAmount;
 			options.YAxisTicks = loanAmount switch
 			{
 				<= 1000 => 100,

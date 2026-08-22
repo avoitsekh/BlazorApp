@@ -5,112 +5,21 @@ public partial class MortgageSettings
 	public double LoanAmount = 320000;
 	public double AnnualRate = 2.49;
 	public int AmortizationPeriodInYears = 25;							// term
-	public DateTime? FirstPaymentDate = new DateTime(2020, 01, 31);     // fpdate - first payment date
+	public DateTime? AdvanceDate = new DateTime(2025, 01, 01);          // mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;                                   // ppy - payments per year
+	// TODO: add: public enum InterestAccrualMethod = per day or per payment
+	public Interests InterestRates;
 
-	public async Task<List<Payment>> CalculateAmortizationScheduleAsync()
+	public MortgageSettings()
 	{
-		return CalculateAmortizationSchedule();
-	}
-
-	public List<Payment> CalculateAmortizationSchedule()
-	{
-		int totalNumberOfPayments = PaymentFrequency * AmortizationPeriodInYears;    // nper
-		List<Payment> result = new List<Payment>(totalNumberOfPayments);
-
-		double ratePerPayment = Math.Pow(1D + AnnualRate / 100 / CompoundPeriod, (double)CompoundPeriod / PaymentFrequency) - 1;
-
-		double balance = LoanAmount;
-		double paymentAmount = PMT(ratePerPayment, totalNumberOfPayments, balance);
-		DateTime paymentDate = FirstPaymentDate ?? DateTime.MinValue;
-
-		for (int i = 1; i <= totalNumberOfPayments; i++)
+		InterestRates = new Interests(AnnualRate)
 		{
-			//if (i > 60)
-			//{
-			//	AnnualRate = 8.5;
-			//}
-			//ratePerPayment = Math.Pow(1D + AnnualRate / 100 / CompoundPeriod, (double)CompoundPeriod / PaymentFrequency) - 1;
-			//paymentAmount = PMT(ratePerPayment, totalNumberOfPayments-i+1, balance);
-
-			double interestPaid = RoundToCents(balance * ratePerPayment);
-
-			if (i == totalNumberOfPayments)
-			{
-				paymentAmount = RoundToCents(balance + interestPaid);
-			}
-
-			double principalPaid = RoundToCents(paymentAmount - interestPaid);
-			balance = RoundToCents(balance - principalPaid);
-
-			result.Add(new()
-			{
-				Number = i,
-				PaymentDate = paymentDate,
-				AnnualInterestRate = AnnualRate,
-				InterestPaid = interestPaid,
-				PaymentAmount = paymentAmount,
-				PrincipalPaid = principalPaid,
-				Balance = balance,
-				Year = i % PaymentFrequency == 0 ? i / PaymentFrequency : null
-			});
-
-			paymentDate = GetNextPaymentDate(paymentDate, i);
-		}
-
-		return result;
+			{ new DateTime(2025, 04, 19), 8.5D },
+			{ new DateTime(2026, 10, 08), 6.35D },
+			{ new DateTime(2028, 10, 08), 7D }
+		};
 	}
 
-	double PMT(double rate, int numberOfPayments, double loanAmount)
-	{
-		var denominator = Math.Pow(1 + rate, numberOfPayments) - 1;
-		return RoundToCents((rate + (rate / denominator)) * loanAmount);
-	}
 
-	public static double RoundToCents(double amount)
-	{
-		return Math.Round(amount, 2);
-	}
-
-	DateTime GetNextPaymentDate(DateTime currentDate, int currentPaymentNumber)
-	{
-		var result = DateTime.MinValue;
-		var fpdate = FirstPaymentDate!.Value;
-		var anchor = fpdate.Day;
-
-		switch (PaymentFrequency)
-		{
-			case 12:
-				result = GetAnchorDate(currentDate.AddMonths(1), anchor);
-				break;
-
-			case 24:
-				if (++currentPaymentNumber % 2 == 0)
-				{
-					result = anchor >= 15 ? GetAnchorDate(currentDate.AddMonths(1), fpdate.AddDays(-14).Day) : currentDate.AddDays(14);
-				}
-				else
-				{
-					result = GetAnchorDate(anchor >= 15 ? currentDate : currentDate.AddMonths(1), anchor);
-				}
-				break;
-
-			case 52:
-				result = currentDate.AddDays(7);
-				break;
-
-			case 26:
-				result = currentDate.AddDays(14);
-				break;
-
-		}
-
-		return result;
-	}
-
-	DateTime GetAnchorDate(DateTime date, int day)
-	{
-		return new DateTime(date.Year, date.Month, Math.Min(day, DateTime.DaysInMonth(date.Year, date.Month)));
-	}
 }

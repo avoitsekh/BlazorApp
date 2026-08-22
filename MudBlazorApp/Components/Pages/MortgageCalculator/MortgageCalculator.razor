@@ -8,41 +8,77 @@
 	<MudItem xs="12" sm="12" md="4">
 		@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 		<MudPaper Class="pa-6 ma-2">
-			<MudForm @ref="@form" Spacing="4">
-				<MudText Typo="Typo.h6">Mortgage Information</MudText>
+			<MudForm @ref="@form" Spacing="2">
+				<MudText Typo="Typo.h5">Mortgage Information</MudText>
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
-						Validation="mortgageSettings.ValidateLoanAmount"
+						Validation="mortgageSettings.ValidateLoanAmount" Margin="Margin.Dense"
 						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Primary" />
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.AnnualRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="999" FullWidth Format="0.##"
+						Margin="Margin.Dense"
 						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="Color.Primary" />
-				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="999" FullWidth />
-				<MudDatePicker Label="First Payment Date" Editable="true" @bind-Date="mortgageSettings.FirstPaymentDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" />
-				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text">
+				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="999" FullWidth Margin="Margin.Dense" />
+				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
 					@foreach (var keyValuePair in Constants.CompoundPeriod)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
-				<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text">
+				<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense">
 					@foreach (var keyValuePair in Constants.PaymentFrequency)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
 				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
+
+				<MudTable Items="@mortgageSettings.InterestRates" FixedHeader Height="160px" Dense Hover Striped Outlined Elevation="0">
+					<ToolBarContent>
+						<MudText>Periodic Elements</MudText>
+						<MudSpacer />
+						<MudIconButton Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary"></MudIconButton>
+					</ToolBarContent>
+					<HeaderContent>
+						<MudTh>Effective Date</MudTh>
+						<MudTh>Rate</MudTh>
+					</HeaderContent>
+					<RowTemplate>
+						<MudTd DataLabel="Effective Date">@(context.EffectiveDate == DateTime.MinValue ? "(initial)" : context.EffectiveDate.ToString("yyyy-MM-dd"))</MudTd>
+						<MudTd DataLabel="Rate">@context.Rate.ToString("0.##'%'")</MudTd>
+					</RowTemplate>
+				</MudTable>
+
+				<MudPaper Elevation="0" Outlined Class="pa-3">
+
+					<MudText GutterBottom Color="Color.Primary">Information</MudText>
+					<MudDivider Class="pb-3" />
+
+
+					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Outlined" />
+					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Text" />
+					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Filled" />
+
+					<MudStack Row>
+						@* <MudText>Loan Amount</MudText> *@
+						<MudInputLabel Style="vertical-align: text-bottom">Loan Amount 2028-10-08</MudInputLabel>
+						<MudTextField T="string" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+					@* <MudNumericField T="int" Variant="Variant.Outlined" Margin="Margin.Dense"></MudNumericField> *@
+					</MudStack>
+				</MudPaper>
+
 			</MudForm>
 		</MudPaper>
 
 	</MudItem>
 	
-	@if (amortizationSchedule.Count > 0)
+	@if (payments.Count > 0)
 	{
 		<MudItem xs="12" sm="12" md="8">
 				@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h6" >Balance Over Time</MudText>
-						<BalanceOverTime AmortizationSchedule="amortizationSchedule" />
+						<BalanceOverTime Payments="payments" />
 					</MudStack>
 				</MudPaper>
 		</MudItem>
@@ -51,14 +87,28 @@
 </MudGrid>
 
 
-@if (amortizationSchedule.Count > 0)
+
+@code {
+	public int IntValue { get; set; }
+}
+
+<style>
+
+	.dense-numeric-field .mud-input-control-input-container .mud-input .mud-input-root {
+		padding: 4px !important;
+	}
+
+
+</style>
+
+@if (payments.Count > 0)
 {
 	<MudGrid Spacing="0">
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 					<MudText Typo="Typo.h6">Statistics</MudText>
-					<Statistics AmortizationSchedule="amortizationSchedule" />
+					<Statistics Payments="payments" />
 				</MudStack>
 			</MudPaper>
 		</MudItem>
@@ -66,8 +116,8 @@
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
-					<MudText Typo="Typo.h6">Amortization Table</MudText>
-					<AmortizationTable AmortizationSchedule="amortizationSchedule"></AmortizationTable>
+					<MudText Typo="Typo.h6">Amortization Schedule</MudText>
+					<AmortizationSchedule Payments="payments"></AmortizationSchedule>
 				</MudStack>
 			</MudPaper>
 		</MudItem>
@@ -77,7 +127,7 @@
 @code {
 
 		MudForm form = null!;
-		List<Payment> amortizationSchedule = [];
+		List<Payment> payments = [];
 		MortgageSettings mortgageSettings = new MortgageSettings();
 
 		//string mortgageInfoHeight = "480px";
@@ -88,7 +138,7 @@
 
 			if (form.IsValid)
 			{
-				amortizationSchedule = mortgageSettings.CalculateAmortizationSchedule();
+				payments = Payments.Generate(mortgageSettings);
 			}
 		}
 }
