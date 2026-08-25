@@ -1,0 +1,103 @@
+﻿<MudDialog>
+	<TitleContent>
+		<MudText Typo="Typo.h5" Class="pt-3" >Additional Interest Rates</MudText>
+	</TitleContent>
+	<DialogContent>
+
+		<MudTable Items="Settings.InterestRates" FixedHeader Height="230px" Dense Hover Striped Elevation="0" Breakpoint="Breakpoint.None">
+			<HeaderContent>
+				<MudTh>Effective Date</MudTh>
+				<MudTh>Rate</MudTh>
+				<MudTh></MudTh>
+			</HeaderContent>
+			<RowTemplate>
+				<MudTd DataLabel="Effective Date"><MudText>@(context.EffectiveDate == DateTime.MinValue ? "(initial)" : context.EffectiveDate.ToString("yyyy-MM-dd"))</MudText></MudTd>
+				<MudTd DataLabel="Rate"><MudText>@context.Rate.ToString("0.##'%'")</MudText></MudTd>
+				<MudTd Style="text-align: right;">
+					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context.EffectiveDate))" Style="position: relative; top: 2px" />
+				</MudTd>
+			</RowTemplate>
+		</MudTable>
+
+		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="AddNewClicked">Add New</MudButton>
+
+		<MudCollapse Expanded="addNewExpanded">
+			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
+				<MudStack Row>
+					<MudDatePicker Label="Effective Date" @bind-Date="newInterest.EffectiveDate" Editable="true" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
+						AdornmentColor="Color.Primary" Margin="Margin.Dense" Validation="ValidateEffectiveDate" />
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="newInterest.Rate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense" Validation="Settings.ValidateInterestRate" />
+					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
+				</MudStack>
+			</MudForm>
+		</MudCollapse>
+
+	</DialogContent>
+	<DialogActions>
+		<MudButton Color="Color.Primary" OnClick="CloseClicked">Close</MudButton>
+	</DialogActions>
+</MudDialog>
+
+
+
+@code {
+
+	[Parameter]
+	public MortgageSettings Settings { get; set; }
+
+	[CascadingParameter]
+	private IMudDialogInstance MudDialog { get; set; }
+
+	MudForm form = null!;
+
+	struct InterestDto()
+	{
+		public DateTime? EffectiveDate = DateTime.Today;
+		public double Rate = 0D;
+	};
+
+	InterestDto newInterest = new();
+
+	bool addNewExpanded;
+
+	void AddNewClicked()
+	{
+		addNewExpanded = !addNewExpanded;
+	}
+
+	async Task AddClicked()
+	{
+		await form.ValidateAsync();
+
+		if (form.IsValid)
+		{
+			Settings.InterestRates.Add(newInterest.EffectiveDate.Value, newInterest.Rate);
+		}
+	}
+
+	void DeleteClicked(DateTime effectiveDate)
+	{
+		Settings.InterestRates.RemoveAt(effectiveDate);
+	}
+
+	void CloseClicked()
+	{
+		MudDialog.Close(DialogResult.Ok(true));
+	}
+
+	string ValidateEffectiveDate(DateTime? dt)
+	{
+		if (!dt.HasValue)
+		{
+			return "Value cannot be empty.";
+		}
+		else if (Settings.InterestRates.Any(x => x.EffectiveDate == dt))
+		{
+			return "Interest rate with such date already exists in the list.";
+		}
+
+		return string.Empty;
+	}
+
+
+}

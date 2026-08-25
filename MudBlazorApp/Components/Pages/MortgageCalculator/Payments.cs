@@ -2,12 +2,12 @@
 
 public class Payments : List<Payment>
 {
-	MortgageSettings _settings;
+	public readonly MortgageSettings Settings;
 
 	Payments(MortgageSettings settings)
 		: base(settings.PaymentFrequency * settings.AmortizationPeriodInYears)
 	{
-		_settings = settings;
+		Settings = settings;
 	}
 
 	public static Payments Generate(MortgageSettings settings)
@@ -17,17 +17,17 @@ public class Payments : List<Payment>
 		return result;
 	}
 
-	public void CalculateAmortizationSchedule()
+	void CalculateAmortizationSchedule()
 	{
-		int numberOfPayments = _settings.PaymentFrequency * _settings.AmortizationPeriodInYears;    // nper
+		int numberOfPayments = Settings.PaymentFrequency * Settings.AmortizationPeriodInYears;    // nper
 
-		double currentRate = _settings.AnnualRate;
-		double balance = _settings.LoanAmount;
+		double currentRate = Settings.AnnualRate;
+		double balance = Settings.LoanAmount;
 		double ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
 		double paymentAmount = PMT(ratePerPayment, numberOfPayments, balance);
-		DateTime paymentDate = _settings.AdvanceDate ?? DateTime.MinValue;
+		DateTime paymentDate = Settings.AdvanceDate ?? DateTime.MinValue;
 
-		_settings.InterestRates.Add(new DateTime(2025, 04, 22), 8.88D);
+		//Settings.InterestRates.Add(new DateTime(2025, 04, 22), 8.88D);
 
 		for (int i = 1; i <= numberOfPayments; i++)
 		{
@@ -49,18 +49,18 @@ public class Payments : List<Payment>
 			double principalPaid = RoundToCents(paymentAmount - interestPaid);
 			balance = RoundToCents(balance - principalPaid);
 
-			int? year = i % _settings.PaymentFrequency == 0 ? i / _settings.PaymentFrequency : null;
+			int? year = i % Settings.PaymentFrequency == 0 ? i / Settings.PaymentFrequency : null;
 
 			if (balance < 0)
 			{
 				paymentAmount += balance;
 				principalPaid += balance;
 				balance = 0;
-				year = i / _settings.PaymentFrequency + 1;
+				year = i / Settings.PaymentFrequency + 1;
 			}
 
 
-			var ratesForPeriod = _settings.InterestRates.GetRatesForAccrualPeriod(previousPaymentDate, paymentDate);
+			var ratesForPeriod = Settings.InterestRates.GetRatesForAccrualPeriod(previousPaymentDate, paymentDate);
 
 			Add(new()
 			{
@@ -75,7 +75,7 @@ public class Payments : List<Payment>
 				Year = year
 			});
 
-			currentRate = _settings.InterestRates.GetRate(paymentDate);
+			currentRate = Settings.InterestRates.GetRate(paymentDate);
 
 			if (currentRate != previousRate)    // interest rate has changed, re-calculate payment amount
 			{
@@ -94,7 +94,7 @@ public class Payments : List<Payment>
 
 	double GetEffectiveAnnualRatePerPayment(double contractRate)
 	{
-		return Math.Pow(1D + contractRate / _settings.CompoundPeriod, (double)_settings.CompoundPeriod / _settings.PaymentFrequency) - 1;
+		return Math.Pow(1D + contractRate / Settings.CompoundPeriod, (double)Settings.CompoundPeriod / Settings.PaymentFrequency) - 1;
 	}
 
 	double CalculateInterestPerPeriod(DateTime periodStart, DateTime periodEnd, double balance, double annualRate)
@@ -103,8 +103,8 @@ public class Payments : List<Payment>
 		var isLeapYear = DateTime.IsLeapYear(periodEnd.Year);
 		//return balance * (annualRate / 100) * (daysPerPeriod / (isLeapYear ? 366 : 365));
 
-		var comp = (double)_settings.CompoundPeriod;
-		return balance * (Math.Pow(1D + _settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
+		var comp = (double)Settings.CompoundPeriod;
+		return balance * (Math.Pow(1D + Settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
 	}
 
 	//double CalculateInterestPerPeriod(DateTime from, DateTime to, double balance, double annualRate)
@@ -117,7 +117,7 @@ public class Payments : List<Payment>
 		var result = 0D;
 		foreach (var day in EachDay(from, to))
 		{
-			var interestRateForDay = _settings.InterestRates.GetRate(day);
+			var interestRateForDay = Settings.InterestRates.GetRate(day);
 			result += CalculateInterestPerDay(day, balance, interestRateForDay);
 		}
 		return RoundToCents(result);
@@ -128,7 +128,7 @@ public class Payments : List<Payment>
 		var isLeapYear = DateTime.IsLeapYear(date.Year);
 		//return balance * (rate / 100) / (isLeapYear ? 366 : 365);	// Scotiabank formula (bad) - no compounding
 
-		var comp = (double)_settings.CompoundPeriod;
+		var comp = (double)Settings.CompoundPeriod;
 		return balance * (Math.Pow(1D + rate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1);
 	}
 
@@ -154,10 +154,10 @@ public class Payments : List<Payment>
 	DateTime GetNextPaymentDate(DateTime currentDate, int currentPaymentNumber)
 	{
 		var result = DateTime.MinValue;
-		var fpdate = _settings.AdvanceDate!.Value;
+		var fpdate = Settings.AdvanceDate!.Value;
 		var anchor = fpdate.Day;
 
-		switch (_settings.PaymentFrequency)
+		switch (Settings.PaymentFrequency)
 		{
 			case 12:
 				result = GetAnchorDate(currentDate.AddMonths(1), anchor);

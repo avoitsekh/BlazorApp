@@ -22,9 +22,18 @@ public class Interests : IEnumerable<Interest>
 		Sort();
 	}
 
+	public void RemoveAt(DateTime effectiveDate)
+	{
+		var interest = _interests.FirstOrDefault(x => x.EffectiveDate == effectiveDate);
+		if (interest != null)
+		{
+			Remove(interest);
+		}
+	}
+
 	public void Remove(Interest interest)
 	{
-		_interests.Add(interest);
+		_interests.Remove(interest);
 		Sort();
 	}
 
