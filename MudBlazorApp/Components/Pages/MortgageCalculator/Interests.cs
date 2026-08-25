@@ -6,12 +6,14 @@ public class Interests : IEnumerable<Interest>
 {
 	List<Interest> _interests = new();
 
+	public double InitialRate;
+
 	public Interests(double initialRate)
 	{
-		Add(DateTime.MinValue, initialRate);
+		InitialRate = initialRate;
 	}
 
-	public void Add(DateTime effectiveDate, double rate)
+	public void Add(DateTime? effectiveDate, double rate)
 	{
 		Add(new Interest { EffectiveDate = effectiveDate, Rate = rate });
 	}
@@ -22,7 +24,7 @@ public class Interests : IEnumerable<Interest>
 		Sort();
 	}
 
-	public void RemoveAt(DateTime effectiveDate)
+	public void RemoveAt(DateTime? effectiveDate)
 	{
 		var interest = _interests.FirstOrDefault(x => x.EffectiveDate == effectiveDate);
 		if (interest != null)
@@ -44,10 +46,10 @@ public class Interests : IEnumerable<Interest>
 
 	public double GetRate(DateTime effectiveDate)
 	{
-		return _interests.Last(x => x.EffectiveDate <= effectiveDate).Rate;
+		return _interests.LastOrDefault(x => x.EffectiveDate <= effectiveDate)?.Rate ?? InitialRate;
 	}
 
-	public double[] GetRatesForAccrualPeriod(DateTime from, DateTime to)
+	public double[] GetRatesForPeriod(DateTime from, DateTime to)
 	{
 		var result = new List<double>
 		{
@@ -56,6 +58,13 @@ public class Interests : IEnumerable<Interest>
 		result.AddRange(_interests.Where(x => x.EffectiveDate > from && x.EffectiveDate < to).Select(x => x.Rate));
 		return result.ToArray();
 	}
+
+	public void Clear()
+	{
+		_interests.Clear();
+	}
+
+	public int Count => _interests.Count;
 
 	public IEnumerator<Interest> GetEnumerator()
 	{

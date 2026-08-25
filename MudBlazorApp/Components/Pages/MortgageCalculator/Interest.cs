@@ -2,6 +2,6 @@
 
 public class Interest
 {
-	public DateTime EffectiveDate;
+	public DateTime? EffectiveDate;
 	public double Rate;
 }

@@ -15,8 +15,8 @@
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
 						Validation="mortgageSettings.ValidateLoanAmount" Margin="Margin.Dense"
 						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Primary" />
-				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.AnnualRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
-						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="Color.Primary" />
+				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
+						Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
 				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
 				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
 				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
@@ -31,9 +31,19 @@
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
+
+
+				<MudSelect T="MortgageSettings.InterestRateTypes" Label="Interest Rate Type" @bind-Value="mortgageSettings.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense">
+					@foreach (var keyValuePair in Constants.InterestRateType)
+					{
+						<MudSelectItem T="MortgageSettings.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+					}
+				</MudSelect>
+
+
 				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
 
-				<MudButton OnClick="OpenDialogAsync" Variant="Variant.Filled" Color="Color.Primary">Options dialog</MudButton>
+				<MudButton OnClick="OpenAdditionalInterestRatesDialogAsync" Variant="Variant.Filled" Color="Color.Primary">Options dialog</MudButton>
 
 
 
@@ -64,18 +74,15 @@
 
 
 
-@code {
-	public int IntValue { get; set; }
-}
+
 
 <style>
-
 	.dense-numeric-field .mud-input-control-input-container .mud-input .mud-input-root {
 		padding: 4px !important;
 	}
-
-
 </style>
+
+
 
 @if (payments.Count > 0)
 {
@@ -106,6 +113,11 @@
 	List<Payment> payments = [];
 	MortgageSettings mortgageSettings = new MortgageSettings();
 
+	bool hasAdditionalInterestRates => mortgageSettings.InterestRates.Count > 0;
+	bool isVariableRateMortgage => mortgageSettings.InterestRateType != MortgageSettings.InterestRateTypes.Fixed;
+
+
+	public int IntValue { get; set; }
 	//string mortgageInfoHeight = "480px";
 
 	async Task CalculateButtonClick()
@@ -118,12 +130,13 @@
 		}
 	}
 
-	Task OpenDialogAsync()
+	async Task OpenAdditionalInterestRatesDialogAsync()
 	{
 		var options = new DialogOptions()
 		{
 			MaxWidth = MaxWidth.ExtraSmall,
-			BackdropClick = false
+			BackdropClick = false,
+			CloseOnEscapeKey = true
 		};
 
 		var parameters = new DialogParameters<AdditionalInterestRates>
@@ -131,7 +144,18 @@
 			{ x => x.Settings, mortgageSettings }
 		};
 
-		return DialogService.ShowAsync<AdditionalInterestRates>(parameters, options);
+		var dialogReference = await DialogService.ShowAsync<AdditionalInterestRates>(parameters, options);
+		await dialogReference.Result;
+		StateHasChanged();
+	}
+
+	async Task OnInterestRateTypeChange()
+	{
+		if (mortgageSettings.InterestRateType == MortgageSettings.InterestRateTypes.Fixed)
+		{
+			mortgageSettings.InterestRates.Clear();
+			StateHasChanged();
+		}
 	}
 
 }

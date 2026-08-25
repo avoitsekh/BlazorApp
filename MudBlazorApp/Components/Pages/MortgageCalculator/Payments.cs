@@ -21,7 +21,7 @@ public class Payments : List<Payment>
 	{
 		int numberOfPayments = Settings.PaymentFrequency * Settings.AmortizationPeriodInYears;    // nper
 
-		double currentRate = Settings.AnnualRate;
+		double currentRate = Settings.InterestRates.InitialRate;
 		double balance = Settings.LoanAmount;
 		double ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
 		double paymentAmount = PMT(ratePerPayment, numberOfPayments, balance);
@@ -44,23 +44,23 @@ public class Payments : List<Payment>
 
 			//double interestPaid = RoundToCents(balance * ratePerPayment);
 			//double interestPaid = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance, AnnualRate);
-			double interestPaid = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance);
+			double interestAmount = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance);
 
-			double principalPaid = RoundToCents(paymentAmount - interestPaid);
-			balance = RoundToCents(balance - principalPaid);
+			double principalAmount = RoundToCents(paymentAmount - interestAmount);
+			balance = RoundToCents(balance - principalAmount);
 
 			int? year = i % Settings.PaymentFrequency == 0 ? i / Settings.PaymentFrequency : null;
 
 			if (balance < 0)
 			{
 				paymentAmount += balance;
-				principalPaid += balance;
+				principalAmount += balance;
 				balance = 0;
 				year = i / Settings.PaymentFrequency + 1;
 			}
 
 
-			var ratesForPeriod = Settings.InterestRates.GetRatesForAccrualPeriod(previousPaymentDate, paymentDate);
+			var ratesForPeriod = Settings.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 
 			Add(new()
 			{
@@ -68,9 +68,9 @@ public class Payments : List<Payment>
 				PaymentDate = paymentDate,
 				PaymentPeriodInterestRate = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x))),
 				InterestAccrualPeriod = string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1)),
-				InterestAmount = interestPaid,
+				InterestAmount = interestAmount,
 				PaymentAmount = paymentAmount,
-				PrincipalAmount = principalPaid,
+				PrincipalAmount = principalAmount,
 				Balance = balance,
 				Year = year
 			});
@@ -97,15 +97,15 @@ public class Payments : List<Payment>
 		return Math.Pow(1D + contractRate / Settings.CompoundPeriod, (double)Settings.CompoundPeriod / Settings.PaymentFrequency) - 1;
 	}
 
-	double CalculateInterestPerPeriod(DateTime periodStart, DateTime periodEnd, double balance, double annualRate)
-	{
-		var daysPerPeriod = (periodEnd - periodStart).TotalDays;
-		var isLeapYear = DateTime.IsLeapYear(periodEnd.Year);
-		//return balance * (annualRate / 100) * (daysPerPeriod / (isLeapYear ? 366 : 365));
+	//double CalculateInterestPerPeriod(DateTime periodStart, DateTime periodEnd, double balance, double annualRate)
+	//{
+	//	var daysPerPeriod = (periodEnd - periodStart).TotalDays;
+	//	var isLeapYear = DateTime.IsLeapYear(periodEnd.Year);
+	//	//return balance * (annualRate / 100) * (daysPerPeriod / (isLeapYear ? 366 : 365));
 
-		var comp = (double)Settings.CompoundPeriod;
-		return balance * (Math.Pow(1D + Settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
-	}
+	//	var comp = (double)Settings.CompoundPeriod;
+	//	return balance * (Math.Pow(1D + Settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
+	//}
 
 	//double CalculateInterestPerPeriod(DateTime from, DateTime to, double balance, double annualRate)
 	//{

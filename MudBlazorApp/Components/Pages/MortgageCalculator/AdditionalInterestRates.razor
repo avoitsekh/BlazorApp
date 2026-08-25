@@ -1,17 +1,17 @@
 ﻿<MudDialog>
 	<TitleContent>
-		<MudText Typo="Typo.h5" Class="pt-3" >Additional Interest Rates</MudText>
+		<MudText Typo="Typo.h5" Class="pt-3">Additional Interest Rates</MudText>
 	</TitleContent>
 	<DialogContent>
 
-		<MudTable Items="Settings.InterestRates" FixedHeader Height="230px" Dense Hover Striped Elevation="0" Breakpoint="Breakpoint.None">
+		<MudTable Items="Settings.InterestRates" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
 				<MudTh>Effective Date</MudTh>
-				<MudTh>Rate</MudTh>
-				<MudTh></MudTh>
+				<MudTh>Annual %</MudTh>
+				<MudTh Style="width: 60px" />
 			</HeaderContent>
 			<RowTemplate>
-				<MudTd DataLabel="Effective Date"><MudText>@(context.EffectiveDate == DateTime.MinValue ? "(initial)" : context.EffectiveDate.ToString("yyyy-MM-dd"))</MudText></MudTd>
+				<MudTd DataLabel="Effective Date"><MudText>@(context.EffectiveDate.HasValue ? context.EffectiveDate.Value.ToString("yyyy-MM-dd") : "")</MudText></MudTd>
 				<MudTd DataLabel="Rate"><MudText>@context.Rate.ToString("0.##'%'")</MudText></MudTd>
 				<MudTd Style="text-align: right;">
 					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context.EffectiveDate))" Style="position: relative; top: 2px" />
@@ -24,9 +24,10 @@
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
-					<MudDatePicker Label="Effective Date" @bind-Date="newInterest.EffectiveDate" Editable="true" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
-						AdornmentColor="Color.Primary" Margin="Margin.Dense" Validation="ValidateEffectiveDate" />
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="newInterest.Rate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense" Validation="Settings.ValidateInterestRate" />
+					<MudDatePicker Label="Effective Date" @bind-Date="interest.EffectiveDate" Editable="true" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
+								   AdornmentColor="Color.Primary" Margin="Margin.Dense" Validation="ValidateEffectiveDate" MinDate="MinDate" />
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="interest.Rate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
+						Validation="ValidateRate" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
@@ -48,17 +49,18 @@
 	[CascadingParameter]
 	private IMudDialogInstance MudDialog { get; set; }
 
-	MudForm form = null!;
+	DateTime MinDate => Settings.AdvanceDate.HasValue ? Settings.AdvanceDate.Value.AddDays(1) : DateTime.MinValue;
 
-	struct InterestDto()
-	{
-		public DateTime? EffectiveDate = DateTime.Today;
-		public double Rate = 0D;
-	};
-
-	InterestDto newInterest = new();
-
+	MudForm form;
+	Interest interest;
 	bool addNewExpanded;
+
+	protected async override Task OnInitializedAsync()
+	{
+		interest = new();
+		interest.EffectiveDate = Settings.InterestRates.LastOrDefault()?.EffectiveDate.GetValueOrDefault().AddDays(1) ?? MinDate;
+		interest.Rate = 0D;
+	}
 
 	void AddNewClicked()
 	{
@@ -71,32 +73,51 @@
 
 		if (form.IsValid)
 		{
-			Settings.InterestRates.Add(newInterest.EffectiveDate.Value, newInterest.Rate);
+			Settings.InterestRates.Add(interest.EffectiveDate, interest.Rate);
 		}
 	}
 
-	void DeleteClicked(DateTime effectiveDate)
+	void DeleteClicked(DateTime? effectiveDate)
 	{
 		Settings.InterestRates.RemoveAt(effectiveDate);
+		form.ResetValidationAsync();
 	}
 
 	void CloseClicked()
 	{
-		MudDialog.Close(DialogResult.Ok(true));
+		MudDialog.Close(DialogResult.Ok(Settings.InterestRates.Count));
 	}
 
-	string ValidateEffectiveDate(DateTime? dt)
+	string ValidateRate(double rate)
 	{
-		if (!dt.HasValue)
+		var result = Settings.ValidateInterestRate(rate);
+		if (string.IsNullOrEmpty(result))
 		{
-			return "Value cannot be empty.";
+			if (Settings.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
+			{
+				result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}.";
+			}
 		}
-		else if (Settings.InterestRates.Any(x => x.EffectiveDate == dt))
+		return result;
+	}
+
+	string ValidateEffectiveDate(DateTime? effectiveDate)
+	{
+		var result = string.Empty;
+		if (!effectiveDate.HasValue)
 		{
-			return "Interest rate with such date already exists in the list.";
+			result = "Value cannot be empty.";
+		}
+		// else if (effectiveDate < MinDate)
+		// {
+		// 	result = "Value cannot be less (or equal to) Advance Date.";
+		// }
+		else if (Settings.InterestRates.Any(x => x.EffectiveDate == effectiveDate))
+		{
+			result = "Interest rate with such date already exists in the list.";
 		}
 
-		return string.Empty;
+		return result;
 	}
 
 
