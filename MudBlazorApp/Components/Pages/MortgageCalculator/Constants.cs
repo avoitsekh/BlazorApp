@@ -3,10 +3,16 @@
 public static class Constants
 {
 
-	public static Dictionary<string, MortgageSettings.InterestRateTypes> InterestRateType = new()
+	public static Dictionary<string, MortgageDetails.InterestRateTypes> InterestRateType = new()
 	{
-		{ "Fixed", MortgageSettings.InterestRateTypes.Fixed },
-		{ "ARM (Adjustable Rate Mortgage)", MortgageSettings.InterestRateTypes.ARM },
+		{ "Fixed", MortgageDetails.InterestRateTypes.Fixed },
+		{ "ARM - Adjustable Rate Mortgage", MortgageDetails.InterestRateTypes.ARM },
+	};
+
+	public static Dictionary<string, MortgageDetails.InterestRateAccrualMethods> InterestRateAccrualMethod = new()
+	{
+		{ "Per Day", MortgageDetails.InterestRateAccrualMethods.PerDay },
+		{ "Per Payment", MortgageDetails.InterestRateAccrualMethods.PerPayment },
 	};
 
 	public static Dictionary<string, int> CompoundPeriod = new()

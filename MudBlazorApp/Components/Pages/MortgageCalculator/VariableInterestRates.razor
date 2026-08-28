@@ -4,7 +4,7 @@
 	</TitleContent>
 	<DialogContent>
 
-		<MudTable Items="Settings.InterestRates" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
+		<MudTable Items="Details.InterestRates.Skip(1)" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
 				<MudTh>Effective Date</MudTh>
 				<MudTh>Annual %</MudTh>
@@ -44,12 +44,12 @@
 @code {
 
 	[Parameter]
-	public MortgageSettings Settings { get; set; }
+	public MortgageDetails Details { get; set; }
 
 	[CascadingParameter]
 	IMudDialogInstance MudDialog { get; set; }
 
-	DateTime MinDate => Settings.AdvanceDate.HasValue ? Settings.AdvanceDate.Value.AddDays(1) : DateTime.MinValue;
+	DateTime MinDate => Details.AdvanceDate.HasValue ? Details.AdvanceDate.Value.AddDays(1) : DateTime.MinValue;
 
 	MudForm form;
 	Interest interest;
@@ -58,7 +58,9 @@
 	protected async override Task OnInitializedAsync()
 	{
 		interest = new();
-		interest.EffectiveDate = Settings.InterestRates.LastOrDefault()?.EffectiveDate.GetValueOrDefault().AddDays(1) ?? MinDate;
+
+		var lastDateAdded = Details.InterestRates.Last().EffectiveDate;
+		interest.EffectiveDate = lastDateAdded.HasValue ? lastDateAdded.Value.AddDays(1) : MinDate;
 		interest.Rate = 0D;
 	}
 
@@ -73,27 +75,27 @@
 
 		if (form.IsValid)
 		{
-			Settings.InterestRates.Add(interest.EffectiveDate, interest.Rate);
+			Details.InterestRates.Add(interest.EffectiveDate, interest.Rate);
 		}
 	}
 
 	void DeleteClicked(DateTime? effectiveDate)
 	{
-		Settings.InterestRates.RemoveAt(effectiveDate);
+		Details.InterestRates.RemoveAt(effectiveDate);
 		form.ResetValidationAsync();
 	}
 
 	void CloseClicked()
 	{
-		MudDialog.Close(DialogResult.Ok(Settings.InterestRates.Count));
+		MudDialog.Close(DialogResult.Ok(Details.InterestRates.Count));
 	}
 
 	string ValidateRate(double rate)
 	{
-		var result = Settings.ValidateInterestRate(rate);
+		var result = MortgageDetailsValidation.ValidateInterestRate(rate);
 		if (string.IsNullOrEmpty(result))
 		{
-			if (Settings.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
+			if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
 			{
 				result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}.";
 			}
@@ -112,7 +114,7 @@
 		// {
 		// 	result = "Value cannot be less (or equal to) Advance Date.";
 		// }
-		else if (Settings.InterestRates.Any(x => x.EffectiveDate == effectiveDate))
+		else if (Details.InterestRates.Any(x => x.EffectiveDate == effectiveDate))
 		{
 			result = "Interest rate with such date already exists in the list.";
 		}

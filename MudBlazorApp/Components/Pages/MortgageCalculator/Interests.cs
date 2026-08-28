@@ -6,11 +6,15 @@ public class Interests : IEnumerable<Interest>
 {
 	List<Interest> _interests = new();
 
-	public double InitialRate;
+	public double InitialRate
+	{
+		get => _interests[0].Rate;
+		set => _interests[0].Rate = value;
+	}
 
 	public Interests(double initialRate)
 	{
-		InitialRate = initialRate;
+		_interests.Add(new() { Rate = initialRate });
 	}
 
 	public void Add(DateTime? effectiveDate, double rate)
@@ -64,7 +68,7 @@ public class Interests : IEnumerable<Interest>
 		_interests.Clear();
 	}
 
-	public int Count => _interests.Count;
+	public int Count => _interests.Count - 1;
 
 	public IEnumerator<Interest> GetEnumerator()
 	{

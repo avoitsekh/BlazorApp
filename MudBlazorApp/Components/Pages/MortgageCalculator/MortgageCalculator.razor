@@ -1,5 +1,7 @@
 ﻿@page "/mortgage"
 
+@using System
+
 @inject IDialogService DialogService
 
 @* <MudThemeProvider @ref="themeProvider" /> *@
@@ -11,21 +13,31 @@
 		@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 		<MudPaper Class="pa-6 ma-2">
 			<MudForm @ref="form" Spacing="2">
-				<MudText Typo="Typo.h5">Mortgage Information</MudText>
-				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
-						Validation="mortgageSettings.ValidateLoanAmount" Margin="Margin.Dense"
-						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Primary" />
-				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
-								 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Addchart" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
-				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
-				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
-				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+					<MudText Typo="Typo.h5">Mortgage Details</MudText>
+					<MudFileUpload T="IBrowserFile" FilesChanged="LoadClicked" MaxFileSize="@(5 * 1024 * 1024)" Accept=".json,.*">
+							<CustomContent>
+								<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3">
+									<MudMenuItem Label="Save" OnClick="MortgageDetailsSaveToFileClicked" />
+									<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" />
+								</MudMenu>
+							</CustomContent>
+							<SelectedTemplate />
+						</MudFileUpload>
+				</MudStack>
+				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
+						Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
+				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
+						 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Menu" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
+				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="Details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
+				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="Details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+				<MudSelect T="int" Label="Compound Period" @bind-Value="Details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.CompoundPeriod)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
-				<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="int" Label="Payment Frequency" @bind-Value="Details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.PaymentFrequency)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -33,74 +45,24 @@
 				</MudSelect>
 
 
-				<MudSelect T="MortgageSettings.InterestRateTypes" Label="Rate Type" @bind-Value="mortgageSettings.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="Details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.InterestRateType)
 					{
-						<MudSelectItem T="MortgageSettings.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+						<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+					}
+				</MudSelect>
+
+				<MudSelect T="MortgageDetails.InterestRateAccrualMethods" Label="Rate Accrual Method" @bind-Value="Details.InterestRateAccrualMethod" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+					@foreach (var keyValuePair in Constants.InterestRateAccrualMethod)
+					{
+						<MudSelectItem T="MortgageDetails.InterestRateAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
 
 
 				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
 
-				<MudButton OnClick="OpenAdditionalInterestRatesDialogAsync" Variant="Variant.Filled" Color="Color.Primary">Options dialog</MudButton>
-
-
-
-				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Outlined" />
-				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Text" />
-				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Filled" />
-
-				<MudInfoContainer>
-					<MessageContent>
-						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
-					</MessageContent>
-					<ChildContent>
-						<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
-					</ChildContent>
-				</MudInfoContainer>
-
-				<MudInfoContainer>
-					<MessageContent>
-						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
-					</MessageContent>
-					<ChildContent>
-						<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
-							@foreach (var keyValuePair in Constants.PaymentFrequency)
-							{
-								<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
-							}
-						</MudSelect>
-					</ChildContent>
-				</MudInfoContainer>
-
-				<MudInfoContainer>
-					<MessageContent>
-						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
-					</MessageContent>
-					<ChildContent>
-						<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
-					</ChildContent>
-				</MudInfoContainer>
-
-				<MudInfoContainer IconOffset="0">
-					<MessageContent>
-						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
-					</MessageContent>
-					<ChildContent>
-						<MudText Color="Color.Tertiary">The component can also receive</MudText>
-					</ChildContent>
-				</MudInfoContainer>
-
-				<MudInfoContainer IconOffset="0">
-					<MessageContent>
-						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
-					</MessageContent>
-					<ChildContent>
-						<MudText Color="Color.Tertiary" Style="background-color: orange !important">The component can also receive</MudText>
-					</ChildContent>
-				</MudInfoContainer>
-
+				
 
 
 			</MudForm>
@@ -114,7 +76,7 @@
 				@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
-						<MudText Typo="Typo.h6" >Balance Over Time</MudText>
+						<MudText Typo="Typo.h5" >Balance Over Time</MudText>
 						<BalanceOverTime Payments="payments" />
 					</MudStack>
 				</MudPaper>
@@ -141,7 +103,7 @@
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
-					<MudText Typo="Typo.h6">Statistics</MudText>
+					<MudText Typo="Typo.h5">Statistics</MudText>
 					<Statistics Payments="payments" />
 				</MudStack>
 			</MudPaper>
@@ -150,7 +112,7 @@
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
-					<MudText Typo="Typo.h6">Amortization Schedule</MudText>
+					<MudText Typo="Typo.h5">Amortization Schedule</MudText>
 					<AmortizationSchedule Payments="payments"></AmortizationSchedule>
 				</MudStack>
 			</MudPaper>
@@ -162,14 +124,11 @@
 
 	MudForm form = null!;
 	List<Payment> payments = [];
-	MortgageSettings mortgageSettings = new MortgageSettings();
+	MortgageDetails Details = new MortgageDetails();
 
-	bool hasAdditionalInterestRates => mortgageSettings.InterestRates.Count > 0;
-	bool isVariableRateMortgage => mortgageSettings.InterestRateType != MortgageSettings.InterestRateTypes.Fixed;
+	bool hasAdditionalInterestRates => Details.InterestRates.Count > 0;
+	bool isVariableRateMortgage => Details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
-
-	public int IntValue { get; set; }
-	//string mortgageInfoHeight = "480px";
 
 	async Task CalculateButtonClick()
 	{
@@ -177,7 +136,7 @@
 
 		if (form.IsValid)
 		{
-			payments = Payments.Generate(mortgageSettings);
+			payments = Payments.Generate(Details);
 		}
 	}
 
@@ -190,23 +149,46 @@
 			CloseOnEscapeKey = true
 		};
 
-		var parameters = new DialogParameters<AdditionalInterestRates>
+		var parameters = new DialogParameters<VariableInterestRates>
 		{
-			{ x => x.Settings, mortgageSettings }
+			{ x => x.Details, Details }
 		};
 
-		var dialogReference = await DialogService.ShowAsync<AdditionalInterestRates>(parameters, options);
+		var dialogReference = await DialogService.ShowAsync<VariableInterestRates>(parameters, options);
 		await dialogReference.Result;
 		StateHasChanged();
 	}
 
 	async Task OnInterestRateTypeChange()
 	{
-		if (mortgageSettings.InterestRateType == MortgageSettings.InterestRateTypes.Fixed)
+		if (Details.InterestRateType == MortgageDetails.InterestRateTypes.Fixed)
 		{
-			mortgageSettings.InterestRates.Clear();
+			Details.InterestRates.Clear();
 			StateHasChanged();
 		}
+	}
+
+	void MortgageDetailsSaveToFileClicked()
+	{
+		Console.WriteLine();
+		Console.WriteLine();
+		Console.WriteLine();
+		Console.WriteLine(Details.ToJsonString());
+	}
+
+
+	async Task LoadClicked(IBrowserFile file)
+	{
+		Console.WriteLine(file.Name);
+
+		// using var stream = new MemoryStream();
+		// await file.OpenReadStream().CopyToAsync(stream);
+		// stream.Position = 0;
+
+
+		var reader = new StreamReader(file.OpenReadStream());
+		string text = await reader.ReadToEndAsync();
+		Details.FromJsonString(text);
 	}
 
 }

@@ -2,13 +2,14 @@
 
 public class Payment
 {
-	public int Number { get; set; }
-	public DateTime PaymentDate { get; set; }
-	public int? Year { get; set; }
-	public string PaymentPeriodInterestRate { get; set; }
-	public string InterestAccrualPeriod { get; set; }
-	public double InterestAmount { get; set; }
-	public double PrincipalAmount { get; set; }
-	public double PaymentAmount { get; set; }
-	public double Balance { get; set; }
+	public int Number;
+	public DateTime PaymentDate;
+	public int? Year;
+	public string PaymentPeriodInterestRate;
+	public string InterestAccrualPeriod;
+	public double InterestAmount;
+	public double PrincipalAmount;
+	public double ExtraAmount;
+	public double PaymentAmount;
+	public double Balance;
 }

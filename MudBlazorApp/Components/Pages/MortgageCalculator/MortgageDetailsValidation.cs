@@ -1,8 +1,6 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-namespace MudBlazorApp.Components.Pages.MortgageCalculator;
-
-public partial class MortgageSettings
+public class MortgageDetailsValidation
 {
 	private string ValidateLoanAmountCore(double arg)
 	{
@@ -21,21 +19,17 @@ public partial class MortgageSettings
 	}
 
 	//public Func<double, string> ValidateLoanAmount => ValidateLoanAmountCore;
-	public Func<double, string> ValidateLoanAmount => x => x switch
+	public static Func<double, string> ValidateLoanAmount => x => x switch
 	{
 		0D => "Value cannot be 0",
 		< 1000D => "Value cannot be less than 1,000",
 		_ => string.Empty
 	};
 
-	public Func<double, string> ValidateInterestRate => x => x switch
+	public static Func<double, string> ValidateInterestRate => x => x switch
 	{
 		0D => "Value cannot be 0",
 		< 0D => "Value cannot be less than 0",
 		_ => string.Empty
-	};
-	public Func<DateTime, string> ValidateAdvanceDate => x =>
-	{
-		return "Test Error 123";
 	};
 }

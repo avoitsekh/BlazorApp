@@ -5,7 +5,7 @@
 	<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" Size="Size.Small" Class="cursor-pointer" @onclick="OnInformationClicked" Style="@IconOffsetStyle" />
 </MudStack>
 
-<MudMessageBox @ref="messageBox" Title="Information" YesText="Close">
+<MudMessageBox @ref="messageBox" Title="Information" YesText="OK">
 	<MessageContent>
 		@MessageContent
 	</MessageContent>
@@ -22,6 +22,9 @@
 	[Parameter]
 	public RenderFragment? MessageContent { get; set; }
 
+	/// <summary>
+	/// Offsets info icon on a vertical axis. Negative number offsets downward and positive number offsets upward. Default is -9.
+	/// </summary>
 	[Parameter]
 	public int IconOffset { get; set; } = -9;
 
@@ -41,6 +44,11 @@
 
 	async Task OnInformationClicked()
 	{
-		await messageBox.ShowAsync();
+		var options = new DialogOptions
+		{
+			Position = DialogPosition.TopCenter,
+			CloseOnEscapeKey = true
+		};
+		await messageBox.ShowAsync(options);
 	}
 }
