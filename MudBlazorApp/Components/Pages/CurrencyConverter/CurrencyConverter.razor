@@ -13,7 +13,7 @@
 				<MudStack Spacing="5">
 					<MudStack Row Spacing="2">
 						<MudText Typo="Typo.h5" Align="Align.Left">Currency Conversion</MudText>
-						<MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" @onclick="OnInformationClicked" Class="cursor-pointer" Style="position:relative; top:2px" />
+						<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" @onclick="OnInformationClicked" Class="cursor-pointer" Style="position:relative; top:2px" />
 					</MudStack>
 					<MudAutocomplete T="CurrencyType" Label="From Currency" @bind-Value="State.FromCurrency" For="(() => State.FromCurrency)"
 						SearchFunc="@SearchCurrencyDropDown" ToStringFunc="@(x => x?.iso_code)" Variant="Variant.Text" Placeholder="Currency code or name" HelperText="@(State.FromCurrency?.name)" ResetValueOnEmptyText SelectValueOnTab ShrinkLabel AdornmentColor="Color.Primary" />
@@ -44,6 +44,7 @@
 		</MudPaper>
 	</MudItem>
 </MudGrid>
+
 
 
 <MudMessageBox @ref="messageBox" Title="Information" YesText="Close">

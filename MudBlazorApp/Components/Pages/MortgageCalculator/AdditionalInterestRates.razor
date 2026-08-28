@@ -1,6 +1,6 @@
 ﻿<MudDialog>
 	<TitleContent>
-		<MudText Typo="Typo.h5" Class="pt-3">Additional Interest Rates</MudText>
+		<MudText Typo="Typo.h5" Class="pt-3">Variable Interest Rates</MudText>
 	</TitleContent>
 	<DialogContent>
 
@@ -47,7 +47,7 @@
 	public MortgageSettings Settings { get; set; }
 
 	[CascadingParameter]
-	private IMudDialogInstance MudDialog { get; set; }
+	IMudDialogInstance MudDialog { get; set; }
 
 	DateTime MinDate => Settings.AdvanceDate.HasValue ? Settings.AdvanceDate.Value.AddDays(1) : DateTime.MinValue;
 

@@ -1,0 +1,46 @@
+﻿@using MudBlazorApp.Components.Pages.MortgageCalculator
+
+<MudStack Row Breakpoint="Breakpoint.None" Wrap="Wrap.NoWrap" Spacing="2" AlignItems="AlignItems.Center">
+	@ChildContent
+	<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" Size="Size.Small" Class="cursor-pointer" @onclick="OnInformationClicked" Style="@IconOffsetStyle" />
+</MudStack>
+
+<MudMessageBox @ref="messageBox" Title="Information" YesText="Close">
+	<MessageContent>
+		@MessageContent
+	</MessageContent>
+	@* <YesButton>
+		<MudButton Variant="Variant.Filled" Color="Color.Secondary">CLOSE</MudButton>
+	</YesButton> *@
+</MudMessageBox>
+
+@code {
+
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+
+	[Parameter]
+	public RenderFragment? MessageContent { get; set; }
+
+	[Parameter]
+	public int IconOffset { get; set; } = -9;
+
+	string IconOffsetStyle
+	{
+		get
+		{
+			if (IconOffset != 0)
+			{
+				return "position: relative; " + (IconOffset < 0 ? "top: " : "bottom: ") + $"{Math.Abs(IconOffset)}px";
+			}
+			return string.Empty;
+		}
+	}
+
+	MudMessageBox messageBox;
+
+	async Task OnInformationClicked()
+	{
+		await messageBox.ShowAsync();
+	}
+}

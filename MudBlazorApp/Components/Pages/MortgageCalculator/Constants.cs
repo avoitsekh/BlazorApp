@@ -5,8 +5,8 @@ public static class Constants
 
 	public static Dictionary<string, MortgageSettings.InterestRateTypes> InterestRateType = new()
 	{
-		{ "Fixed Rate", MortgageSettings.InterestRateTypes.Fixed },
-		{ "Adjustable Rate Mortgage (ARM)", MortgageSettings.InterestRateTypes.ARM },
+		{ "Fixed", MortgageSettings.InterestRateTypes.Fixed },
+		{ "ARM (Adjustable Rate Mortgage)", MortgageSettings.InterestRateTypes.ARM },
 	};
 
 	public static Dictionary<string, int> CompoundPeriod = new()

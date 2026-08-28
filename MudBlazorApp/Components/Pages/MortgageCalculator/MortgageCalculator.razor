@@ -7,7 +7,7 @@
 <PageHeader Title="Mortgage Calculator" />
  
 <MudGrid Spacing="0">
-	<MudItem xs="12" sm="12" md="4">
+	<MudItem xs="12" sm="12" md="3">
 		@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 		<MudPaper Class="pa-6 ma-2">
 			<MudForm @ref="form" Spacing="2">
@@ -16,16 +16,16 @@
 						Validation="mortgageSettings.ValidateLoanAmount" Margin="Margin.Dense"
 						Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Primary" />
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="mortgageSettings.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
-						Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
+								 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Addchart" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
 				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
 				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
-				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
+				<MudSelect T="int" Label="Compound Period" @bind-Value="mortgageSettings.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.CompoundPeriod)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
-				<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense">
+				<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.PaymentFrequency)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -33,7 +33,7 @@
 				</MudSelect>
 
 
-				<MudSelect T="MortgageSettings.InterestRateTypes" Label="Interest Rate Type" @bind-Value="mortgageSettings.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense">
+				<MudSelect T="MortgageSettings.InterestRateTypes" Label="Rate Type" @bind-Value="mortgageSettings.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.InterestRateType)
 					{
 						<MudSelectItem T="MortgageSettings.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -47,9 +47,60 @@
 
 
 
-					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Outlined" />
-					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Text" />
-					<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Filled" />
+				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Outlined" />
+				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Text" />
+				<MudNumericField Class="dense-numeric-field" HideSpinButtons="true" @bind-Value="IntValue" Variant="Variant.Filled" />
+
+				<MudInfoContainer>
+					<MessageContent>
+						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
+					</MessageContent>
+					<ChildContent>
+						<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="mortgageSettings.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+					</ChildContent>
+				</MudInfoContainer>
+
+				<MudInfoContainer>
+					<MessageContent>
+						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
+					</MessageContent>
+					<ChildContent>
+						<MudSelect T="int" Label="Payment Frequency" @bind-Value="mortgageSettings.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+							@foreach (var keyValuePair in Constants.PaymentFrequency)
+							{
+								<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</ChildContent>
+				</MudInfoContainer>
+
+				<MudInfoContainer>
+					<MessageContent>
+						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
+					</MessageContent>
+					<ChildContent>
+						<MudNumericField T="int" HideSpinButtons="true" @bind-Value="mortgageSettings.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
+					</ChildContent>
+				</MudInfoContainer>
+
+				<MudInfoContainer IconOffset="0">
+					<MessageContent>
+						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
+					</MessageContent>
+					<ChildContent>
+						<MudText Color="Color.Tertiary">The component can also receive</MudText>
+					</ChildContent>
+				</MudInfoContainer>
+
+				<MudInfoContainer IconOffset="0">
+					<MessageContent>
+						<MudText>The component can also receive parameters from query string to pre-fill initial form values, e.g.: <MudLink Href="http://google.ca" Target="_blank">Google</MudLink>.</MudText>
+					</MessageContent>
+					<ChildContent>
+						<MudText Color="Color.Tertiary" Style="background-color: orange !important">The component can also receive</MudText>
+					</ChildContent>
+				</MudInfoContainer>
+
 
 
 			</MudForm>
