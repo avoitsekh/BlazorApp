@@ -1,7 +1,7 @@
 ﻿@using SkiaSharp
 
 <MudStack Spacing="2">
-	<MudFileUpload T="IBrowserFile" @ref="mudFileUpload" @bind-Files="uploadedFile" DragAndDrop="true" MaxFileSize="@maxFileSize" Accept=".jpg,.png,.gif,.webp" OnFilesChanged="OnFilesChanged">
+	<MudFileUpload T="IBrowserFile" @ref="mudFileUpload" @bind-Files="uploadedFile" DragAndDrop="true" MaxFileSize="@maxFileSize" Accept=".jpg,.png,.gif,.webp" OnFilesChanged="Decode">
 		<SelectedTemplate />
 	</MudFileUpload>
 
@@ -23,16 +23,7 @@
 
 @code {
 
-	IBrowserFile? uploadedFile
-	{
-		get;
-		set
-		{
-			field = value;
-			Decode();
-		}
-	}
-
+	IBrowserFile? uploadedFile;
 	MudFileUpload<IBrowserFile>? mudFileUpload;
 	string? errorMessage;
 	string? successMessage;
@@ -41,57 +32,54 @@
 
 	async void Decode()
 	{
+		errorMessage = successMessage = null;
+
+		if (uploadedFile == null)
+		{
+			return;
+		}
+
 		try
 		{
 			inProgress = true;
+			await mudFileUpload.ResetValidationAsync();
 
-			if (uploadedFile != null)
+			using var stream = new MemoryStream();
+			await uploadedFile.OpenReadStream(maxAllowedSize: maxFileSize).CopyToAsync(stream);
+			stream.Position = 0;
+			var bitmap = SKBitmap.Decode(stream);
+
+			if (bitmap != null)
 			{
-				await mudFileUpload!.ResetValidationAsync();
-				errorMessage = successMessage = null;
+				string content;
 
-				using var stream = new MemoryStream();
-				await uploadedFile.OpenReadStream(maxAllowedSize: maxFileSize).CopyToAsync(stream);
-				stream.Position = 0;
-				var bitmap = SKBitmap.Decode(stream);
-
-				if (bitmap != null)
+				if (SkiaSharp.QrCode.QRCodeDecoder.TryDecode(bitmap, out content))
 				{
-					string content;
-
-					if (SkiaSharp.QrCode.QRCodeDecoder.TryDecode(bitmap, out content))
-					{
-						successMessage = $"Decoded content: '{content}'";
-					}
-					else if (SkiaSharp.QrCode.MicroQRCodeDecoder.TryDecode(bitmap, out content))
-					{
-						successMessage = $"Decoded content: '{content}'";
-					}
-					else
-					{
-						errorMessage = $"No QR code was found in '{uploadedFile.Name}'. The built-in decoder targets clean, screen-rendered images.";
-					}
+					successMessage = $"Decoded content: '{content}'";
+				}
+				else if (SkiaSharp.QrCode.MicroQRCodeDecoder.TryDecode(bitmap, out content))
+				{
+					successMessage = $"Decoded content: '{content}'";
 				}
 				else
 				{
-					errorMessage = $"Could not process '{uploadedFile.Name}'. The image format is invalid or not supported.";
+					errorMessage = $"No QR code was found in '{uploadedFile.Name}'. The built-in decoder targets clean, screen-rendered images.";
 				}
-				StateHasChanged();
 			}
+			else
+			{
+				errorMessage = $"Could not process '{uploadedFile.Name}'. The image format is invalid or not supported.";
+			}
+			StateHasChanged();
 		}
 		catch (Exception ex)
 		{
-			errorMessage = ex.GetBaseException().Message;
+			errorMessage = $"Error: {ex.GetBaseException().Message}";
 		}
 		finally
 		{
 			inProgress = false;
 			StateHasChanged();
 		}
-	}
-
-	void OnFilesChanged()
-	{
-		errorMessage = successMessage = null;
 	}
 }

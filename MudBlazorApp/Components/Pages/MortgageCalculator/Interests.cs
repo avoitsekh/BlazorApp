@@ -2,7 +2,7 @@
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class Interests : IEnumerable<Interest>
+public class Interests : IList<Interest>
 {
 	List<Interest> _interests = new();
 
@@ -10,6 +10,10 @@ public class Interests : IEnumerable<Interest>
 	{
 		get => _interests[0].Rate;
 		set => _interests[0].Rate = value;
+	}
+
+	public Interests()
+	{
 	}
 
 	public Interests(double initialRate)
@@ -25,7 +29,7 @@ public class Interests : IEnumerable<Interest>
 	public void Add(Interest interest)
 	{
 		_interests.Add(interest);
-		Sort();
+		SortByEffectiveDate();
 	}
 
 	public void RemoveAt(DateTime? effectiveDate)
@@ -40,10 +44,10 @@ public class Interests : IEnumerable<Interest>
 	public void Remove(Interest interest)
 	{
 		_interests.Remove(interest);
-		Sort();
+		SortByEffectiveDate();
 	}
 
-	void Sort()
+	void SortByEffectiveDate()
 	{
 		_interests = _interests.OrderBy(x => x.EffectiveDate).ToList();
 	}
@@ -63,12 +67,22 @@ public class Interests : IEnumerable<Interest>
 		return result.ToArray();
 	}
 
+	#region IList
+
+	public int Count => _interests.Count;
+
+	public bool IsReadOnly => false;
+
 	public void Clear()
 	{
-		_interests.Clear();
+		_interests.RemoveAll(x => x.EffectiveDate.HasValue);
 	}
 
-	public int Count => _interests.Count - 1;
+	public Interest this[int index]
+	{
+		get => _interests[index];
+		set => _interests[index] = value;
+	}
 
 	public IEnumerator<Interest> GetEnumerator()
 	{
@@ -79,4 +93,36 @@ public class Interests : IEnumerable<Interest>
 	{
 		return GetEnumerator();
 	}
+
+	public int IndexOf(Interest item)
+	{
+		return _interests.IndexOf(item);
+	}
+
+	public void Insert(int index, Interest item)
+	{
+		_interests.Insert(index, item);
+	}
+
+	public void RemoveAt(int index)
+	{
+		_interests.RemoveAt(index);
+	}
+
+	public bool Contains(Interest item)
+	{
+		return _interests.Contains(item);
+	}
+
+	public void CopyTo(Interest[] array, int arrayIndex)
+	{
+		_interests.CopyTo(array, arrayIndex);
+	}
+
+	bool ICollection<Interest>.Remove(Interest item)
+	{
+		return _interests.Remove(item);
+	}
+
+	#endregion
 }

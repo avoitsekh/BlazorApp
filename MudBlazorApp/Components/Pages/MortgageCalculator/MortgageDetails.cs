@@ -16,19 +16,14 @@ public class MortgageDetails
 	public enum InterestRateTypes { Fixed, ARM }
 	public enum InterestRateAccrualMethods { PerDay, PerPayment }
 
-	public string ToJsonString()
+	public static string ToJsonString(MortgageDetails details)
 	{
-		return JsonSerializer.Serialize(this, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+		return JsonSerializer.Serialize(details, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
 	}
 
-	public void FromJsonString(string jsonString)
+	public static MortgageDetails FromJsonString(string jsonString)
 	{
-		var details = JsonSerializer.Deserialize<MortgageDetails>(jsonString);
-		if (details is not null)
-		{
-			LoanAmount = details.LoanAmount;
-			// ...
-		}
+		return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
 	}
 
 }

@@ -1,10 +1,10 @@
 ﻿@page "/mortgage"
 
-@using System
+@using System.Text
 
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
-@* <MudThemeProvider @ref="themeProvider" /> *@
 
 <PageHeader Title="Mortgage Calculator" />
  
@@ -15,15 +15,15 @@
 			<MudForm @ref="form" Spacing="2">
 				<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 					<MudText Typo="Typo.h5">Mortgage Details</MudText>
-					<MudFileUpload T="IBrowserFile" FilesChanged="LoadClicked" MaxFileSize="@(5 * 1024 * 1024)" Accept=".json,.*">
-							<CustomContent>
-								<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3">
-									<MudMenuItem Label="Save" OnClick="MortgageDetailsSaveToFileClicked" />
-									<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" />
-								</MudMenu>
-							</CustomContent>
-							<SelectedTemplate />
-						</MudFileUpload>
+					<MudFileUpload @ref="mudFileUpload" T="IBrowserFile" FilesChanged="LoadClicked" MaxFileSize="maxFileSize" Accept=".json,.*">
+						<CustomContent>
+							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3" Dense>
+								<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Outlined.FileUpload" IconColor="Color.Primary" />
+								<MudMenuItem Label="Save" OnClick="SaveClicked" Icon="@Icons.Material.Outlined.FileDownload" IconColor="Color.Primary" />
+							</MudMenu>
+						</CustomContent>
+						<SelectedTemplate />
+					</MudFileUpload>
 				</MudStack>
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
 						Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
@@ -59,11 +59,7 @@
 					}
 				</MudSelect>
 
-
 				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
-
-				
-
 
 			</MudForm>
 		</MudPaper>
@@ -84,18 +80,6 @@
 	}
 
 </MudGrid>
-
-
-
-
-
-<style>
-	.dense-numeric-field .mud-input-control-input-container .mud-input .mud-input-root {
-		padding: 4px !important;
-	}
-</style>
-
-
 
 @if (payments.Count > 0)
 {
@@ -120,14 +104,32 @@
 	</MudGrid>
 }
 
+<script>
+
+	window.downloadFile = (fileName, contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = fileName;
+		anchor.click();
+		URL.revokeObjectURL(url);
+	};
+
+</script>
+
 @code {
 
-	MudForm form = null!;
+	MudForm form;
+	MudFileUpload<IBrowserFile> mudFileUpload;
 	List<Payment> payments = [];
 	MortgageDetails Details = new MortgageDetails();
 
-	bool hasAdditionalInterestRates => Details.InterestRates.Count > 0;
+	bool hasAdditionalInterestRates => Details.InterestRates.Count > 1;
 	bool isVariableRateMortgage => Details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
+
+	int maxFileSize = 4 * 1024;  // 4 KB
+
 
 
 	async Task CalculateButtonClick()
@@ -168,27 +170,18 @@
 		}
 	}
 
-	void MortgageDetailsSaveToFileClicked()
+	async Task SaveClicked()
 	{
-		Console.WriteLine();
-		Console.WriteLine();
-		Console.WriteLine();
-		Console.WriteLine(Details.ToJsonString());
+		var jsonText = MortgageDetails.ToJsonString(Details);
+		await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
 	}
-
 
 	async Task LoadClicked(IBrowserFile file)
 	{
-		Console.WriteLine(file.Name);
-
-		// using var stream = new MemoryStream();
-		// await file.OpenReadStream().CopyToAsync(stream);
-		// stream.Position = 0;
-
-
-		var reader = new StreamReader(file.OpenReadStream());
-		string text = await reader.ReadToEndAsync();
-		Details.FromJsonString(text);
+		await mudFileUpload.ResetValidationAsync();
+		using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxFileSize));
+		string jsonText = await reader.ReadToEndAsync();
+		Details = MortgageDetails.FromJsonString(jsonText);
 	}
 
 }
