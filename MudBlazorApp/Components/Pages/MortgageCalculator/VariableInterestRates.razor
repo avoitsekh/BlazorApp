@@ -11,8 +11,8 @@
 				<MudTh Style="width: 60px" />
 			</HeaderContent>
 			<RowTemplate>
-				<MudTd DataLabel="Effective Date"><MudText>@(context.EffectiveDate.HasValue ? context.EffectiveDate.Value.ToString("yyyy-MM-dd") : "")</MudText></MudTd>
-				<MudTd DataLabel="Rate"><MudText>@context.Rate.ToString("0.##'%'")</MudText></MudTd>
+				<MudTd><MudText>@(context.EffectiveDate.HasValue ? context.EffectiveDate.Value.ToString("yyyy-MM-dd") : "")</MudText></MudTd>
+				<MudTd><MudText>@context.Rate.ToString("0.##'%'")</MudText></MudTd>
 				<MudTd Style="text-align: right;">
 					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context.EffectiveDate))" Style="position: relative; top: 2px" />
 				</MudTd>

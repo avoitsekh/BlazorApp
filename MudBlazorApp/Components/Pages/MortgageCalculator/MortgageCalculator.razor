@@ -4,6 +4,7 @@
 
 @inject IDialogService DialogService
 @inject IJSRuntime JS
+@inject ISnackbar snackbar
 
 
 <PageHeader Title="Mortgage Calculator" />
@@ -15,11 +16,16 @@
 			<MudForm @ref="form" Spacing="2">
 				<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 					<MudText Typo="Typo.h5">Mortgage Details</MudText>
-					<MudFileUpload @ref="mudFileUpload" T="IBrowserFile" FilesChanged="LoadClicked" MaxFileSize="maxFileSize" Accept=".json,.*">
+					<MudFileUpload T="IBrowserFile" Accept=".json,.*" OnFilesChanged="FileLoadClicked">
 						<CustomContent>
-							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3" Dense>
-								<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Outlined.FileUpload" IconColor="Color.Primary" />
-								<MudMenuItem Label="Save" OnClick="SaveClicked" Icon="@Icons.Material.Outlined.FileDownload" IconColor="Color.Primary" />
+							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3">
+								<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune" IconColor="Color.Primary">
+									<MudMenuItem Label="Fixed Rate with Extra Payments" />
+									<MudMenuItem Label="Variable Rate with Extra Payments" />
+								</MudMenu>
+								<MudDivider />
+								<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.UploadFile" IconColor="Color.Primary" />
+								<MudMenuItem Label="Save" OnClick="FileSaveClicked" Icon="@Icons.Material.Filled.Save" IconColor="Color.Primary" />
 							</MudMenu>
 						</CustomContent>
 						<SelectedTemplate />
@@ -28,9 +34,10 @@
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
 						Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
 				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
-						 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Menu" AdornmentColor="@(hasAdditionalInterestRates ? Color.Primary : Color.Default)" OnAdornmentClick="OpenAdditionalInterestRatesDialogAsync" />
+						 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Menu" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
 				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="Details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
-				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="Details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="Details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
+						AdornmentColor="Color.Primary" Margin="Margin.Dense" />
 				<MudSelect T="int" Label="Compound Period" @bind-Value="Details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.CompoundPeriod)
 					{
@@ -59,6 +66,8 @@
 					}
 				</MudSelect>
 
+				<MudButton OnClick="OpenExtraPaymentsDialogAsync">Extra Payments</MudButton>
+
 				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
 
 			</MudForm>
@@ -73,7 +82,7 @@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h5" >Balance Over Time</MudText>
-						<BalanceOverTime Payments="payments" />
+						<BalanceOverTime Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
 					</MudStack>
 				</MudPaper>
 		</MudItem>
@@ -121,14 +130,14 @@
 @code {
 
 	MudForm form;
-	MudFileUpload<IBrowserFile> mudFileUpload;
 	List<Payment> payments = [];
+	List<Payment> paymentsWithNoExtraPayments = [];
 	MortgageDetails Details = new MortgageDetails();
 
 	bool hasAdditionalInterestRates => Details.InterestRates.Count > 1;
 	bool isVariableRateMortgage => Details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
-	int maxFileSize = 4 * 1024;  // 4 KB
+	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
 
 
@@ -138,11 +147,12 @@
 
 		if (form.IsValid)
 		{
-			payments = Payments.Generate(Details);
+			payments = PaymentCollection.Generate(Details);
+			paymentsWithNoExtraPayments = payments.Any(x => x.ExtraAmount > 0D) ? PaymentCollection.Generate(Details, countExtraPayments: false) : [];
 		}
 	}
 
-	async Task OpenAdditionalInterestRatesDialogAsync()
+	async Task OpenVariableInterestRatesDialogAsync()
 	{
 		var options = new DialogOptions()
 		{
@@ -170,18 +180,61 @@
 		}
 	}
 
-	async Task SaveClicked()
+	async Task FileSaveClicked()
 	{
-		var jsonText = MortgageDetails.ToJsonString(Details);
-		await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
+		try
+		{
+			var jsonText = MortgageDetails.ToJsonString(Details);
+			await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
+			snackbar.Add("Saved to mortgage-details.json", Severity.Info);
+		}
+		catch (Exception ex)
+		{
+			snackbar.Add($"Error saving to mortgage-details.json. {ex.GetBaseException().Message}", Severity.Error);
+		}
 	}
 
-	async Task LoadClicked(IBrowserFile file)
+	async Task FileLoadClicked(InputFileChangeEventArgs arg)
 	{
-		await mudFileUpload.ResetValidationAsync();
-		using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxFileSize));
-		string jsonText = await reader.ReadToEndAsync();
-		Details = MortgageDetails.FromJsonString(jsonText);
+		var file = arg.File;
+
+		if (file != null)
+		{
+			try
+			{
+				if (file.Size > maxUploadFileSize)
+				{
+					throw new Exception($"File exceeds the maximum allowed size of {maxUploadFileSize} bytes.");
+				}
+
+				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
+				string jsonText = await reader.ReadToEndAsync();
+				Details = MortgageDetails.FromJsonString(jsonText);
+				snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
+			}
+			catch (Exception ex)
+			{
+				snackbar.Add($"Error loading from {file.Name}. {ex.GetBaseException().Message}", Severity.Error);
+			}
+		}
 	}
 
+	async Task OpenExtraPaymentsDialogAsync()
+	{
+		var options = new DialogOptions()
+		{
+			MaxWidth = MaxWidth.ExtraSmall,
+			BackdropClick = false,
+			CloseOnEscapeKey = true
+		};
+
+		var parameters = new DialogParameters<ExtraPayments>
+		{
+			{ x => x.Details, Details }
+		};
+
+		var dialogReference = await DialogService.ShowAsync<ExtraPayments>(parameters, options);
+		await dialogReference.Result;
+		StateHasChanged();
+	}
 }

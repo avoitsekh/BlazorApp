@@ -1,55 +1,54 @@
 ﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class Payments : List<Payment>
+public sealed class PaymentCollection : List<Payment>
 {
 	public readonly MortgageDetails Details;
 
-	Payments(MortgageDetails settings)
+	PaymentCollection(MortgageDetails settings)
 		: base(settings.PaymentFrequency * settings.AmortizationPeriodInYears)
 	{
 		Details = settings;
 	}
 
-	public static Payments Generate(MortgageDetails settings)
+	public static PaymentCollection Generate(MortgageDetails settings, bool countExtraPayments = true)
 	{
-		var result = new Payments(settings);
-		result.CalculateAmortizationSchedule();
+		var result = new PaymentCollection(settings);
+		result.CalculateAmortizationSchedule(countExtraPayments);
 		return result;
 	}
 
-	void CalculateAmortizationSchedule()
+	void CalculateAmortizationSchedule(bool countExtraPayments)
 	{
-		int numberOfPayments = Details.PaymentFrequency * Details.AmortizationPeriodInYears;    // nper
+		int paymentCount = Details.PaymentFrequency * Details.AmortizationPeriodInYears;    // nper
 
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
 		double ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
-		double paymentAmount = PMT(ratePerPayment, numberOfPayments, balance);
+		double paymentAmount = PMT(ratePerPayment, paymentCount, balance);
 		DateTime paymentDate = Details.AdvanceDate ?? DateTime.MinValue;
 
-		//Settings.InterestRates.Add(new DateTime(2025, 04, 22), 8.88D);
 
-		for (int i = 1; i <= numberOfPayments; i++)
+		for (int i = 1; i <= paymentCount; i++)
 		{
 			if (balance <= 0)
 			{
 				break;
 			}
 
+			int? year = i % Details.PaymentFrequency == 0 ? i / Details.PaymentFrequency : null;
 			var previousRate = currentRate;
-
 			var previousPaymentDate = paymentDate;
 			paymentDate = GetNextPaymentDate(paymentDate, i);
-
 
 			//double interestPaid = RoundToCents(balance * ratePerPayment);
 			//double interestPaid = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance, AnnualRate);
 			double interestAmount = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance);
-
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
-			balance = RoundToCents(balance - principalAmount);
 
-			int? year = i % Details.PaymentFrequency == 0 ? i / Details.PaymentFrequency : null;
+
+			var extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
+			balance = RoundToCents(balance - principalAmount - extraAmount);
+
 
 			if (balance < 0)
 			{
@@ -57,7 +56,7 @@ public class Payments : List<Payment>
 				principalAmount += balance;
 				balance = 0;
 
-				if (i < numberOfPayments)
+				if (i < paymentCount)
 				{
 					year = i / Details.PaymentFrequency + 1;
 				}
@@ -70,13 +69,14 @@ public class Payments : List<Payment>
 			{
 				Number = i,
 				PaymentDate = paymentDate,
-				PaymentPeriodInterestRate = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x))),
+				Year = year,
+				IterestRate = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x))),
 				InterestAccrualPeriod = string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1)),
 				InterestAmount = interestAmount,
-				PaymentAmount = paymentAmount,
 				PrincipalAmount = principalAmount,
+				ExtraAmount = extraAmount,
+				PaymentAmount = paymentAmount + extraAmount,
 				Balance = balance,
-				Year = year
 			});
 
 			currentRate = Details.InterestRates.GetRate(paymentDate);
@@ -84,7 +84,7 @@ public class Payments : List<Payment>
 			if (currentRate != previousRate)    // interest rate has changed, re-calculate payment amount
 			{
 				ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
-				paymentAmount = PMT(ratePerPayment, numberOfPayments - i, balance);
+				paymentAmount = PMT(ratePerPayment, paymentCount - i, balance);
 			}
 		}
 

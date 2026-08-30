@@ -5,16 +5,19 @@ namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 public class MortgageDetails
 {
 	public double LoanAmount = 320000D;
-	public Interests InterestRates = new Interests(2.49D);
+	public InterestCollection InterestRates = new(2.49D);
 	public int AmortizationPeriodInYears = 25;							// term
 	public DateTime? AdvanceDate = new DateTime(2025, 01, 01);          // mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;                                   // ppy - payments per year
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public InterestRateAccrualMethods InterestRateAccrualMethod = InterestRateAccrualMethods.PerDay;
+	public ExtraPaymentCollection ExtraPayments = new();
 
 	public enum InterestRateTypes { Fixed, ARM }
 	public enum InterestRateAccrualMethods { PerDay, PerPayment }
+
+	#region Json
 
 	public static string ToJsonString(MortgageDetails details)
 	{
@@ -23,7 +26,16 @@ public class MortgageDetails
 
 	public static MortgageDetails FromJsonString(string jsonString)
 	{
-		return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
+		try
+		{
+			return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
+		}
+		catch
+		{
+			throw new Exception("File appears to be corrupted or invalid.");
+		}
 	}
+
+	#endregion
 
 }

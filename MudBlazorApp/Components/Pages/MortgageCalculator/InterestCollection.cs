@@ -2,7 +2,7 @@
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class Interests : IList<Interest>
+public sealed class InterestCollection : IList<Interest>
 {
 	List<Interest> _interests = new();
 
@@ -12,11 +12,11 @@ public class Interests : IList<Interest>
 		set => _interests[0].Rate = value;
 	}
 
-	public Interests()
+	public InterestCollection()
 	{
 	}
 
-	public Interests(double initialRate)
+	public InterestCollection(double initialRate)
 	{
 		_interests.Add(new() { Rate = initialRate });
 	}
@@ -24,12 +24,6 @@ public class Interests : IList<Interest>
 	public void Add(DateTime? effectiveDate, double rate)
 	{
 		Add(new Interest { EffectiveDate = effectiveDate, Rate = rate });
-	}
-
-	public void Add(Interest interest)
-	{
-		_interests.Add(interest);
-		SortByEffectiveDate();
 	}
 
 	public void RemoveAt(DateTime? effectiveDate)
@@ -72,6 +66,12 @@ public class Interests : IList<Interest>
 	public int Count => _interests.Count;
 
 	public bool IsReadOnly => false;
+
+	public void Add(Interest interest)
+	{
+		_interests.Add(interest);
+		SortByEffectiveDate();
+	}
 
 	public void Clear()
 	{

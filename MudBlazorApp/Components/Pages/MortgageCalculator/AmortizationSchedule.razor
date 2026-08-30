@@ -1,4 +1,4 @@
-﻿<MudDataGrid @ref="elementGrid" T="Payment" Items="@Payments" ReadOnly="true" Elevation="0"
+﻿@* <MudDataGrid @ref="elementGrid" T="Payment" Items="@Payments" ReadOnly="true" Elevation="0"
 			 EditMode="DataGridEditMode.Cell" StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
 			 Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.Manual" SortMode="SortMode.None" Groupable="false" Hover Striped Outlined RowStyleFunc="_rowStyleFunc" ColumnResizeMode="ResizeMode.Container">
 	<Columns>
@@ -7,11 +7,6 @@
 		<PropertyColumn Property="x => x.Year" Editable="false" />
 		<PropertyColumn Property="x => x.PaymentPeriodInterestRate" Title="Interest" Editable="false" />
 		<PropertyColumn Property="x => x.InterestAccrualPeriod" Title="Interest Accrual Period" Editable="false" />
-		@* <PropertyColumn Property="x => x.AnnualInterestRate" Title="Annual %" Editable="false">
-			<EditTemplate>
-				<MudNumericField T="double" @bind-Value="context.Item.AnnualInterestRate" HideSpinButtons="true" Min="0" Max="100" Format="F2" />
-			</EditTemplate>
-		</PropertyColumn> *@
 		<PropertyColumn Property="x => x.InterestAmount" Title="Interest Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
 		<PropertyColumn Property="x => x.PrincipalAmount" Title="Principal Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
 		<PropertyColumn Property="x => x.ExtraAmount" Title="Extra Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
@@ -19,6 +14,41 @@
 		<PropertyColumn Property="x => x.Balance" Title="Remaining Balance" Editable="false" Format="N2" CellStyle="text-align: right" />
 	</Columns>
 </MudDataGrid>
+ *@
+
+<MudTable Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="mud-table-small-cell" Virtualize="true" FixedHeader Height="400px">
+	<HeaderContent>
+		<MudTh>No.</MudTh>
+		<MudTh>Payment Date</MudTh>
+		<MudTh>Year</MudTh>
+		<MudTh>Interest</MudTh>
+		<MudTh>Interest Accrual Period</MudTh>
+		<MudTh Style="text-align: right;">Interest Amount</MudTh>
+		<MudTh Style="text-align: right;">Principal Amount</MudTh>
+		<MudTh Style="text-align: right;">Extra Amount</MudTh>
+		<MudTh Style="text-align: right;">Payment Amount</MudTh>
+		<MudTh Style="text-align: right;">Remaining Balance</MudTh>
+	</HeaderContent>
+	<RowTemplate>
+		<MudTd DataLabel="No.">@context.Number</MudTd>
+		<MudTd DataLabel="Payment Date">@context.PaymentDate.ToString("yyyy-MM-dd")</MudTd>
+		<MudTd DataLabel="Year">@context.Year</MudTd>
+		<MudTd DataLabel="Interest">@context.IterestRate</MudTd>
+		<MudTd DataLabel="Interest Accrual Period">@context.InterestAccrualPeriod</MudTd>
+		<MudTd DataLabel="Interest Amount" Style="text-align: right;">@context.InterestAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="Principal Amount" Style="text-align: right;">@context.PrincipalAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="Extra Amount" Style="text-align: right;">@context.ExtraAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="Payment Amount" Style="text-align: right;">@context.PaymentAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="Remaining Balance" Style="text-align: right;">@context.Balance.ToString("N2")</MudTd>
+	</RowTemplate>
+</MudTable>
+
+<style>
+	.mud-table-small-cell {
+		/* padding: 12px !important; */
+		padding: 4px 12px 4px 12px !important
+	}
+</style>
 
 @code {
 	MudDataGrid<Payment> elementGrid = default!;

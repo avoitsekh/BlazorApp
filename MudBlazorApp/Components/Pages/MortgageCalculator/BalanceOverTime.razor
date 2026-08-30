@@ -8,13 +8,19 @@
 	[Parameter]
 	public List<Payment>? Payments { get; set; }
 
+	[Parameter]
+	public List<Payment>? PaymentsWithNoExtraPayments { get; set; }
+
+	bool hasPaymentsWithNoExtraPayments => PaymentsWithNoExtraPayments != null && PaymentsWithNoExtraPayments.Count > 0;
+
 	LineChartOptions options = new()
 	{
-		XAxisTitle = "Time",
-		YAxisTitle = "Balance",
+		XAxisTitle = "Balance",
+		YAxisTitle = "",
 		YAxisFormat = "N0",
 		XAxisLabelRotation = 45,
-		ChartPalette = [Colors.Blue.Default, Colors.DeepOrange.Default],
+		ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten2],
+		// ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
 		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
 		ShowLegend = false,
 		ShowToolTips = false,
@@ -37,28 +43,40 @@
 
 	void SetGraphValues()
 	{
-		series = new()
+		series = new();
+		series.Add(new ChartSeries<double>()
+		{
+			Name = "With extra payments",
+			Data = Payments!.Select(x => x.Balance).ToArray(),
+			TooltipTitleFormat = "{{SERIES_NAME}}" }
+		);
+
+		if (hasPaymentsWithNoExtraPayments)
+		{
+			series.Add(new ChartSeries<double>()
 			{
-				new ChartSeries<double>() { Name = "Balance", Data = Payments!.Select(x => x.Balance).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
-				//new ChartSeries<double>() { Name = "Balance (with extra payments)", Data = AmortizationSchedule.Select(x => x.Balance + 10000D).ToArray(), TooltipTitleFormat = "{{SERIES_NAME}}" },
-			};
+				Name = "Without extra payments",
+				Data = PaymentsWithNoExtraPayments!.Select(x => x.Balance).ToArray(),
+				TooltipTitleFormat = "{{SERIES_NAME}}"
+			});
+		}
 
 		options.ShowLegend = series.Count > 1;
-
 		options.SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>(series.Count);
 		series.ForEach(x => options.SeriesDisplayOverrides.Add(x, new() { LineDisplayType = LineDisplayType.Area }));
 	}
 
 	void SetXAxisLabels()
 	{
-		var amortizationPeriodInYears = Payments!.Max(x => x.Year);
+		var payments = hasPaymentsWithNoExtraPayments ? PaymentsWithNoExtraPayments : Payments;
+		var amortizationPeriodInYears = payments!.Max(x => x.Year);
 		var denominator = amortizationPeriodInYears switch
 		{
 			<= 5 => 1,
 			<= 60 => 5,
 			_ => 10
 		};
-		XAxisLabels = Payments!.Select(x => x.Year.HasValue && x.Year % denominator == 0 ? x.PaymentDate.Year.ToString() : string.Empty).ToArray();
+		XAxisLabels = payments!.Select(x => x.Year.HasValue && x.Year % denominator == 0 ? x.PaymentDate.Year.ToString() : string.Empty).ToArray();
 	}
 
 	void SetYAxisLabels()

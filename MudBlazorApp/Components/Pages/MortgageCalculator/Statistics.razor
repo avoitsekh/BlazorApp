@@ -87,15 +87,15 @@
 				PaymentDate = yearEndPayment.PaymentDate;
 
 				var paymentsForPeriod = Payments.Where(x => x.Number <= paymentNumber);
-                    InterestPaid = Pages.MortgageCalculator.Payments.RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
-                    PrincipalPaid = Pages.MortgageCalculator.Payments.RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
-                    TotalPaid = Pages.MortgageCalculator.Payments.RoundToCents(InterestPaid + PrincipalPaid);
+                    InterestPaid = Pages.MortgageCalculator.PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
+                    PrincipalPaid = Pages.MortgageCalculator.PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
+                    TotalPaid = Pages.MortgageCalculator.PaymentCollection.RoundToCents(InterestPaid + PrincipalPaid);
 
 				var firstPayment = Payments.FirstOrDefault(x => x.Number == 1);
 				if (firstPayment != null)
 				{
 					var loanAmount = firstPayment.Balance + firstPayment.PrincipalAmount;
-                        RemainingBalance = Pages.MortgageCalculator.Payments.RoundToCents(loanAmount - PrincipalPaid);
+                        RemainingBalance = Pages.MortgageCalculator.PaymentCollection.RoundToCents(loanAmount - PrincipalPaid);
 				}
 			}
 
