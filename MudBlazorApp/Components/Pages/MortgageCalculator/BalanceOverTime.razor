@@ -6,13 +6,10 @@
 @code {
 
 	[Parameter]
-	public MortgageDetails? Details { get; set; }
+	public PaymentCollection? Payments { get; set; }
 
 	[Parameter]
-	public List<Payment>? Payments { get; set; }
-
-	[Parameter]
-	public List<Payment>? PaymentsWithNoExtraPayments { get; set; }
+	public PaymentCollection? PaymentsWithNoExtraPayments { get; set; }
 
 	bool hasPaymentsWithNoExtraPayments => PaymentsWithNoExtraPayments != null && PaymentsWithNoExtraPayments.Count > 0;
 
@@ -22,8 +19,8 @@
 		YAxisTitle = "",
 		YAxisFormat = "N0",
 		XAxisLabelRotation = 45,
-		ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten2],
-		// ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
+		// ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten2],
+		ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
 		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
 		ShowLegend = false,
 		ShowToolTips = false,
@@ -84,7 +81,7 @@
 
 	void SetYAxisLabels()
 	{
-		var loanAmount = Details!.LoanAmount;
+		var loanAmount = Payments.Details.LoanAmount;
 		options.YAxisTicks = loanAmount switch
 		{
 			<= 1000 => 100,

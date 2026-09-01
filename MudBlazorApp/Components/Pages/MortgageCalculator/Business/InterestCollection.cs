@@ -53,7 +53,7 @@ public sealed class InterestCollection : IList<Interest>
 
 	public double[] GetRatesForPeriod(DateTime from, DateTime to)
 	{
-		var result = new List<double>
+		List<double> result = new()
 		{
 			GetRate(from)
 		};

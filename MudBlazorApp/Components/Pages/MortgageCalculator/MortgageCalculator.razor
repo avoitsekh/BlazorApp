@@ -68,21 +68,21 @@
 
 				<MudButton OnClick="OpenExtraPaymentsDialogAsync">Extra Payments</MudButton>
 
-				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClick" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
+				<MudProgressButton Variant="Variant.Filled" OnClick="CalculateButtonClicked" Size="Size.Large" Color="Color.Primary">Calculate</MudProgressButton>
 
 			</MudForm>
 		</MudPaper>
 
 	</MudItem>
 	
-	@if (payments.Count > 0)
+	@if (hasPayments)
 	{
 		<MudItem xs="12" sm="12" md="8">
 				@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h5" >Balance Over Time</MudText>
-						<BalanceOverTime Details="details" Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
+						<BalanceOverTime Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
 					</MudStack>
 				</MudPaper>
 		</MudItem>
@@ -90,14 +90,14 @@
 
 </MudGrid>
 
-@if (payments.Count > 0)
+@if (hasPayments)
 {
 	<MudGrid Spacing="0">
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 					<MudText Typo="Typo.h5">Statistics</MudText>
-					<Statistics Payments="payments" />
+					<Statistics Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
 				</MudStack>
 			</MudPaper>
 		</MudItem>
@@ -129,11 +129,12 @@
 
 @code {
 
-	MudForm form;
-	List<Payment> payments = [];
-	List<Payment> paymentsWithNoExtraPayments = [];
+	MudForm? form;
+	PaymentCollection? payments;
+	PaymentCollection? paymentsWithNoExtraPayments;
 	MortgageDetails details = new MortgageDetails();
 
+	bool hasPayments => payments?.Count > 0;
 	bool hasAdditionalInterestRates => details.InterestRates.Count > 1;
 	bool isVariableRateMortgage => details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
@@ -141,7 +142,7 @@
 
 
 
-	async Task CalculateButtonClick()
+	async Task CalculateButtonClicked()
 	{
 		await form.ValidateAsync();
 

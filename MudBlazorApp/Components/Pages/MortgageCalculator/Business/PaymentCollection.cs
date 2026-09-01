@@ -4,6 +4,10 @@ public sealed class PaymentCollection : List<Payment>
 {
 	public readonly MortgageDetails Details;
 
+	public PaymentCollection()
+	{
+	}
+
 	PaymentCollection(MortgageDetails settings)
 		: base(settings.PaymentFrequency * settings.AmortizationPeriodInYears)
 	{
@@ -20,35 +24,23 @@ public sealed class PaymentCollection : List<Payment>
 	void CalculateAmortizationSchedule(bool countExtraPayments)
 	{
 		int paymentCount = Details.PaymentFrequency * Details.AmortizationPeriodInYears;    // nper
-
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
-		double ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
-		double paymentAmount = PMT(ratePerPayment, paymentCount, balance);
+		double paymentAmount = CalculatePaymentAmount(currentRate, paymentCount, balance);
 		DateTime paymentDate = Details.AdvanceDate ?? DateTime.MinValue;
-
+		bool isLastPayment = false;
+		int year = 1;
 
 		for (int i = 1; i <= paymentCount; i++)
 		{
-			if (balance <= 0)
-			{
-				break;
-			}
-
-			int? year = i % Details.PaymentFrequency == 0 ? i / Details.PaymentFrequency : null;
-			var previousRate = currentRate;
-			var previousPaymentDate = paymentDate;
+			DateTime previousPaymentDate = paymentDate;
 			paymentDate = GetNextPaymentDate(paymentDate, i);
 
-			//double interestAmount = RoundToCents(balance * ratePerPayment);
-			//double interestPaid = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance, AnnualRate);
-			double interestAmount = Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay 
-				? CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance) 
-				: RoundToCents(balance * ratePerPayment);   // todo, add interest split when rate changes for ARM (e.g. 9% → 2%)
+			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
+
+			double interestAmount = CalculateInterest(previousPaymentDate, paymentDate, balance);
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
-
-
-			var extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
+			double extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
 			balance = RoundToCents(balance - principalAmount - extraAmount);
 
 			if (balance <= 0)
@@ -61,25 +53,14 @@ public sealed class PaymentCollection : List<Payment>
 				}
 				paymentAmount = interestAmount + principalAmount;
 				balance = 0;
-
-				//	Old logic without extra amount in consideration:
-				//	paymentAmount += balance;
-				//	principalAmount += balance;
-				//	balance = 0;
-
-				if (i < paymentCount)
-				{
-					year = i / Details.PaymentFrequency + 1;
-				}
+				isLastPayment = true;
 			}
-
-			var ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 
 			Add(new()
 			{
 				Number = i,
 				PaymentDate = paymentDate,
-				Year = year,
+				Year = i % Details.PaymentFrequency == 0 || isLastPayment ? year++ : null,
 				IterestRate = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x))),
 				InterestAccrualPeriod = string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1)),
 				InterestAmount = interestAmount,
@@ -89,26 +70,34 @@ public sealed class PaymentCollection : List<Payment>
 				Balance = balance,
 			});
 
-			currentRate = Details.InterestRates.GetRate(paymentDate);
-
-			if (currentRate != previousRate)    // interest rate has changed, re-calculate payment amount
+			if (isLastPayment)
 			{
-				ratePerPayment = GetEffectiveAnnualRatePerPayment(currentRate / 100);
-				paymentAmount = PMT(ratePerPayment, paymentCount - i, balance);
+				break;
+			}
+
+			double previousRate = currentRate;
+			currentRate = Details.InterestRates.GetRate(paymentDate);
+			if (currentRate != previousRate)
+			{
+				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
 			}
 		}
-
-		//var EffectiveAnnualRate = GetEffectiveAnnualRate(_settings.AnnualRate / 100) * 100;
 	}
 
-	//double GetEffectiveAnnualRate(double contractRate)
-	//{
-	//	return Math.Pow(1D + contractRate / _settings.CompoundPeriod, (double)_settings.CompoundPeriod) - 1;
-	//}
+	double GetEffectiveAnnualRate(double contractRate)
+	{
+		return Math.Pow(1D + contractRate / Details.CompoundPeriod, (double)Details.CompoundPeriod) - 1;
+	}
 
 	double GetEffectiveAnnualRatePerPayment(double contractRate)
 	{
 		return Math.Pow(1D + contractRate / Details.CompoundPeriod, (double)Details.CompoundPeriod / Details.PaymentFrequency) - 1;
+	}
+
+	double CalculatePaymentAmount(double interestRate, int paymentCount, double balance)
+	{
+		double ratePerPayment = GetEffectiveAnnualRatePerPayment(interestRate / 100);
+		return PMT(ratePerPayment, paymentCount, balance);
 	}
 
 	//double CalculateInterestPerPeriod(DateTime periodStart, DateTime periodEnd, double balance, double annualRate)
@@ -121,29 +110,49 @@ public sealed class PaymentCollection : List<Payment>
 	//	return balance * (Math.Pow(1D + Settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
 	//}
 
-	//double CalculateInterestPerPeriod(DateTime from, DateTime to, double balance, double annualRate)
-	//{
-	//	return EachDay(from, to).Sum(day => CalculateInterestPerDay(day, balance, annualRate));
-	//}
-
-	double CalculateInterestPerPeriod(DateTime from, DateTime to, double balance)
+	double CalculateInterest(DateTime from, DateTime to, double balance)
 	{
-		var result = 0D;
-		foreach (var day in EachDay(from, to))
+		return Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay
+				? CalculateInterestForPeriod(from, to, balance)
+				: CalculateInterestForPayment(from, to, balance);
+	}
+
+	double CalculateInterestForPayment(DateTime from, DateTime to, double balance)
+	{
+		double result = 0D;
+		double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(from, to);
+
+		if (ratesForPeriod.Length == 1)
 		{
-			var interestRateForDay = Details.InterestRates.GetRate(day);
-			result += CalculateInterestPerDay(day, balance, interestRateForDay);
+			double ratePerPayment = GetEffectiveAnnualRatePerPayment(ratesForPeriod[0] / 100);
+			result = balance * ratePerPayment;
 		}
+		else
+		{
+			result = CalculateInterestForPeriod(from, to, balance);
+		}
+
 		return RoundToCents(result);
 	}
 
-	double CalculateInterestPerDay(DateTime date, double balance, double rate)
+	double CalculateInterestForPeriod(DateTime from, DateTime to, double balance)
+	{
+		var result = 0D;
+
+		foreach (var day in EachDay(from, to))
+		{
+			var interestRateForDay = Details.InterestRates.GetRate(day);
+			result += CalculateInterestForDay(day, balance, interestRateForDay);
+		}
+
+		return result;
+	}
+
+	double CalculateInterestForDay(DateTime date, double balance, double rate)
 	{
 		var isLeapYear = DateTime.IsLeapYear(date.Year);
 		//return balance * (rate / 100) / (isLeapYear ? 366 : 365);	// Scotiabank formula (bad) - no compounding
-
-		var comp = (double)Details.CompoundPeriod;
-		return balance * (Math.Pow(1D + rate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1);
+		return balance * (Math.Pow(1D + rate / 100 / Details.CompoundPeriod, (double)Details.CompoundPeriod / (isLeapYear ? 366 : 365)) - 1);
 	}
 
 	IEnumerable<DateTime> EachDay(DateTime from, DateTime to)
@@ -203,5 +212,30 @@ public sealed class PaymentCollection : List<Payment>
 	DateTime GetAnchorDate(DateTime date, int day)
 	{
 		return new DateTime(date.Year, date.Month, Math.Min(day, DateTime.DaysInMonth(date.Year, date.Month)));
+	}
+
+	public (double InterestAmount, double PrincipalAmount, double ExtraAmount, double PaymentAmount, double RemainingBalance, DateTime? LastPaymentDate, int Payments) GetStatsForYear(int year)
+	{
+		(double InterestAmount, double PrincipalAmount, double ExtraAmount, double PaymentAmount, double RemainingBalance, DateTime? LastPaymentDate, int Payments) result = new();
+
+		if (year > 0)
+		{
+			var lastPayment = this.FirstOrDefault(x => x.Year == year);
+			if (lastPayment != null)
+			{
+				int lastPaymentNumber = lastPayment.Number;
+				result.LastPaymentDate = lastPayment.PaymentDate;
+				result.RemainingBalance = lastPayment.Balance;
+
+				var paymentsForPeriod = this.Where(x => x.Number <= lastPaymentNumber).ToList();
+				result.InterestAmount = RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
+				result.PrincipalAmount = RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
+				result.ExtraAmount = RoundToCents(paymentsForPeriod.Sum(x => x.ExtraAmount));
+				result.PaymentAmount = RoundToCents(paymentsForPeriod.Sum(x => x.PaymentAmount));
+				result.Payments = paymentsForPeriod.Count;
+			}
+		}
+
+		return result;
 	}
 }

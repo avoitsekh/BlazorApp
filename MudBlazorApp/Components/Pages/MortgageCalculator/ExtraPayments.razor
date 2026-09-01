@@ -6,15 +6,15 @@
 
 		<MudTable Items="Details.ExtraPayments" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
+				<MudTh>Amount</MudTh>
 				<MudTh>Begin at Payment No.</MudTh>
 				<MudTh>End at Payment No.</MudTh>
-				<MudTh>Amount</MudTh>
 				<MudTh Style="width: 60px" />
 			</HeaderContent>
 			<RowTemplate>
+				<MudTd><MudText>@context.Amount</MudText></MudTd>
 				<MudTd><MudText>@context.FromPayment</MudText></MudTd>
 				<MudTd><MudText>@context.ToPayment</MudText></MudTd>
-				<MudTd><MudText>@context.Amount</MudText></MudTd>
 				<MudTd Style="text-align: right;">
 					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context))" Style="position: relative; top: 2px" />
 				</MudTd>
@@ -26,9 +26,9 @@
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
 					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="Begin at Payment No." Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
 					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="End at Payment No." Variant="Variant.Text" Min="payment.FromPayment" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
