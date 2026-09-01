@@ -31,20 +31,20 @@
 						<SelectedTemplate />
 					</MudFileUpload>
 				</MudStack>
-				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
+				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
 						Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
-				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="Details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
+				<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
 						 Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Menu" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
-				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="Details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
-				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="Details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
+				<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
+				<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
 						AdornmentColor="Color.Primary" Margin="Margin.Dense" />
-				<MudSelect T="int" Label="Compound Period" @bind-Value="Details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.CompoundPeriod)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
-				<MudSelect T="int" Label="Payment Frequency" @bind-Value="Details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.PaymentFrequency)
 					{
 						<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -52,17 +52,17 @@
 				</MudSelect>
 
 
-				<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="Details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.InterestRateType)
 					{
 						<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
 
-				<MudSelect T="MortgageDetails.InterestRateAccrualMethods" Label="Rate Accrual Method" @bind-Value="Details.InterestRateAccrualMethod" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+				<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
 					@foreach (var keyValuePair in Constants.InterestRateAccrualMethod)
 					{
-						<MudSelectItem T="MortgageDetails.InterestRateAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+						<MudSelectItem T="MortgageDetails.InterestAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 					}
 				</MudSelect>
 
@@ -82,7 +82,7 @@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h5" >Balance Over Time</MudText>
-						<BalanceOverTime Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
+						<BalanceOverTime Details="details" Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
 					</MudStack>
 				</MudPaper>
 		</MudItem>
@@ -132,10 +132,10 @@
 	MudForm form;
 	List<Payment> payments = [];
 	List<Payment> paymentsWithNoExtraPayments = [];
-	MortgageDetails Details = new MortgageDetails();
+	MortgageDetails details = new MortgageDetails();
 
-	bool hasAdditionalInterestRates => Details.InterestRates.Count > 1;
-	bool isVariableRateMortgage => Details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
+	bool hasAdditionalInterestRates => details.InterestRates.Count > 1;
+	bool isVariableRateMortgage => details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
@@ -147,35 +147,16 @@
 
 		if (form.IsValid)
 		{
-			payments = PaymentCollection.Generate(Details);
-			paymentsWithNoExtraPayments = payments.Any(x => x.ExtraAmount > 0D) ? PaymentCollection.Generate(Details, countExtraPayments: false) : [];
+			payments = PaymentCollection.Generate(details);
+			paymentsWithNoExtraPayments = payments.Any(x => x.ExtraAmount > 0D) ? PaymentCollection.Generate(details, countExtraPayments: false) : [];
 		}
-	}
-
-	async Task OpenVariableInterestRatesDialogAsync()
-	{
-		var options = new DialogOptions()
-		{
-			MaxWidth = MaxWidth.ExtraSmall,
-			BackdropClick = false,
-			CloseOnEscapeKey = true
-		};
-
-		var parameters = new DialogParameters<VariableInterestRates>
-		{
-			{ x => x.Details, Details }
-		};
-
-		var dialogReference = await DialogService.ShowAsync<VariableInterestRates>(parameters, options);
-		await dialogReference.Result;
-		StateHasChanged();
 	}
 
 	async Task OnInterestRateTypeChange()
 	{
-		if (Details.InterestRateType == MortgageDetails.InterestRateTypes.Fixed)
+		if (details.InterestRateType == MortgageDetails.InterestRateTypes.Fixed)
 		{
-			Details.InterestRates.Clear();
+			details.InterestRates.Clear();
 			StateHasChanged();
 		}
 	}
@@ -184,7 +165,7 @@
 	{
 		try
 		{
-			var jsonText = MortgageDetails.ToJsonString(Details);
+			var jsonText = MortgageDetails.ToJsonString(details);
 			await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
 			snackbar.Add("Saved to mortgage-details.json", Severity.Info);
 		}
@@ -209,7 +190,7 @@
 
 				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
 				string jsonText = await reader.ReadToEndAsync();
-				Details = MortgageDetails.FromJsonString(jsonText);
+				details = MortgageDetails.FromJsonString(jsonText);
 				snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
 			}
 			catch (Exception ex)
@@ -219,7 +200,7 @@
 		}
 	}
 
-	async Task OpenExtraPaymentsDialogAsync()
+	async Task OpenVariableInterestRatesDialogAsync()
 	{
 		var options = new DialogOptions()
 		{
@@ -228,9 +209,28 @@
 			CloseOnEscapeKey = true
 		};
 
+		var parameters = new DialogParameters<VariableInterestRates>
+		{
+			{ x => x.Details, details }
+		};
+
+		var dialogReference = await DialogService.ShowAsync<VariableInterestRates>(parameters, options);
+		await dialogReference.Result;
+		StateHasChanged();
+	}
+
+	async Task OpenExtraPaymentsDialogAsync()
+	{
+		var options = new DialogOptions()
+		{
+			MaxWidth = MaxWidth.Medium,
+			BackdropClick = false,
+			CloseOnEscapeKey = true
+		};
+
 		var parameters = new DialogParameters<ExtraPayments>
 		{
-			{ x => x.Details, Details }
+			{ x => x.Details, details }
 		};
 
 		var dialogReference = await DialogService.ShowAsync<ExtraPayments>(parameters, options);

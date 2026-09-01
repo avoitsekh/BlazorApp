@@ -6,6 +6,9 @@
 @code {
 
 	[Parameter]
+	public MortgageDetails? Details { get; set; }
+
+	[Parameter]
 	public List<Payment>? Payments { get; set; }
 
 	[Parameter]
@@ -81,21 +84,17 @@
 
 	void SetYAxisLabels()
 	{
-		var firstPayment = Payments!.FirstOrDefault(x => x.Number == 1);
-		if (firstPayment != null)
+		var loanAmount = Details!.LoanAmount;
+		options.YAxisTicks = loanAmount switch
 		{
-			var loanAmount = firstPayment.Balance + firstPayment.PrincipalAmount;
-			options.YAxisTicks = loanAmount switch
-			{
-				<= 1000 => 100,
-				<= 2000 => 250,
-				<= 10000 => 1000,
-				<= 50000 => 5000,
-				<= 100000 => 10000,
-				<= 500000 => 50000,
-				<= 1000000 => 100000,
-				_ => 250000
-			};
-		}
+			<= 1000 => 100,
+			<= 2000 => 250,
+			<= 10000 => 1000,
+			<= 50000 => 5000,
+			<= 100000 => 10000,
+			<= 500000 => 50000,
+			<= 1000000 => 100000,
+			_ => 250000
+		};
 	}
 }

@@ -6,8 +6,8 @@
 
 		<MudTable Items="Details.ExtraPayments" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
-				<MudTh>Payment From</MudTh>
-				<MudTh>Payment To</MudTh>
+				<MudTh>Begin at Payment No.</MudTh>
+				<MudTh>End at Payment No.</MudTh>
 				<MudTh>Amount</MudTh>
 				<MudTh Style="width: 60px" />
 			</HeaderContent>
@@ -21,14 +21,14 @@
 			</RowTemplate>
 		</MudTable>
 
-		<MudButton Variant="Variant.Text" StartIcon="@(addLumpSumExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="AddLumpSumClicked">Add Lump Sum</MudButton>
+		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="AddLumpSumClicked">Add New</MudButton>
 
-		<MudCollapse Expanded="addLumpSumExpanded">
+		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="Payment From" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" />
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="Payment To" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" />
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="Amount" Variant="Variant.Text" Min="1" Max="99999999" Margin="Margin.Dense" />
+					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="Begin at Payment No." Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
+					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="End at Payment No." Variant="Variant.Text" Min="payment.FromPayment" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
@@ -54,16 +54,16 @@
 
 	MudForm form;
 	ExtraPayment payment;
-	bool addLumpSumExpanded;
+	bool addNewExpanded;
 
 	protected async override Task OnInitializedAsync()
 	{
-		payment = new() { FromPayment = 1, ToPayment = 1 };
+		payment = new() { FromPayment = 1 };
 	}
 
 	void AddLumpSumClicked()
 	{
-		addLumpSumExpanded = !addLumpSumExpanded;
+		addNewExpanded = !addNewExpanded;
 	}
 
 	async Task AddClicked()
@@ -87,5 +87,42 @@
 		MudDialog.Close();
 	}
 
+	string ValidateFromPayment(int? fromPayment)
+	{
+		var result = string.Empty;
+		if (!fromPayment.HasValue)
+		{
+			result = "Value cannot be empty";
+		}
+		else if (fromPayment <= 0)
+		{
+			result = "Value cannot be 0 or negative";
+		}
+		return result;
+	}
+
+	string ValidateToPayment(int? toPayment)
+	{
+		var result = string.Empty;
+		if (toPayment <= 0)
+		{
+			result = "Value cannot be 0 or negative";
+		}
+		else if (toPayment < payment.FromPayment)
+		{
+			result = "Value cannot less than starting payment";
+		}
+		return result;
+	}
+
+	string ValidateAmount(double amount)
+	{
+		var result = string.Empty;
+		if (amount <= 0)
+		{
+			result = "Value cannot be 0 or negative";
+		}
+		return result;
+	}
 
 }

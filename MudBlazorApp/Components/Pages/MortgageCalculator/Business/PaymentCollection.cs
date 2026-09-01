@@ -40,28 +40,38 @@ public sealed class PaymentCollection : List<Payment>
 			var previousPaymentDate = paymentDate;
 			paymentDate = GetNextPaymentDate(paymentDate, i);
 
-			//double interestPaid = RoundToCents(balance * ratePerPayment);
+			//double interestAmount = RoundToCents(balance * ratePerPayment);
 			//double interestPaid = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance, AnnualRate);
-			double interestAmount = CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance);
+			double interestAmount = Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay 
+				? CalculateInterestPerPeriod(previousPaymentDate, paymentDate, balance) 
+				: RoundToCents(balance * ratePerPayment);   // todo, add interest split when rate changes for ARM (e.g. 9% → 2%)
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
 
 
 			var extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
 			balance = RoundToCents(balance - principalAmount - extraAmount);
 
-
-			if (balance < 0)
+			if (balance <= 0)
 			{
-				paymentAmount += balance;
-				principalAmount += balance;
+				extraAmount += balance;
+				if (extraAmount < 0)
+				{
+					principalAmount += extraAmount;
+					extraAmount = 0;
+				}
+				paymentAmount = interestAmount + principalAmount;
 				balance = 0;
+
+				//	Old logic without extra amount in consideration:
+				//	paymentAmount += balance;
+				//	principalAmount += balance;
+				//	balance = 0;
 
 				if (i < paymentCount)
 				{
 					year = i / Details.PaymentFrequency + 1;
 				}
 			}
-
 
 			var ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 

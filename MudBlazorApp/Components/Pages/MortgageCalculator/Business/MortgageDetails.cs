@@ -11,11 +11,11 @@ public class MortgageDetails
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;                                   // ppy - payments per year
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
-	public InterestRateAccrualMethods InterestRateAccrualMethod = InterestRateAccrualMethods.PerDay;
+	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
 	public ExtraPaymentCollection ExtraPayments = new();
 
 	public enum InterestRateTypes { Fixed, ARM }
-	public enum InterestRateAccrualMethods { PerDay, PerPayment }
+	public enum InterestAccrualMethods { PerDay, PerPayment }
 
 	#region Json
 

@@ -8,10 +8,10 @@ public static class Constants
 		{ "ARM - Adjustable Rate Mortgage", MortgageDetails.InterestRateTypes.ARM },
 	};
 
-	public static Dictionary<string, MortgageDetails.InterestRateAccrualMethods> InterestRateAccrualMethod = new()
+	public static Dictionary<string, MortgageDetails.InterestAccrualMethods> InterestRateAccrualMethod = new()
 	{
-		{ "Per Day", MortgageDetails.InterestRateAccrualMethods.PerDay },
-		{ "Per Payment", MortgageDetails.InterestRateAccrualMethods.PerPayment },
+		{ "Per Day", MortgageDetails.InterestAccrualMethods.PerDay },
+		{ "Per Payment", MortgageDetails.InterestAccrualMethods.PerPayment },
 	};
 
 	public static Dictionary<string, int> CompoundPeriod = new()
