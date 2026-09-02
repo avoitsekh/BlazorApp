@@ -9,9 +9,7 @@
 	public PaymentCollection? Payments { get; set; }
 
 	[Parameter]
-	public PaymentCollection? PaymentsWithNoExtraPayments { get; set; }
-
-	bool hasPaymentsWithNoExtraPayments => PaymentsWithNoExtraPayments != null && PaymentsWithNoExtraPayments.Count > 0;
+	public PaymentCollection? PaymentsNoExtras { get; set; }
 
 	LineChartOptions options = new()
 	{
@@ -51,12 +49,12 @@
 			TooltipTitleFormat = "{{SERIES_NAME}}" }
 		);
 
-		if (hasPaymentsWithNoExtraPayments)
+		if (PaymentsNoExtras.HasData())
 		{
 			series.Add(new ChartSeries<double>()
 			{
 				Name = "Without extra payments",
-				Data = PaymentsWithNoExtraPayments!.Select(x => x.Balance).ToArray(),
+				Data = PaymentsNoExtras!.Select(x => x.Balance).ToArray(),
 				TooltipTitleFormat = "{{SERIES_NAME}}"
 			});
 		}
@@ -68,7 +66,7 @@
 
 	void SetXAxisLabels()
 	{
-		var payments = hasPaymentsWithNoExtraPayments ? PaymentsWithNoExtraPayments : Payments;
+		var payments = PaymentsNoExtras.HasData() ? PaymentsNoExtras : Payments;
 		var amortizationPeriodInYears = payments!.Max(x => x.Year);
 		var denominator = amortizationPeriodInYears switch
 		{

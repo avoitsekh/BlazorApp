@@ -4,6 +4,8 @@ public sealed class PaymentCollection : List<Payment>
 {
 	public readonly MortgageDetails Details;
 
+	public bool HasExtraPayments => this.Any(x => x.ExtraAmount > 0D);
+
 	public PaymentCollection()
 	{
 	}
@@ -14,7 +16,7 @@ public sealed class PaymentCollection : List<Payment>
 		Details = settings;
 	}
 
-	public static PaymentCollection Generate(MortgageDetails settings, bool countExtraPayments = true)
+	public static PaymentCollection Create(MortgageDetails settings, bool countExtraPayments = true)
 	{
 		var result = new PaymentCollection(settings);
 		result.CalculateAmortizationSchedule(countExtraPayments);
@@ -214,28 +216,14 @@ public sealed class PaymentCollection : List<Payment>
 		return new DateTime(date.Year, date.Month, Math.Min(day, DateTime.DaysInMonth(date.Year, date.Month)));
 	}
 
-	public (double InterestAmount, double PrincipalAmount, double ExtraAmount, double PaymentAmount, double RemainingBalance, DateTime? LastPaymentDate, int Payments) GetStatsForYear(int year)
+	public Payment LastPaymentForYear(int year)
 	{
-		(double InterestAmount, double PrincipalAmount, double ExtraAmount, double PaymentAmount, double RemainingBalance, DateTime? LastPaymentDate, int Payments) result = new();
-
-		if (year > 0)
-		{
-			var lastPayment = this.FirstOrDefault(x => x.Year == year);
-			if (lastPayment != null)
-			{
-				int lastPaymentNumber = lastPayment.Number;
-				result.LastPaymentDate = lastPayment.PaymentDate;
-				result.RemainingBalance = lastPayment.Balance;
-
-				var paymentsForPeriod = this.Where(x => x.Number <= lastPaymentNumber).ToList();
-				result.InterestAmount = RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
-				result.PrincipalAmount = RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
-				result.ExtraAmount = RoundToCents(paymentsForPeriod.Sum(x => x.ExtraAmount));
-				result.PaymentAmount = RoundToCents(paymentsForPeriod.Sum(x => x.PaymentAmount));
-				result.Payments = paymentsForPeriod.Count;
-			}
-		}
-
-		return result;
+		return this.FirstOrDefault(x => x.Year == year);
 	}
+
+	public List<Payment> GetPaymentsForPeriod(int fromPayment, int toPayment)
+	{
+		return this.Where(x => x.Number >= fromPayment && x.Number <= toPayment).ToList();
+	}
+
 }

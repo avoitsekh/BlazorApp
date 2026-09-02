@@ -5,45 +5,62 @@
 			<MudNumericField T="int?" @bind-Value="BalanceAtYear" @bind-Value:after="Calculate" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@maxYear" Style="margin-bottom: 15px;" />
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Payment Date: </MudText>
+				<MudText Align="Align.Left">Last Payment Date</MudText>
 				<MudText Align="Align.Right">@stats.LastPaymentDate?.ToString("yyyy-MM-dd")</MudText>
+			</MudStack>
+
+			<MudStack Justify="Justify.SpaceBetween" Row>
+				<MudText Align="Align.Left">Number Of Payments</MudText>
+				<MudText Align="Align.Right">@stats.NumberOfPayments</MudText>
 			</MudStack>
 			
 
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Interest Paid: </MudText>
-				<MudText Align="Align.Right">@stats.InterestAmount.ToString("N2")</MudText>
+				<MudText Align="Align.Left">Interest Paid</MudText>
+				<MudText Align="Align.Right">@stats.InterestPaid.ToString("N2")</MudText>
 			</MudStack>
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Principal Paid: </MudText>
-				<MudText Align="Align.Right">@stats.PrincipalAmount.ToString("N2")</MudText>
+				<MudText Align="Align.Left">Principal Paid</MudText>
+				<MudText Align="Align.Right">@stats.PrincipalPaid.ToString("N2")</MudText>
 			</MudStack>
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Extra Paid: </MudText>
-				<MudText Align="Align.Right">@stats.ExtraAmount.ToString("N2")</MudText>
+				<MudText Align="Align.Left">Extra Paid</MudText>
+				<MudText Align="Align.Right">@stats.ExtraPaid.ToString("N2")</MudText>
 			</MudStack>
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Total Paid: </MudText>
-				<MudText Align="Align.Right">@stats.PaymentAmount.ToString("N2")</MudText>
+				<MudText Align="Align.Left">Total Paid</MudText>
+				<MudText Align="Align.Right">@stats.TotalPaid.ToString("N2")</MudText>
 			</MudStack>
 
 			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Interest Savings: </MudText>
-				<MudText Align="Align.Right">@InterestSavings.ToString("N2")</MudText>
+				<MudText Align="Align.Left">Interest Savings</MudText>
+				<MudText Align="Align.Right">@stats.InterestSavings.ToString("N2")</MudText>
 			</MudStack>
 
-			<MudStack Justify="Justify.SpaceBetween" Row>
-				<MudText Align="Align.Left">Ammortization Offset: </MudText>
-				<MudText Align="Align.Right">@AmmortizationEncreaseDecrease.ToString("+#'%';-#'%';0'%'")</MudText>
-			</MudStack>
 
 			<MudStack Justify="Justify.SpaceBetween" Row >
-				<MudText Align="Align.Left" Style="font-weight: 500;">Remaining Balance: </MudText>
+				<MudText Align="Align.Left" Style="font-weight: 500;">Remaining Balance</MudText>
 				<MudText Align="Align.Right">@stats.RemainingBalance.ToString("N2")</MudText>
+			</MudStack>
+
+			
+			<MudStack Justify="Justify.SpaceBetween" Row>
+				<MudText Align="Align.Left">Ammortization Reduction</MudText>
+				<MudText Align="Align.Right">@stats.AmmortizationOffset.ToString("+#'%';-#'%';0'%'")</MudText>
+			</MudStack>
+
+			<MudStack Justify="Justify.SpaceBetween" Row>
+				<MudText Align="Align.Left">Years to pay-off</MudText>
+				<MudText Align="Align.Right">@stats.YearsToPayOff</MudText>
+			</MudStack>
+
+			<MudStack Justify="Justify.SpaceBetween" Row>
+				<MudText Align="Align.Left">Effective Annual Rate</MudText>
+				<MudText Align="Align.Right">@stats.EffectiveAnnualRate.ToString("0.##'%'")</MudText>
 			</MudStack>
 
 		</MudStack>
@@ -60,26 +77,12 @@
 	public PaymentCollection? Payments { get; set; }
 
 	[Parameter]
-	public PaymentCollection? PaymentsWithNoExtraPayments { get; set; }
-
-	bool hasPaymentsWithNoExtraPayments => PaymentsWithNoExtraPayments != null && PaymentsWithNoExtraPayments.Count > 0;
+	public PaymentCollection? PaymentsNoExtras { get; set; }
 
 
 	int? BalanceAtYear = 5;
-	double InterestSavings = 0D;
-
-	(double InterestAmount, double PrincipalAmount, double ExtraAmount, double PaymentAmount, double RemainingBalance, DateTime? LastPaymentDate, int Payments) stats = new();
-
-
-	// DateTime PaymentDate;
-	// double InterestPaid;
-	// double PrincipalPaid;
-	// double TotalPaid;
-	// double RemainingBalance;
-	double EffectiveAnnualRate;
-	double AmmortizationEncreaseDecrease;
-
 	int maxYear;
+	PaymentStatistics stats = new();
 	string[] labels = { "Principal Paid", "Interest Paid", "Remaining Balance" };
 	double[] data = { 0 };
 
@@ -93,36 +96,28 @@
 	protected override void OnParametersSet()
 	{
 		base.OnParametersSet();
+		stats.Payments = Payments;
+		stats.PaymentsNoExtras = PaymentsNoExtras;
 		Calculate();
 	}
 
 	void Calculate()
 	{
-		if (Payments != null && BalanceAtYear.HasValue)
+		if (Payments.HasData())
 		{
-			stats = Payments.GetStatsForYear(BalanceAtYear.Value);
+			stats.CalculateSummary();
 
-			if (hasPaymentsWithNoExtraPayments)
+			if (BalanceAtYear.HasValue)
 			{
-				var statsWithNoExtraPayments = PaymentsWithNoExtraPayments.GetStatsForYear(BalanceAtYear.Value);
-				InterestSavings = statsWithNoExtraPayments.InterestAmount - stats.InterestAmount;
-				AmmortizationEncreaseDecrease = (((double)Payments.Count / PaymentsWithNoExtraPayments.Count) - 1) * 100;
-			}
-			else
-			{
-				InterestSavings = 0D;
-				AmmortizationEncreaseDecrease = 0D;
-			}
+				stats.CalculateForYear(BalanceAtYear.Value);
+				data = [stats.PrincipalPaid, stats.InterestPaid, stats.RemainingBalance];
 
-			data = [stats.PrincipalAmount, stats.InterestAmount, stats.RemainingBalance];
-			maxYear = Payments?.Max(x => x.Year) ?? 1;
-			if (BalanceAtYear > maxYear)
-			{
-				BalanceAtYear = maxYear;
+				maxYear = Payments?.Max(x => x.Year) ?? 1;
+				if (BalanceAtYear > maxYear)
+				{
+					BalanceAtYear = maxYear;
+				}
 			}
-
-			
-
 		}
 	}
 

@@ -24,7 +24,7 @@
 									<MudMenuItem Label="Variable Rate with Extra Payments" />
 								</MudMenu>
 								<MudDivider />
-								<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.UploadFile" IconColor="Color.Primary" />
+								<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" IconColor="Color.Primary" />
 								<MudMenuItem Label="Save" OnClick="FileSaveClicked" Icon="@Icons.Material.Filled.Save" IconColor="Color.Primary" />
 							</MudMenu>
 						</CustomContent>
@@ -75,14 +75,14 @@
 
 	</MudItem>
 	
-	@if (hasPayments)
+	@if (payments.HasData())
 	{
 		<MudItem xs="12" sm="12" md="8">
 				@* <MudPaper Class="pa-6 ma-2" Height="@mortgageInfoHeight"> *@
 				<MudPaper Class="pa-6 ma-2">
 					<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 						<MudText Typo="Typo.h5" >Balance Over Time</MudText>
-						<BalanceOverTime Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
+						<BalanceOverTime Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 					</MudStack>
 				</MudPaper>
 		</MudItem>
@@ -90,14 +90,14 @@
 
 </MudGrid>
 
-@if (hasPayments)
+@if (payments.HasData())
 {
 	<MudGrid Spacing="0">
 		<MudItem xs="12">
 			<MudPaper Class="pa-6 ma-2">
 				<MudStack Row="false" Breakpoint="Breakpoint.None" Spacing="4">
 					<MudText Typo="Typo.h5">Statistics</MudText>
-					<Statistics Payments="payments" PaymentsWithNoExtraPayments="paymentsWithNoExtraPayments" />
+					<Statistics Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 				</MudStack>
 			</MudPaper>
 		</MudItem>
@@ -131,10 +131,9 @@
 
 	MudForm? form;
 	PaymentCollection? payments;
-	PaymentCollection? paymentsWithNoExtraPayments;
+	PaymentCollection? paymentsNoExtras;
 	MortgageDetails details = new MortgageDetails();
 
-	bool hasPayments => payments?.Count > 0;
 	bool hasAdditionalInterestRates => details.InterestRates.Count > 1;
 	bool isVariableRateMortgage => details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
@@ -148,8 +147,8 @@
 
 		if (form.IsValid)
 		{
-			payments = PaymentCollection.Generate(details);
-			paymentsWithNoExtraPayments = payments.Any(x => x.ExtraAmount > 0D) ? PaymentCollection.Generate(details, countExtraPayments: false) : [];
+			payments = PaymentCollection.Create(details);
+			paymentsNoExtras = payments.HasExtraPayments ? PaymentCollection.Create(details, countExtraPayments: false) : null;
 		}
 	}
 
