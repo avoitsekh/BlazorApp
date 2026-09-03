@@ -14,12 +14,12 @@ public class PaymentStatistics()
 	public int NumberOfPayments;
 	public double InterestSavings;
 
-	public double YearsToPayOff;
-	public double AmmortizationOffset;
-	public double EffectiveAnnualRate;
 	public double PaymentAmount;
 	public double InterestAmount;
 	public double PrincipalAmount;
+	public double EffectiveAnnualRate;
+	public double YearsToPayOff;
+	public double AmmortizationOffset;
 
 	MortgageDetails Details => Payments.Details;
 

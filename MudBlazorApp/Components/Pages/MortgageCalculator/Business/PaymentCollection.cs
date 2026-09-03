@@ -114,9 +114,10 @@ public sealed class PaymentCollection : List<Payment>
 
 	double CalculateInterest(DateTime from, DateTime to, double balance)
 	{
-		return Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay
+		var result = Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay
 				? CalculateInterestForPeriod(from, to, balance)
 				: CalculateInterestForPayment(from, to, balance);
+		return RoundToCents(result);
 	}
 
 	double CalculateInterestForPayment(DateTime from, DateTime to, double balance)
@@ -134,7 +135,7 @@ public sealed class PaymentCollection : List<Payment>
 			result = CalculateInterestForPeriod(from, to, balance);
 		}
 
-		return RoundToCents(result);
+		return result;
 	}
 
 	double CalculateInterestForPeriod(DateTime from, DateTime to, double balance)
