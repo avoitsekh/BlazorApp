@@ -1,14 +1,12 @@
-﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+﻿using static MudBlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
+
+namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class PaymentCollection : List<Payment>
 {
 	public readonly MortgageDetails Details;
 
 	public bool HasExtraPayments => this.Any(x => x.ExtraAmount > 0D);
-
-	public PaymentCollection()
-	{
-	}
 
 	PaymentCollection(MortgageDetails settings)
 		: base(settings.PaymentFrequency * settings.AmortizationPeriodInYears)
@@ -38,7 +36,6 @@ public sealed class PaymentCollection : List<Payment>
 			DateTime previousPaymentDate = paymentDate;
 			paymentDate = GetNextPaymentDate(paymentDate, i);
 
-			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 
 			double interestAmount = CalculateInterest(previousPaymentDate, paymentDate, balance);
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
@@ -58,13 +55,21 @@ public sealed class PaymentCollection : List<Payment>
 				isLastPayment = true;
 			}
 
+			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
+			string ratesForPeriodFormatted = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x)));
+
+			string accruaPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
+				? string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1))
+				: $"{ratesForPeriodFormatted} ÷ {Details.PaymentFrequency}";
+
+
 			Add(new()
 			{
 				Number = i,
 				PaymentDate = paymentDate,
 				Year = i % Details.PaymentFrequency == 0 || isLastPayment ? year++ : null,
-				IterestRate = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x))),
-				InterestAccrualPeriod = string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1)),
+				IterestRate = ratesForPeriodFormatted,
+				InterestAccrualPeriod = accruaPeriod,
 				InterestAmount = interestAmount,
 				PrincipalAmount = principalAmount,
 				ExtraAmount = extraAmount,

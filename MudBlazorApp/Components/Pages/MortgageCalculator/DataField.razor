@@ -1,0 +1,18 @@
+﻿@typeparam T
+
+<MudField Label="@Label" Underline="false" Margin="Margin.Dense">
+	@string.Format("{0:" + Format + "}", Value)
+</MudField>
+
+@code {
+
+	[Parameter]
+	public string? Label { get; set; }
+
+	[Parameter]
+	public T? Value { get; set; }
+
+	[Parameter]
+	public string? Format { get; set; }
+
+}

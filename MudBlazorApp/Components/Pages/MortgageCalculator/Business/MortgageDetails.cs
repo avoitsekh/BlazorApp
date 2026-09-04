@@ -17,7 +17,7 @@ public class MortgageDetails
 	public enum InterestRateTypes { Fixed, ARM }
 	public enum InterestAccrualMethods { PerDay, PerPayment }
 
-	#region Json
+	#region JSON Import/Export
 
 	public static string ToJsonString(MortgageDetails details)
 	{

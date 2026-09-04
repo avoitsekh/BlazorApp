@@ -3,17 +3,22 @@
 @using System.Diagnostics
 @using System.Text
 
+@implements IBrowserViewportObserver
+@implements IAsyncDisposable
+
+@inject IBrowserViewportService BrowserViewportService
+
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 @inject ISnackbar snackbar
 
 
-@* <PageHeader Title="Mortgage Calculator" /> *@
+<PageTitle>Mortgage Calculator</PageTitle>
 
 
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
-	<MudPaper id="maincont" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
-		<MudStack id="mainstack">
+	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
+		<MudStack id="main-stack">
 
 			<MudGrid Spacing="3">
 				<MudItem xs="12" sm="4">
@@ -43,7 +48,7 @@
 
 
 							<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
-								<MudGrid>
+								<MudGrid Spacing="@adaptiveSpacing">
 									<MudItem xs="6" sm="12" md="6">
 										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
 										Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
@@ -59,14 +64,10 @@
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
-										<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="details.AdvanceDate" Mask="@(new DateMask("yyyy-MM-dd"))" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
-										AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+										<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="details.AdvanceDate" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
+											AdornmentColor="Color.Primary" Margin="Margin.Dense" />
 									</MudItem>
-@* 								</MudGrid>
-							</MudStack>
 
-							<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
-								<MudGrid> *@
 
 									<MudItem xs="6" sm="12" md="6">
 										<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
@@ -114,7 +115,7 @@
 								<MudButton Variant="Variant.Filled" OnClick="CalculateButtonClicked" Size="Size.Large" Color="Color.Primary" Style="width: 200px">Calculate</MudButton>
 							</MudStack>
 
-							Execute time: @ms
+							Execute time: @___ms
 
 						</MudForm>
 
@@ -125,28 +126,29 @@
 					<MudPaper Class="pa-6" Height="100%">
 						<MudStack Breakpoint="Breakpoint.None" Spacing="4">
 							<MudText Typo="Typo.h5">Summary</MudText>
-							<MudGrid Spacing="0">
+
+ 							<MudGrid Spacing="0">
 								<MudItem xs="6" sm="4">
 									<MudStack Spacing="0">
-										<NameValuePair T="double" Name="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
-										<NameValuePair T="double" Name="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
+										<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
+										<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
 									</MudStack>
 								</MudItem>
 								<MudItem xs="6" sm="4">
 									<MudStack Spacing="0">
-										<NameValuePair T="double" Name="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
-										<NameValuePair T="double" Name="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
+										<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
+										<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
 									</MudStack>
 								</MudItem>
 								<MudItem xs="6" sm="4">
 									<MudStack Spacing="0">
-										<NameValuePair T="double" Name="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
-										<NameValuePair T="double" Name="Years to pay-off" Value="@stats.YearsToPayOff" />
+										<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
+										<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
 									</MudStack>
 								</MudItem>
 							</MudGrid>
 
-							<BalanceOverTime Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
+							<BalanceLineChart Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 
 
 						</MudStack>
@@ -157,19 +159,19 @@
 			</MudGrid>
 
 
-@* 			<MudPaper Class="pa-6">
+			<MudPaper Class="pa-6">
 				<MudStack Breakpoint="Breakpoint.None" Spacing="4">
 					<MudText Typo="Typo.h5">Summary</MudText>
 					<Statistics Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 				</MudStack>
 			</MudPaper>
-*@
+
 
 
 			<MudPaper Class="pa-6">
 				<MudStack Breakpoint="Breakpoint.None" Spacing="4">
 					<MudText Typo="Typo.h5">Amortization Schedule</MudText>
-					<AmortizationSchedule Payments="payments"></AmortizationSchedule>
+					<PaymentsTable Payments="payments"></PaymentsTable>
 				</MudStack>
 			</MudPaper> 
 
@@ -209,7 +211,9 @@
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
 
-	double ms = 0;
+	int adaptiveSpacing = 6;
+
+	double ___ms = 0;
 
 	async Task CalculateButtonClicked()
 	{
@@ -217,12 +221,7 @@
 
 		if (form.IsValid)
 		{
-			// var aaa = new Stopwatch();
-			// aaa.Start();
-
 			long startTime = Stopwatch.GetTimestamp();
-			// Do Something...
-
 
 			payments = PaymentCollection.Create(details);
 			paymentsNoExtras = payments.HasExtraPayments ? PaymentCollection.Create(details, countExtraPayments: false) : null;
@@ -231,11 +230,8 @@
 			stats.PaymentsNoExtras = paymentsNoExtras;
 			stats.CalculateSummary();
 
-			// aaa.Stop();
-			// ms = aaa.ElapsedMilliseconds;
-
 			TimeSpan elapsedTime = Stopwatch.GetElapsedTime(startTime);
-			ms = elapsedTime.TotalMilliseconds;
+			___ms = elapsedTime.TotalMilliseconds;
 		}
 	}
 
@@ -296,12 +292,12 @@
 			CloseOnEscapeKey = true
 		};
 
-		var parameters = new DialogParameters<VariableInterestRates>
+		var parameters = new DialogParameters<VariableInterestRatesDialog>
 		{
 			{ x => x.Details, details }
 		};
 
-		var dialogReference = await DialogService.ShowAsync<VariableInterestRates>(parameters, options);
+		var dialogReference = await DialogService.ShowAsync<VariableInterestRatesDialog>(parameters, options);
 		await dialogReference.Result;
 		StateHasChanged();
 	}
@@ -315,13 +311,37 @@
 			CloseOnEscapeKey = true
 		};
 
-		var parameters = new DialogParameters<ExtraPayments>
+		var parameters = new DialogParameters<ExtraPaymentsDialog>
 		{
 			{ x => x.Details, details }
 		};
 
-		var dialogReference = await DialogService.ShowAsync<ExtraPayments>(parameters, options);
+		var dialogReference = await DialogService.ShowAsync<ExtraPaymentsDialog>(parameters, options);
 		await dialogReference.Result;
 		StateHasChanged();
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+		}
+
+		await base.OnAfterRenderAsync(firstRender);
+	}
+
+	Guid IBrowserViewportObserver.Id => Guid.NewGuid();
+
+	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+	{
+		bool isSmallScreen = browserViewportEventArgs.Breakpoint == Breakpoint.Sm;
+		adaptiveSpacing = isSmallScreen ? 3 : 6;
+		return InvokeAsync(StateHasChanged);
+	}
+
+	async ValueTask IAsyncDisposable.DisposeAsync()
+	{
+		await BrowserViewportService.UnsubscribeAsync(this);
 	}
 }

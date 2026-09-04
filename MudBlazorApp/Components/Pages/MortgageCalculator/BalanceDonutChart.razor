@@ -1,0 +1,31 @@
+﻿<div style="position: relative;">
+	<MudOverlay Visible="true" Absolute="true" />
+	<MudChart T="double" ChartType="ChartType.Donut" ChartSeries="@([data])" ChartLabels="@labels" LegendPosition="Position.Right" ChartOptions="@options" Width="180px" Height="100%" Style="margin: 0 auto;" />
+</div>
+
+@code {
+
+	[Parameter]
+	public PaymentStatistics? Statistics { get; set; }
+
+	string[] labels = [];
+	double[] data = [];
+
+	DonutChartOptions options = new()
+	{
+		FillOpacity = .75D,
+		ChartPalette = [Colors.Blue.Default, Colors.DeepOrange.Default, Colors.Gray.Lighten1],
+		ShowToolTips = false,
+	};
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+
+		if (Statistics != null)
+		{
+			labels = ["Principal" + (Statistics.ExtraPaid > 0 ? " + Extra" : string.Empty) + " Paid", "Interest Paid", "Remaining Balance"];
+			data = [Statistics.PrincipalPaid + Statistics.ExtraPaid, Statistics.InterestPaid, Statistics.RemainingBalance];
+		}
+	}
+}

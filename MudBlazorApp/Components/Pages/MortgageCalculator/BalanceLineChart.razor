@@ -1,7 +1,15 @@
 ﻿@using MudBlazor.Charts
 
-<MudChart id="balchart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="change-only-this"
-		  ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="pointer-events: none; padding: 0px 20px 0px 20px;" />
+@implements IBrowserViewportObserver
+@implements IAsyncDisposable
+
+@inject IBrowserViewportService BrowserViewportService
+
+<div style="position: relative;">
+	<MudOverlay Visible="true" Absolute="true" />
+	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="change-only-this"
+		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@adaptivePadding" />
+</div>
 
 <style>
 	.change-only-this .mud-chart-legend {
@@ -46,12 +54,13 @@
 
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
+	string adaptivePadding = "padding: 0px 20px 0px 20px;";
 
 	protected override void OnParametersSet()
 	{
 		base.OnParametersSet();
 
-		if (Payments?.Count > 0)
+		if (Payments.HasData())
 		{
 			SetGraphValues();
 			SetXAxisLabels();
@@ -111,5 +120,29 @@
 			<= 1000000 => 100000,
 			_ => 250000
 		};
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+		}
+
+		await base.OnAfterRenderAsync(firstRender);
+	}
+
+	Guid IBrowserViewportObserver.Id => Guid.NewGuid();
+
+	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
+	{
+		bool isSmallOrExtraSmallScreen = browserViewportEventArgs.Breakpoint == Breakpoint.Sm || browserViewportEventArgs.Breakpoint == Breakpoint.Xs;
+		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 0px;" : "padding: 0px 20px 0px 20px;";
+		return InvokeAsync(StateHasChanged);
+	}
+
+	async ValueTask IAsyncDisposable.DisposeAsync()
+	{
+		await BrowserViewportService.UnsubscribeAsync(this);
 	}
 }
