@@ -1,7 +1,26 @@
 ﻿@using MudBlazor.Charts
 
-<MudChart ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels"
-		  ChartOptions="@options" Width="100%" Height="100%" MatchBoundsToSize Style="pointer-events: none;" />
+<MudChart id="balchart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="change-only-this"
+		  ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="pointer-events: none; padding: 0px 20px 0px 20px;" />
+
+<style>
+	.change-only-this .mud-chart-legend {
+		height: 8px !important;
+		margin-bottom: -10px;
+	}
+
+	.change-only-this .mud-chart-legend-item {
+		position: relative !important;
+		bottom: 26px !important;
+	}
+
+	.change-only-this .mud-chart-legend-marker {
+		padding-left: 10px !important;
+		position: relative !important;
+		top: 2px !important;
+		right: 2px !important;
+	}
+</style>
 
 @code {
 
@@ -17,8 +36,9 @@
 		YAxisTitle = "",
 		YAxisFormat = "N0",
 		XAxisLabelRotation = 45,
-		// ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten2],
-		ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
+		// ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten1],
+		// ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
+		ChartPalette = [Colors.Blue.Default, Colors.Cyan.Default],
 		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
 		ShowLegend = false,
 		ShowToolTips = false,
@@ -61,7 +81,7 @@
 
 		options.ShowLegend = series.Count > 1;
 		options.SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>(series.Count);
-		series.ForEach(x => options.SeriesDisplayOverrides.Add(x, new() { LineDisplayType = LineDisplayType.Area }));
+		series.ForEach(x => options.SeriesDisplayOverrides.Add(x, new() { LineDisplayType = LineDisplayType.Area, FillOpacity = 0.15 }));
 	}
 
 	void SetXAxisLabels()

@@ -1,22 +1,4 @@
-﻿@* <MudDataGrid @ref="elementGrid" T="Payment" Items="@Payments" ReadOnly="true" Elevation="0"
-			 EditMode="DataGridEditMode.Cell" StartedEditingItem="@StartedEditingItem" CanceledEditingItem="@CanceledEditingItem" CommittedItemChanges="@CommittedItemChanges"
-			 Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.Manual" SortMode="SortMode.None" Groupable="false" Hover Striped Outlined RowStyleFunc="_rowStyleFunc" ColumnResizeMode="ResizeMode.Container">
-	<Columns>
-		<PropertyColumn Property="x => x.Number" Title="No." Editable="false" />
-		<PropertyColumn Property="x => x.PaymentDate" Title="Payment Date" Editable="false" Format="yyyy-MM-dd" />
-		<PropertyColumn Property="x => x.Year" Editable="false" />
-		<PropertyColumn Property="x => x.PaymentPeriodInterestRate" Title="Interest" Editable="false" />
-		<PropertyColumn Property="x => x.InterestAccrualPeriod" Title="Interest Accrual Period" Editable="false" />
-		<PropertyColumn Property="x => x.InterestAmount" Title="Interest Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
-		<PropertyColumn Property="x => x.PrincipalAmount" Title="Principal Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
-		<PropertyColumn Property="x => x.ExtraAmount" Title="Extra Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
-		<PropertyColumn Property="x => x.PaymentAmount" Title="Payment Amount" Editable="false" Format="N2" CellStyle="text-align: right" />
-		<PropertyColumn Property="x => x.Balance" Title="Remaining Balance" Editable="false" Format="N2" CellStyle="text-align: right" />
-	</Columns>
-</MudDataGrid>
- *@
-
-<MudTable Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="mud-table-small-cell" Virtualize="true" FixedHeader Height="400px">
+﻿<MudTable Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="mud-table-small-cell" Virtualize="true" FixedHeader Height="400px">
 	<HeaderContent>
 		<MudTh>No.</MudTh>
 		<MudTh>Payment Date</MudTh>
@@ -45,7 +27,6 @@
 
 <style>
 	.mud-table-small-cell {
-		/* padding: 12px !important; */
 		padding: 4px 12px 4px 12px !important
 	}
 </style>
@@ -56,60 +37,4 @@
 	[Parameter]
 	public List<Payment>? Payments { get; set; }
 
-
-	// events
-	void StartedEditingItem(Payment item)
-	{
-		// _events.Insert(0, $"Event = StartedEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
-	}
-
-	void CanceledEditingItem(Payment item)
-	{
-		// update code for backing data here if needed
-		// _events.Insert(0, $"Event = CanceledEditingItem, Data = {System.Text.Json.JsonSerializer.Serialize(item)}");
-	}
-
-	Task<DataGridEditFormAction> CommittedItemChanges(Payment item)
-	{
-		// for (int i = item.Number; i < payments.Count; i++)
-		// {
-		// 	payments[i].Balance = payments[i].Balance + 100;
-		// }
-		//_elements.Add(new() { Name = "XXX", Number = 511, InterestRate = 55511 });
-
-		return Task.FromResult(DataGridEditFormAction.Close);
-	}
-
-	Func<Payment, int, string> _rowStyleFunc => (x, i) =>
-	{
-		if (x.Year.HasValue)
-		{
-			//return "background: rgb(33, 150, 243, 0.5); font-style: italic;";
-			return "font-weight: bold !important;";
-		}
-
-		return "";
-	};
-
-	private Func<Payment, string> _cellStyleFunc => x =>
-	{
-		string style = "";
-
-		if (x.Number == 1)
-			style += "background-color:#8CED8C";
-
-		else if (x.Number == 2)
-			style += "background-color:#E5BDE5";
-
-		else if (x.Number == 3)
-			style += "background-color:#EACE5D";
-
-		else if (x.Number == 4)
-			style += "background-color:#F1F165";
-
-		// if (x.Molar > 5)
-		//     style += ";font-weight:bold";
-
-		return style;
-	};
 }

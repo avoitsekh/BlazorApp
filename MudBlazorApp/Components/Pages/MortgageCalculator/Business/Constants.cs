@@ -5,7 +5,7 @@ public static class Constants
 	public static Dictionary<string, MortgageDetails.InterestRateTypes> InterestRateType = new()
 	{
 		{ "Fixed", MortgageDetails.InterestRateTypes.Fixed },
-		{ "ARM - Adjustable Rate Mortgage", MortgageDetails.InterestRateTypes.ARM },
+		{ "ARM", MortgageDetails.InterestRateTypes.ARM },
 	};
 
 	public static Dictionary<string, MortgageDetails.InterestAccrualMethods> InterestRateAccrualMethod = new()
