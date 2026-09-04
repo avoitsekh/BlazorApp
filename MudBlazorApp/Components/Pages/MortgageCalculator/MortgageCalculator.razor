@@ -7,7 +7,6 @@
 @implements IAsyncDisposable
 
 @inject IBrowserViewportService BrowserViewportService
-
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 @inject ISnackbar snackbar
@@ -56,7 +55,8 @@
 
 									<MudItem xs="6" sm="12" md="6">
 										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
-										Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Menu" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
+											Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
+										@* @Icons.Material.Filled.Menu *@
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
@@ -64,7 +64,7 @@
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
-										<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="details.AdvanceDate" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
+										<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
 											AdornmentColor="Color.Primary" Margin="Margin.Dense" />
 									</MudItem>
 
@@ -110,7 +110,6 @@
 
 
 							<MudStack AlignItems="AlignItems.Center" Spacing="2">
-								@* <MudDivider Class="pt-20" /> *@
 								<MudButton OnClick="OpenExtraPaymentsDialogAsync" Size="Size.Large" Style="width: 200px">Extra Payments</MudButton>
 								<MudButton Variant="Variant.Filled" OnClick="CalculateButtonClicked" Size="Size.Large" Color="Color.Primary" Style="width: 200px">Calculate</MudButton>
 							</MudStack>
@@ -125,31 +124,113 @@
 				<MudItem xs="12" sm="8">
 					<MudPaper Class="pa-6" Height="100%">
 						<MudStack Breakpoint="Breakpoint.None" Spacing="4">
-							<MudText Typo="Typo.h5">Summary</MudText>
 
- 							<MudGrid Spacing="0">
-								<MudItem xs="6" sm="4">
-									<MudStack Spacing="0">
-										<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
-										<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
-									</MudStack>
-								</MudItem>
-								<MudItem xs="6" sm="4">
-									<MudStack Spacing="0">
-										<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
-										<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
-									</MudStack>
-								</MudItem>
-								<MudItem xs="6" sm="4">
-									<MudStack Spacing="0">
-										<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
-										<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
-									</MudStack>
-								</MudItem>
-							</MudGrid>
 
-							<BalanceLineChart Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 
+							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+								<MudText Typo="Typo.h5">Summary</MudText>
+								<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="ma-n3">
+									<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(summaryPage == 0)" OnClick="@(() => summaryPage--)" />
+									<MudText Typo="Typo.body2">@(summaryPage + 1) / 2</MudText>
+									<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(summaryPage == 1)" OnClick="@(() => summaryPage++)" />
+								</MudStack>
+							</MudStack>
+
+							<MudCarousel Class="mud-width-full" Style="height:400px;" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
+								<MudCarouselItem Transition="Transition.Slide">
+									<MudGrid Spacing="0">
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
+										</MudItem>
+									</MudGrid>
+									@* <MudGrid Spacing="0">
+										<MudItem xs="6" sm="4">
+											<MudStack Spacing="0">
+												<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
+												<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
+											</MudStack>
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<MudStack Spacing="0">
+												<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
+												<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
+											</MudStack>
+										</MudItem>
+										<MudItem xs="6" sm="4">
+											<MudStack Spacing="0">
+												<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
+												<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
+											</MudStack>
+										</MudItem>
+									</MudGrid> *@
+									<BalanceLineChart Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
+								</MudCarouselItem>
+								<MudCarouselItem Transition="Transition.Slide">
+									
+									<MudStack Spacing="8">
+
+										<MudGrid Spacing="0">
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="DateTime" Label="Last Payment Date" Value="@stats.LastPaymentDate" Format="yyyy-MM-dd" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Interest Paid" Value="@stats.InterestPaid" Format="N2" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Extra Paid" Value="@stats.ExtraPaid" Format="N2" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Interest Savings" Value="@stats.InterestSavings" Format="N2" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Number Of Payments" Value="@stats.NumberOfPayments" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Principal Paid" Value="@stats.PrincipalPaid" Format="N2" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Total Paid" Value="@stats.TotalPaid" Format="N2" />
+											</MudItem>
+											<MudItem xs="6" sm="4" md="3">
+												<DataField T="double" Label="Remaining Balance" Value="@stats.RemainingBalance" Format="N2" />
+											</MudItem>
+										</MudGrid>
+
+										@* <MudGrid Spacing="0" Justify="Justify.FlexEnd"> *@
+										<MudGrid Justify="Justify.Center" Class="flex-grow-1 align-center">
+											@* <MudItem xs="12" md="2" Class="align-content-center justify-center" Style="background-color: greenyellow"> *@
+											@* <MudItem xs="12" md="2" Class="d-flex justify-end">
+												<MudNumericField T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" Style="width: 60px" />
+											</MudItem>  *@
+											<MudItem xs="12" md="4" Class="d-flex justify-end pe-3" Style="background-color: greenyellow">
+												<MudButton Variant=" Variant.Filled" StartIcon="@Icons.Material.Outlined.EditNote"
+														   Size="Size.Small"> View History</MudButton>
+											</MudItem>
+												@* Style="width: 60px" *@
+											<MudItem xs="12" md="8">
+												<BalanceDonutChart Statistics="@stats" />
+											</MudItem>
+										</MudGrid>
+
+									</MudStack>
+
+								</MudCarouselItem>
+							</MudCarousel>
 
 						</MudStack>
 					</MudPaper>
@@ -159,12 +240,12 @@
 			</MudGrid>
 
 
-			<MudPaper Class="pa-6">
+			@* <MudPaper Class="pa-6">
 				<MudStack Breakpoint="Breakpoint.None" Spacing="4">
-					<MudText Typo="Typo.h5">Summary</MudText>
+					<MudText Typo="Typo.h5">Summary 12345</MudText>
 					<Statistics Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 				</MudStack>
-			</MudPaper>
+			</MudPaper> *@
 
 
 
@@ -210,8 +291,17 @@
 
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
+	// Workaround for MudDatePicker
+	DateTime? AdvanceDateNullable
+	{
+		get => details.AdvanceDate != DateTime.MinValue ? details.AdvanceDate : null;
+		set => details.AdvanceDate = value.HasValue ? value.Value : DateTime.MinValue;
+	}
 
+	int summaryPage = 0;
 	int adaptiveSpacing = 6;
+	int balanceMaxYear;
+	int? balanceAtYear = 5;
 
 	double ___ms = 0;
 
@@ -229,6 +319,8 @@
 			stats.Payments = payments;
 			stats.PaymentsNoExtras = paymentsNoExtras;
 			stats.CalculateSummary();
+			stats.CalculateForYear(5);
+			balanceMaxYear = payments?.Max(x => x.Year) ?? 1;
 
 			TimeSpan elapsedTime = Stopwatch.GetElapsedTime(startTime);
 			___ms = elapsedTime.TotalMilliseconds;
@@ -319,6 +411,18 @@
 		var dialogReference = await DialogService.ShowAsync<ExtraPaymentsDialog>(parameters, options);
 		await dialogReference.Result;
 		StateHasChanged();
+	}
+
+	void OnSummaryYearChanged()
+	{
+		if (payments.HasData() && balanceAtYear.HasValue)
+		{
+			stats.CalculateForYear(balanceAtYear.Value);
+			if (balanceAtYear > balanceMaxYear)
+			{
+				balanceAtYear = balanceMaxYear;
+			}
+		}
 	}
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)

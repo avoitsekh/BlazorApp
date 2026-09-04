@@ -49,7 +49,7 @@
 	[CascadingParameter]
 	IMudDialogInstance MudDialog { get; set; }
 
-	DateTime MinDate => Details.AdvanceDate.HasValue ? Details.AdvanceDate.Value.AddDays(1) : DateTime.MinValue;
+	DateTime MinDate => Details.AdvanceDate.AddDays(1);
 
 	MudForm form;
 	Interest interest;

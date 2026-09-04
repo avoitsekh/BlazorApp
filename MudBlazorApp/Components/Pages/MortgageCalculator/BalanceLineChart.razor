@@ -137,7 +137,7 @@
 	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
 	{
 		bool isSmallOrExtraSmallScreen = browserViewportEventArgs.Breakpoint == Breakpoint.Sm || browserViewportEventArgs.Breakpoint == Breakpoint.Xs;
-		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 0px;" : "padding: 0px 20px 0px 20px;";
+		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 20px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
 		return InvokeAsync(StateHasChanged);
 	}
 

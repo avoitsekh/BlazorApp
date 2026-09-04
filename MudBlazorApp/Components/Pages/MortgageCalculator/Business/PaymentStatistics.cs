@@ -10,7 +10,7 @@ public class PaymentStatistics()
 	public double ExtraPaid;
 	public double TotalPaid;
 	public double RemainingBalance;
-	public DateTime? LastPaymentDate;
+	public DateTime LastPaymentDate;
 	public int NumberOfPayments;
 	public double InterestSavings;
 
@@ -25,23 +25,25 @@ public class PaymentStatistics()
 
 	public void CalculateSummary()
 	{
-		EffectiveAnnualRate = GetEffectiveAnnualRate(Details.InterestRates.InitialRate);
-		PaymentAmount = Payments.First().PaymentAmount;
-		InterestAmount = Payments.First().InterestAmount;
-		PrincipalAmount = Payments.First().PrincipalAmount;
-
-		if (PaymentsNoExtras.HasData())
+		if (Payments.HasData())
 		{
-			var totalDays = (Payments.Last().PaymentDate - Payments.Details.AdvanceDate.Value).TotalDays;
-			YearsToPayOff = Math.Round(totalDays / 365.2425, 1);
-			AmmortizationOffset = (((double)Payments.Count / PaymentsNoExtras.Count) - 1) * 100;
-		}
-		else
-		{
-			YearsToPayOff = Details.AmortizationPeriodInYears;
-			AmmortizationOffset = default;
-		}
+			EffectiveAnnualRate = GetEffectiveAnnualRate(Details.InterestRates.InitialRate);
+			PaymentAmount = Payments.First().PaymentAmount;
+			InterestAmount = Payments.First().InterestAmount;
+			PrincipalAmount = Payments.First().PrincipalAmount;
 
+			if (PaymentsNoExtras.HasData())
+			{
+				var totalDays = (Payments.Last().PaymentDate - Payments.Details.AdvanceDate).TotalDays;
+				YearsToPayOff = Math.Round(totalDays / 365.2425, 1);
+				AmmortizationOffset = (((double)Payments.Count / PaymentsNoExtras.Count) - 1) * 100;
+			}
+			else
+			{
+				YearsToPayOff = Details.AmortizationPeriodInYears;
+				AmmortizationOffset = default;
+			}
+		}
 	}
 
 	double GetEffectiveAnnualRate(double contractRate)
@@ -54,7 +56,7 @@ public class PaymentStatistics()
 	{
 		if (year > 0)
 		{
-			if (Payments != null)
+			if (Payments.HasData())
 			{
 				var lastPayment = Payments.LastPaymentForYear(year);
 				if (lastPayment != null)

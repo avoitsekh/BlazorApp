@@ -7,9 +7,9 @@ public class MortgageDetails
 	public double LoanAmount = 320000D;
 	public InterestCollection InterestRates = new(2.49D);
 	public int AmortizationPeriodInYears = 25;							// term
-	public DateTime? AdvanceDate = new DateTime(2025, 01, 01);          // mortgage start date
+	public DateTime AdvanceDate = new DateTime(2025, 01, 01);			// mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
-	public int PaymentFrequency = 12;                                   // ppy - payments per year
+	public int PaymentFrequency = 12;									// ppy - payments per year
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
 	public ExtraPaymentCollection ExtraPayments = new();

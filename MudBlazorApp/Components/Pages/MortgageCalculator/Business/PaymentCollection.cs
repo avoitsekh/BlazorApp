@@ -27,7 +27,7 @@ public sealed class PaymentCollection : List<Payment>
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
 		double paymentAmount = CalculatePaymentAmount(currentRate, paymentCount, balance);
-		DateTime paymentDate = Details.AdvanceDate ?? DateTime.MinValue;
+		DateTime paymentDate = Details.AdvanceDate;
 		bool isLastPayment = false;
 		int year = 1;
 
@@ -185,7 +185,7 @@ public sealed class PaymentCollection : List<Payment>
 	DateTime GetNextPaymentDate(DateTime currentDate, int currentPaymentNumber)
 	{
 		var result = DateTime.MinValue;
-		var fpdate = Details.AdvanceDate!.Value;
+		var fpdate = Details.AdvanceDate;
 		var anchor = fpdate.Day;
 
 		switch (Details.PaymentFrequency)
