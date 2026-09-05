@@ -7,22 +7,22 @@
 
 <div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" />
-	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="change-only-this"
+	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="adjust-this-line-chart pointer-events-none"
 		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@adaptivePadding" />
 </div>
 
 <style>
-	.change-only-this .mud-chart-legend {
+	.adjust-this-line-chart .mud-chart-legend {
 		height: 8px !important;
 		margin-bottom: -10px;
 	}
 
-	.change-only-this .mud-chart-legend-item {
+	.adjust-this-line-chart .mud-chart-legend-item {
 		position: relative !important;
 		bottom: 26px !important;
 	}
 
-	.change-only-this .mud-chart-legend-marker {
+	.adjust-this-line-chart .mud-chart-legend-marker {
 		padding-left: 10px !important;
 		position: relative !important;
 		top: 2px !important;
@@ -71,12 +71,6 @@
 	void SetGraphValues()
 	{
 		series = new();
-		series.Add(new ChartSeries<double>()
-		{
-			Name = "With extra payments",
-			Data = Payments!.Select(x => x.Balance).ToArray(),
-			TooltipTitleFormat = "{{SERIES_NAME}}" }
-		);
 
 		if (PaymentsNoExtras.HasData())
 		{
@@ -87,6 +81,13 @@
 				TooltipTitleFormat = "{{SERIES_NAME}}"
 			});
 		}
+
+		series.Add(new ChartSeries<double>()
+		{
+			Name = "With extra payments",
+			Data = Payments!.Select(x => x.Balance).ToArray(),
+			TooltipTitleFormat = "{{SERIES_NAME}}" }
+		);
 
 		options.ShowLegend = series.Count > 1;
 		options.SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>(series.Count);

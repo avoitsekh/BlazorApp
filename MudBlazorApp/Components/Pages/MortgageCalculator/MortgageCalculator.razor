@@ -9,7 +9,7 @@
 @inject IBrowserViewportService BrowserViewportService
 @inject IDialogService DialogService
 @inject IJSRuntime JS
-@inject ISnackbar snackbar
+@inject ISnackbar Snackbar
 
 
 <PageTitle>Mortgage Calculator</PageTitle>
@@ -33,8 +33,8 @@
 									<CustomContent>
 										<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
 											<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune" IconColor="Color.Primary">
-												<MudMenuItem Label="Fixed Rate with Extra Payments" />
-												<MudMenuItem Label="Variable Rate with Extra Payments" />
+												<MudMenuItem Label="Fixed Rate with Extra Payments" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Primary" />
+												<MudMenuItem Label="Variable Rate with Extra Payments" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Primary" />
 											</MudMenu>
 											<MudDivider />
 											<MudMenuItem Label="Load" OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" IconColor="Color.Primary" />
@@ -49,25 +49,24 @@
 							<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
 								<MudGrid Spacing="@adaptiveSpacing">
 									<MudItem xs="6" sm="12" md="6">
-										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="999999999.99" FullWidth Format="###,###,##0.00"
+										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")"
 										Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
-										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="99" FullWidth Format="0.##" Margin="Margin.Dense"
+										<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
 											Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
-										@* @Icons.Material.Filled.Menu *@
+											@* @Icons.Material.Filled.Menu *@
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
-										<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="99" FullWidth Margin="Margin.Dense" />
+										<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" />
 									</MudItem>
 
 									<MudItem xs="6" sm="12" md="6">
 										<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false"
 											AdornmentColor="Color.Primary" Margin="Margin.Dense" />
 									</MudItem>
-
 
 									<MudItem xs="6" sm="12" md="6">
 										<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
@@ -125,8 +124,6 @@
 					<MudPaper Class="pa-6" Height="100%">
 						<MudStack Breakpoint="Breakpoint.None" Spacing="4">
 
-
-
 							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 								<MudText Typo="Typo.h5">Summary</MudText>
 								<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="ma-n3">
@@ -137,7 +134,7 @@
 							</MudStack>
 
 							<MudCarousel Class="mud-width-full" Style="height:400px;" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
-								<MudCarouselItem Transition="Transition.Slide">
+								<MudCarouselItem Transition="Transition.Slide" Class="anim-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4">
 											<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
@@ -158,29 +155,10 @@
 											<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
 										</MudItem>
 									</MudGrid>
-									@* <MudGrid Spacing="0">
-										<MudItem xs="6" sm="4">
-											<MudStack Spacing="0">
-												<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
-												<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
-											</MudStack>
-										</MudItem>
-										<MudItem xs="6" sm="4">
-											<MudStack Spacing="0">
-												<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
-												<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
-											</MudStack>
-										</MudItem>
-										<MudItem xs="6" sm="4">
-											<MudStack Spacing="0">
-												<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
-												<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
-											</MudStack>
-										</MudItem>
-									</MudGrid> *@
 									<BalanceLineChart Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
 								</MudCarouselItem>
-								<MudCarouselItem Transition="Transition.Slide">
+
+								<MudCarouselItem Transition="Transition.Slide" Class="anim-duration">
 									
 									<MudStack Spacing="8">
 
@@ -211,21 +189,14 @@
 											</MudItem>
 										</MudGrid>
 
-										@* <MudGrid Spacing="0" Justify="Justify.FlexEnd"> *@
-										<MudGrid Justify="Justify.Center" Class="flex-grow-1 align-center">
-											@* <MudItem xs="12" md="2" Class="align-content-center justify-center" Style="background-color: greenyellow"> *@
-											@* <MudItem xs="12" md="2" Class="d-flex justify-end">
-												<MudNumericField T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" Style="width: 60px" />
-											</MudItem>  *@
-											<MudItem xs="12" md="4" Class="d-flex justify-end pe-3" Style="background-color: greenyellow">
-												<MudButton Variant=" Variant.Filled" StartIcon="@Icons.Material.Outlined.EditNote"
-														   Size="Size.Small"> View History</MudButton>
-											</MudItem>
-												@* Style="width: 60px" *@
-											<MudItem xs="12" md="8">
+										<MudStack Row Spacing="6" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+											<div style="width: 45px">
+												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" />
+											</div>
+											<div>
 												<BalanceDonutChart Statistics="@stats" />
-											</MudItem>
-										</MudGrid>
+											</div>
+										</MudStack>
 
 									</MudStack>
 
@@ -262,6 +233,12 @@
 
 </MudContainer>
 
+<style>
+.anim-duration {
+	animation-duration: .3s;
+}
+</style>
+	
 
 
 <script>
@@ -298,7 +275,7 @@
 		set => details.AdvanceDate = value.HasValue ? value.Value : DateTime.MinValue;
 	}
 
-	int summaryPage = 0;
+	int summaryPage = 1;
 	int adaptiveSpacing = 6;
 	int balanceMaxYear;
 	int? balanceAtYear = 5;
@@ -342,11 +319,11 @@
 		{
 			var jsonText = MortgageDetails.ToJsonString(details);
 			await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
-			snackbar.Add("Saved to mortgage-details.json", Severity.Info);
+			Snackbar.Add("Saved to mortgage-details.json", Severity.Info);
 		}
 		catch (Exception ex)
 		{
-			snackbar.Add($"Error saving to mortgage-details.json. {ex.GetBaseException().Message}", Severity.Error);
+			Snackbar.Add($"Error saving to mortgage-details.json. {ex.GetBaseException().Message}", Severity.Error);
 		}
 	}
 
@@ -366,11 +343,11 @@
 				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
 				string jsonText = await reader.ReadToEndAsync();
 				details = MortgageDetails.FromJsonString(jsonText);
-				snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
+				Snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
 			}
 			catch (Exception ex)
 			{
-				snackbar.Add($"Error loading from {file.Name}. {ex.GetBaseException().Message}", Severity.Error);
+				Snackbar.Add($"Error loading from {file.Name}. {ex.GetBaseException().Message}", Severity.Error);
 			}
 		}
 	}
@@ -430,6 +407,8 @@
 		if (firstRender)
 		{
 			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
+
+			CalculateButtonClicked();	// todo remove
 		}
 
 		await base.OnAfterRenderAsync(firstRender);
