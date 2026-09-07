@@ -1,42 +1,21 @@
 ﻿@using MudBlazor.Charts
 
-@implements IBrowserViewportObserver
-@implements IAsyncDisposable
-
-@inject IBrowserViewportService BrowserViewportService
-
 <div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" />
 	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="adjust-this-line-chart pointer-events-none"
 		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@adaptivePadding" />
 </div>
 
-<style>
-	.adjust-this-line-chart .mud-chart-legend {
-		height: 8px !important;
-		margin-bottom: -10px;
-	}
-
-	.adjust-this-line-chart .mud-chart-legend-item {
-		position: relative !important;
-		bottom: 26px !important;
-	}
-
-	.adjust-this-line-chart .mud-chart-legend-marker {
-		padding-left: 10px !important;
-		position: relative !important;
-		top: 2px !important;
-		right: 2px !important;
-	}
-</style>
-
 @code {
 
-	[Parameter]
-	public PaymentCollection? Payments { get; set; }
+	[CascadingParameter(Name = "payments")]
+	PaymentCollection? Payments { get; set; }
 
-	[Parameter]
-	public PaymentCollection? PaymentsNoExtras { get; set; }
+	[CascadingParameter(Name = "paymentsNoExtras")]
+	PaymentCollection? PaymentsNoExtras { get; set; }
+
+	[CascadingParameter]
+	Breakpoint? CurrentBreakpoint { get; set; }
 
 	LineChartOptions options = new()
 	{
@@ -44,8 +23,6 @@
 		YAxisTitle = "",
 		YAxisFormat = "N0",
 		XAxisLabelRotation = 45,
-		// ChartPalette = [Colors.Blue.Default, Colors.Gray.Lighten1],
-		// ChartPalette = [Colors.Blue.Default, Colors.Blue.Accent4],
 		ChartPalette = [Colors.Blue.Default, Colors.Cyan.Default],
 		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
 		ShowLegend = false,
@@ -59,6 +36,12 @@
 	protected override void OnParametersSet()
 	{
 		base.OnParametersSet();
+
+		if (CurrentBreakpoint != null)
+		{
+			bool isSmallOrExtraSmallScreen = CurrentBreakpoint == Breakpoint.Sm || CurrentBreakpoint == Breakpoint.Xs;
+			adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 20px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
+		}
 
 		if (Payments.HasData())
 		{
@@ -121,29 +104,5 @@
 			<= 1000000 => 100000,
 			_ => 250000
 		};
-	}
-
-	protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		if (firstRender)
-		{
-			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-		}
-
-		await base.OnAfterRenderAsync(firstRender);
-	}
-
-	Guid IBrowserViewportObserver.Id => Guid.NewGuid();
-
-	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
-	{
-		bool isSmallOrExtraSmallScreen = browserViewportEventArgs.Breakpoint == Breakpoint.Sm || browserViewportEventArgs.Breakpoint == Breakpoint.Xs;
-		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 20px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
-		return InvokeAsync(StateHasChanged);
-	}
-
-	async ValueTask IAsyncDisposable.DisposeAsync()
-	{
-		await BrowserViewportService.UnsubscribeAsync(this);
 	}
 }

@@ -1,0 +1,7 @@
+div ::deep .small-cell {
+	padding: 4px 12px 4px 12px !important
+}
+
+::deep .text-right {
+	text-align: right;
+}

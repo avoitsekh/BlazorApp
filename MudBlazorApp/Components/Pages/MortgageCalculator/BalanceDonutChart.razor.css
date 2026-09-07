@@ -1,0 +1,6 @@
+div ::deep .adjust-this-donut-chart .mud-chart-legend-marker {
+	padding-left: 10px;
+	position: relative;
+	top: 2px;
+	right: 2px;
+}

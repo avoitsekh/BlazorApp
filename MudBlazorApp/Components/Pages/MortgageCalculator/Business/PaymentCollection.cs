@@ -1,4 +1,5 @@
 ﻿using static MudBlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
@@ -37,7 +38,7 @@ public sealed class PaymentCollection : List<Payment>
 			paymentDate = GetNextPaymentDate(paymentDate, i);
 
 
-			double interestAmount = CalculateInterest(previousPaymentDate, paymentDate, balance);
+			double interestAmount = CalculateInterestAmount(previousPaymentDate, paymentDate, balance);
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
 			double extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
 			balance = RoundToCents(balance - principalAmount - extraAmount);
@@ -58,7 +59,7 @@ public sealed class PaymentCollection : List<Payment>
 			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 			string ratesForPeriodFormatted = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x)));
 
-			string accruaPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
+			string accrualPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
 				? string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1))
 				: $"{ratesForPeriodFormatted} ÷ {Details.PaymentFrequency}";
 
@@ -69,7 +70,7 @@ public sealed class PaymentCollection : List<Payment>
 				PaymentDate = paymentDate,
 				Year = i % Details.PaymentFrequency == 0 || isLastPayment ? year++ : null,
 				IterestRate = ratesForPeriodFormatted,
-				InterestAccrualPeriod = accruaPeriod,
+				InterestAccrualPeriod = accrualPeriod,
 				InterestAmount = interestAmount,
 				PrincipalAmount = principalAmount,
 				ExtraAmount = extraAmount,
@@ -91,84 +92,83 @@ public sealed class PaymentCollection : List<Payment>
 		}
 	}
 
-	double GetEffectiveAnnualRate(double contractRate)
+	public double GetEffectiveAnnualRate(double contractRate)
 	{
-		return Math.Pow(1D + contractRate / Details.CompoundPeriod, (double)Details.CompoundPeriod) - 1;
+		return Compound(contractRate, Details.CompoundPeriod, 1);
 	}
 
 	double GetEffectiveAnnualRatePerPayment(double contractRate)
 	{
-		return Math.Pow(1D + contractRate / Details.CompoundPeriod, (double)Details.CompoundPeriod / Details.PaymentFrequency) - 1;
+		return Compound(contractRate, Details.CompoundPeriod, Details.PaymentFrequency);
+	}
+
+	double GetEffectiveAnnualRatePerDay(double contractRate, DateTime date)
+	{
+		var daysInYear = 365;
+
+		if (Details.FinancialYear == FinancialYears._365or366)
+		{
+			var isLeapYear = DateTime.IsLeapYear(date.Year);
+			daysInYear = isLeapYear ? 366 : 365;
+		}
+		else if (Details.FinancialYear == FinancialYears._360)
+		{
+			daysInYear = 360;
+		}
+
+		return Compound(contractRate, Details.CompoundPeriod, daysInYear);
+	}
+
+	double Compound(double contractRate, double compoundPeriod, int denominator)
+	{
+		return compoundPeriod == 0D
+			? contractRate / 100 / denominator
+			: Math.Pow(1D + contractRate / 100 / compoundPeriod, compoundPeriod / denominator) - 1;
 	}
 
 	double CalculatePaymentAmount(double interestRate, int paymentCount, double balance)
 	{
-		double ratePerPayment = GetEffectiveAnnualRatePerPayment(interestRate / 100);
+		double ratePerPayment = GetEffectiveAnnualRatePerPayment(interestRate);
 		return PMT(ratePerPayment, paymentCount, balance);
 	}
 
-	//double CalculateInterestPerPeriod(DateTime periodStart, DateTime periodEnd, double balance, double annualRate)
-	//{
-	//	var daysPerPeriod = (periodEnd - periodStart).TotalDays;
-	//	var isLeapYear = DateTime.IsLeapYear(periodEnd.Year);
-	//	//return balance * (annualRate / 100) * (daysPerPeriod / (isLeapYear ? 366 : 365));
-
-	//	var comp = (double)Settings.CompoundPeriod;
-	//	return balance * (Math.Pow(1D + Settings.AnnualRate / 100 / comp, comp / (isLeapYear ? 366 : 365)) - 1) * daysPerPeriod;
-	//}
-
-	double CalculateInterest(DateTime from, DateTime to, double balance)
+	double CalculateInterestAmount(DateTime from, DateTime to, double balance)
 	{
-		var result = Details.InterestAccrualMethod == MortgageDetails.InterestAccrualMethods.PerDay
-				? CalculateInterestForPeriod(from, to, balance)
-				: CalculateInterestForPayment(from, to, balance);
+		var result = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
+				? CalculateInterestAmountForPeriod(from, to, balance)
+				: CalculateInterestAmountForPayment(from, to, balance);
 		return RoundToCents(result);
 	}
 
-	double CalculateInterestForPayment(DateTime from, DateTime to, double balance)
+	double CalculateInterestAmountForPayment(DateTime from, DateTime to, double balance)
 	{
 		double result = 0D;
 		double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(from, to);
 
 		if (ratesForPeriod.Length == 1)
 		{
-			double ratePerPayment = GetEffectiveAnnualRatePerPayment(ratesForPeriod[0] / 100);
+			double ratePerPayment = GetEffectiveAnnualRatePerPayment(ratesForPeriod[0]);
 			result = balance * ratePerPayment;
 		}
 		else
 		{
-			result = CalculateInterestForPeriod(from, to, balance);
+			result = CalculateInterestAmountForPeriod(from, to, balance);
 		}
 
 		return result;
 	}
 
-	double CalculateInterestForPeriod(DateTime from, DateTime to, double balance)
+	double CalculateInterestAmountForPeriod(DateTime from, DateTime to, double balance)
 	{
 		var result = 0D;
 
-		foreach (var day in EachDay(from, to))
+		for (var day = from.Date; day.Date < to.Date; day = day.AddDays(1))
 		{
 			var interestRateForDay = Details.InterestRates.GetRate(day);
-			result += CalculateInterestForDay(day, balance, interestRateForDay);
+			result += balance * GetEffectiveAnnualRatePerDay(interestRateForDay, day);
 		}
 
 		return result;
-	}
-
-	double CalculateInterestForDay(DateTime date, double balance, double rate)
-	{
-		var isLeapYear = DateTime.IsLeapYear(date.Year);
-		//return balance * (rate / 100) / (isLeapYear ? 366 : 365);	// no compounding
-		return balance * (Math.Pow(1D + rate / 100 / Details.CompoundPeriod, (double)Details.CompoundPeriod / (isLeapYear ? 366 : 365)) - 1);
-	}
-
-	IEnumerable<DateTime> EachDay(DateTime from, DateTime to)
-	{
-		for (var day = from.Date; day.Date < to.Date; day = day.AddDays(1))
-		{
-			yield return day;
-		}
 	}
 
 	double PMT(double rate, int numberOfPayments, double loanAmount)

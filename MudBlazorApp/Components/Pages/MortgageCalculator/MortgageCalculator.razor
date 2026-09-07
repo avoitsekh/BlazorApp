@@ -1,6 +1,5 @@
 ﻿@page "/mortgage"
 
-@using System.Diagnostics
 @using System.Text
 
 @implements IBrowserViewportObserver
@@ -14,10 +13,14 @@
 
 <PageTitle>Mortgage Calculator</PageTitle>
 
-
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
 	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
 		<MudStack id="main-stack">
+
+			<CascadingValue Value="@payments" Name="payments">
+			<CascadingValue Value="@paymentsNoExtras" Name="paymentsNoExtras">
+			<CascadingValue Value="@stats">
+			<CascadingValue Value="@currentBreakpoint">
 
 			<MudGrid Spacing="3"> <!-- Grid for Mortgage Details and Summary panels -->
 				<MudItem xs="12" sm="4">
@@ -25,16 +28,16 @@
 						<HeaderContent>
 							<MudFileUpload T="IBrowserFile" Accept=".json,.*" OnFilesChanged="DetailsLoadClicked">
 								<CustomContent>
-									<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
-										<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune" IconColor="Color.Primary">
+									<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
+										<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune">
 											@foreach (var keyValuePair in presets)
 											{
-												<MudMenuItem Label="@keyValuePair.Key" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Primary" OnClick="@(() => OnPresetChanged(keyValuePair.Value))" />
+												<MudMenuItem Label="@keyValuePair.Key" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Info" OnClick="@(() => OnPresetChanged(keyValuePair.Value))" />
 											}
 										</MudMenu>
 										<MudDivider />
-										<MudMenuItem Label="Load..." OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" IconColor="Color.Primary" />
-										<MudMenuItem Label="Save..." OnClick="DetailsSaveClicked" Icon="@Icons.Material.Filled.Save" IconColor="Color.Primary" />
+										<MudMenuItem Label="Load..." OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" />
+										<MudMenuItem Label="Save..." OnClick="DetailsSaveClicked" Icon="@Icons.Material.Filled.Save" />
 									</MudMenu>
 								</CustomContent>
 								<SelectedTemplate />
@@ -51,7 +54,7 @@
 
 										<MudItem xs="6" sm="12" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
-												Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(hasAdditionalInterestRates ? Color.Tertiary : Color.Primary)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
+												Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
 												@* @Icons.Material.Filled.Menu *@
 										</MudItem>
 
@@ -60,12 +63,11 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="12" md="6">
-											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)"
-												AdornmentColor="Color.Primary" Margin="Margin.Dense" />
+											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense" />
 										</MudItem>
 
 										<MudItem xs="6" sm="12" md="6">
-											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.CompoundPeriod)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -74,7 +76,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="12" md="6">
-											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.PaymentFrequency)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -83,7 +85,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="12" md="6">
-											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.InterestRateType)
 												{
 													<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -92,7 +94,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="12" md="6">
-											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Primary">
+											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.InterestRateAccrualMethod)
 												{
 													<MudSelectItem T="MortgageDetails.InterestAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -100,14 +102,29 @@
 											</MudSelect>
 										</MudItem>
 
+										<MudItem xs="6" sm="12" md="6">
+											<MudSelect T="MortgageDetails.FinancialYears" Label="Financial Year" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" 
+												Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
+												@foreach (var keyValuePair in Constants.FinancialYear)
+												{
+													<MudSelectItem T="MortgageDetails.FinancialYears" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+												}
+											</MudSelect>
+										</MudItem>
+
+										<MudItem xs="6" sm="12" md="6">
+											<MudTextField T="string" Label="Extra Payments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@("aaa bbb ccc ddd eee fff ggg hhh iii")"
+												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
+										</MudItem>
+
 									</MudGrid>
 								</MudStack>
 
-								<MudStack AlignItems="AlignItems.Center" Spacing="2">
+								@* <MudStack AlignItems="AlignItems.Center" Spacing="2">
 									<MudButton OnClick="OpenExtraPaymentsDialogAsync" Size="Size.Large" Style="width: 200px">Extra Payments</MudButton>
-									<MudButton Variant="Variant.Filled" OnClick="CalculateButtonClicked" Size="Size.Large" Color="Color.Inherit" Style="width: 200px">Calculate</MudButton>
-								</MudStack>
-								Execute time: @___ms
+									<MudButton Variant="Variant.Filled" OnClick="Calculate" Size="Size.Large" Color="Color.Inherit" Style="width: 200px">Calculate</MudButton>
+								</MudStack> *@
+								<MudButton Variant="Variant.Filled" OnClick="Calculate" Size="Size.Large" Color="Color.Inherit">Calculate</MudButton>
 
 							</MudForm>
 						</MainContent>
@@ -117,14 +134,14 @@
 				<MudItem xs="12" sm="8">
 					<Panel Title="Summary">
 						<HeaderContent>
-							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="ma-n3">
+							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(summaryPage == 0)" OnClick="@(() => summaryPage--)" />
 								<MudText Typo="Typo.body2">@(summaryPage + 1) / 2</MudText>
 								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(summaryPage == 1)" OnClick="@(() => summaryPage++)" />
 							</MudStack>
 						</HeaderContent>
 						<MainContent>
-							<MudCarousel Class="mud-width-full" Style="height:400px;" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
+							<MudCarousel Class="mud-width-full mud-height-full" Style="min-height:400px;" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4">
@@ -134,7 +151,7 @@
 											<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
 										</MudItem>
 										<MudItem xs="6" sm="4">
-											<DataField T="double" Label="Ammortization Reduction" Value="@stats.AmmortizationOffset" Format="+#'%';-#'%';0'%'" />
+											<DataField T="double" Label="Amortization Reduction" Value="@stats.AmortizationOffset" Format="+#'%';-#'%';0'%'" />
 										</MudItem>
 										<MudItem xs="6" sm="4">
 											<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
@@ -146,7 +163,7 @@
 											<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
 										</MudItem>
 									</MudGrid>
-									<BalanceLineChart Payments="payments" PaymentsNoExtras="paymentsNoExtras" />
+									<BalanceLineChart />
 								</MudCarouselItem>
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
 									<MudStack Spacing="8">
@@ -181,7 +198,7 @@
 												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" />
 											</div>
 											<div>
-												<BalanceDonutChart Statistics="@stats" />
+												<BalanceDonutChart />
 											</div>
 										</MudStack>
 									</MudStack>
@@ -196,19 +213,27 @@
 				<HeaderContent>
 					@if (payments.HasData())
 					{
-						<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Class="ma-n3" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
-							<MudMenuItem Label="Scroll to Bottom" OnClick="ScrollToBottomClicked" Icon="@Icons.Material.Filled.VerticalAlignBottom" IconColor="Color.Primary" Class="pe-6" />
-							<MudMenuItem Label="Scroll to Top" OnClick="ScrollToTopClicked" Icon="@Icons.Material.Filled.VerticalAlignTop" IconColor="Color.Primary" />
-							<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="ExpandContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" IconColor="Color.Primary" />
-							<MudDivider />
-							<MudMenuItem Label="Save to Excel..." OnClick="SaveToExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" IconColor="Color.Primary" />
-						</MudMenu>
+						<MudStack Row Spacing="0">
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="ScrollToTopClicked" />
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Inherit" OnClick="ScrollToBottomClicked" />
+							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
+								<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="ExpandContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" Class="pe-6" />
+								<MudDivider />
+								<MudMenuItem Label="Download as Excel" OnClick="DownloadAsExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" Class="pe-6" />
+							</MudMenu>
+						</MudStack>
 					}
 				</HeaderContent>
 				<MainContent>
-					<PaymentsTable @ref="paymentsTable" Payments="payments" Expanded="paymentsTableExpanded"></PaymentsTable>
+					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded"></PaymentsTable>
+					@* <PaymentsTable @ref="paymentsTable" Payments="payments" Expanded="paymentsTableExpanded"></PaymentsTable> *@
 				</MainContent>
 			</Panel>
+
+			</CascadingValue>
+			</CascadingValue>
+			</CascadingValue>
+			</CascadingValue>
 
 		</MudStack>
 	</MudPaper>
@@ -216,9 +241,9 @@
 </MudContainer>
 
 <style>
-.animation-duration {
-	animation-duration: .3s;
-}
+	.animation-duration {
+		animation-duration: .3s;
+	}
 </style>
 	
 
@@ -239,7 +264,8 @@
 
 @code {
 
-	MudForm? form;
+	MudForm? form = null;
+
 	PaymentsTable? paymentsTable;
 	PaymentCollection? payments;
 	PaymentCollection? paymentsNoExtras;
@@ -247,12 +273,11 @@
 	PaymentStatistics stats = new();
 	PresetCollection presets = new();
 
-	bool hasAdditionalInterestRates => details.InterestRates.Count > 1;
 	bool isVariableRateMortgage => details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
 
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
-	// Workaround for MudDatePicker that requires DateTime? instead of DateTime
+	// Workaround for MudDatePicker requiring DateTime? instead of DateTime
 	DateTime? AdvanceDateNullable
 	{
 		get => details.AdvanceDate != DateTime.MinValue ? details.AdvanceDate : null;
@@ -265,16 +290,13 @@
 	int? balanceAtYear = 5;
 	bool paymentsTableExpanded = false;
 
-	double ___ms = 0;
-
-	async Task CalculateButtonClicked()
+	async Task Calculate()
 	{
 		await form.ValidateAsync();
 
 		if (form.IsValid)
 		{
-			long startTime = Stopwatch.GetTimestamp();
-
+			paymentsTableExpanded = false;
 			payments = PaymentCollection.Create(details);
 			paymentsNoExtras = payments.HasExtraPayments ? PaymentCollection.Create(details, countExtraPayments: false) : null;
 
@@ -283,9 +305,6 @@
 			stats.CalculateSummary();
 			stats.CalculateForYear(5);
 			balanceMaxYear = payments?.Max(x => x.Year) ?? 1;
-
-			TimeSpan elapsedTime = Stopwatch.GetElapsedTime(startTime);
-			___ms = elapsedTime.TotalMilliseconds;
 		}
 	}
 
@@ -329,6 +348,7 @@
 				string jsonText = await reader.ReadToEndAsync();
 				details = MortgageDetails.FromJsonString(jsonText);
 				Snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
+				Calculate();
 			}
 			catch (Exception ex)
 			{
@@ -337,12 +357,9 @@
 		}
 	}
 
-	async Task SaveToExcelClicked()
+	async Task DownloadAsExcelClicked()
 	{
-		// todo
 		Export.ToExcel(payments);
-
-
 	}
 
 	async Task ExpandContractClicked()
@@ -398,9 +415,10 @@
 		StateHasChanged();
 	}
 
-	void OnPresetChanged(MortgageDetails preset)
+	async Task OnPresetChanged(MortgageDetails preset)
 	{
 		details = preset;
+		await Calculate();
 	}
 
 	void OnSummaryYearChanged()
@@ -420,18 +438,18 @@
 		if (firstRender)
 		{
 			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-
-			CalculateButtonClicked();	// todo remove
 		}
 
 		await base.OnAfterRenderAsync(firstRender);
 	}
 
 	Guid IBrowserViewportObserver.Id => Guid.NewGuid();
+	Breakpoint? currentBreakpoint;
 
 	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
 	{
-		bool isSmallScreen = browserViewportEventArgs.Breakpoint == Breakpoint.Sm;
+		currentBreakpoint = browserViewportEventArgs.Breakpoint;
+		bool isSmallScreen = currentBreakpoint == Breakpoint.Sm;
 		adaptiveSpacing = isSmallScreen ? 3 : 6;
 		return InvokeAsync(StateHasChanged);
 	}
@@ -440,4 +458,5 @@
 	{
 		await BrowserViewportService.UnsubscribeAsync(this);
 	}
+
 }

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
@@ -13,10 +12,12 @@ public sealed class MortgageDetails
 	public int PaymentFrequency = 12;									// ppy - payments per year
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
+	public FinancialYears FinancialYear = FinancialYears._365or366;
 	public ExtraPaymentCollection ExtraPayments = new();
 
 	public enum InterestRateTypes { Fixed, ARM }
 	public enum InterestAccrualMethods { PerDay, PerPayment }
+	public enum FinancialYears { _365or366, _365, _360 }
 
 	#region JSON Import/Export
 

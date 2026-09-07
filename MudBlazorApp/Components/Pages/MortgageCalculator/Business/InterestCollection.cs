@@ -6,6 +6,8 @@ public sealed class InterestCollection : IList<Interest>
 {
 	List<Interest> _interests = new();
 
+	public bool HasAdditionalInterestRates => Count > 1;
+
 	public double InitialRate
 	{
 		get => _interests[0].Rate;

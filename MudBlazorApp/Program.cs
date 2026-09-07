@@ -28,7 +28,7 @@ builder.Services.AddScoped<ISnackbar, SnackbarService>();
 
 builder.Services.AddMudBlazorSnackbar(options =>
 {
-	options.PositionClass = Defaults.Classes.Position.BottomRight;
+	options.PositionClass = Defaults.Classes.Position.BottomLeft;
 	options.ShowTransitionDuration = 200;
 	options.HideTransitionDuration = 200;
 	options.VisibleStateDuration = 4000;

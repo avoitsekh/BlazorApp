@@ -1,25 +1,35 @@
-﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+﻿using static MudBlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
+
+namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
 public static class Constants
 {
 	#region Dropdowns
 
-	public static Dictionary<string, MortgageDetails.InterestRateTypes> InterestRateType = new()
+	public static Dictionary<string, InterestRateTypes> InterestRateType = new()
 	{
-		{ "Fixed", MortgageDetails.InterestRateTypes.Fixed },
-		{ "ARM", MortgageDetails.InterestRateTypes.ARM },
+		{ "Fixed", InterestRateTypes.Fixed },
+		{ "ARM", InterestRateTypes.ARM },
 	};
 
-	public static Dictionary<string, MortgageDetails.InterestAccrualMethods> InterestRateAccrualMethod = new()
+	public static Dictionary<string, InterestAccrualMethods> InterestRateAccrualMethod = new()
 	{
-		{ "Per Day", MortgageDetails.InterestAccrualMethods.PerDay },
-		{ "Per Payment", MortgageDetails.InterestAccrualMethods.PerPayment },
+		{ "Per Day", InterestAccrualMethods.PerDay },
+		{ "Per Payment", InterestAccrualMethods.PerPayment },
+	};
+
+	public static Dictionary<string, FinancialYears> FinancialYear = new()
+	{
+		{ "365 or 366 days", FinancialYears._365or366 },
+		{ "365 days", FinancialYears._365 },
+		{ "360 days", FinancialYears._360 },
 	};
 
 	public static Dictionary<string, int> CompoundPeriod = new()
 	{
 		{ "Semi-Annually", 2 },
 		{ "Montly", 12 },
+		{ "None", 0 },
 	};
 
 	public static Dictionary<string, int> PaymentFrequency = new()

@@ -16,7 +16,9 @@
 		<NavMenu />
 	</MudDrawer>
 	<MudMainContent Class="pt-16 pa-4">
-		@Body
+		<CascadingValue Value="@_isDarkMode" Name="isDarkMode">
+			@Body
+		</CascadingValue>
 	</MudMainContent>
 </MudLayout>
 
@@ -51,6 +53,9 @@
 		{
 			PaletteLight = _lightPalette,
 			PaletteDark = _darkPalette,
+
+
+
 			LayoutProperties = new LayoutProperties()
 		};
 	}
@@ -83,6 +88,7 @@
 		DrawerBackground = "#ffffff",
 		GrayLight = "#e8e8e8",
 		GrayLighter = "#f9f9f9",
+		ActionDefault = "#424242ff",
 	};
 
 	private readonly PaletteDark _darkPalette = new()
@@ -94,7 +100,8 @@
 		AppbarText = "#92929f",
 		AppbarBackground = "rgba(26,26,39,0.8)",
 		DrawerBackground = "#1a1a27",
-		ActionDefault = "#74718e",
+		// ActionDefault = "#74718e",
+		ActionDefault = "#b2b0bfff",
 		ActionDisabled = "#9999994d",
 		ActionDisabledBackground = "#605f6d4d",
 		TextPrimary = "#b2b0bf",

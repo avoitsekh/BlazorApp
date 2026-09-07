@@ -19,7 +19,7 @@ public sealed class PaymentStatistics()
 	public double PrincipalAmount;
 	public double EffectiveAnnualRate;
 	public double YearsToPayOff;
-	public double AmmortizationOffset;
+	public double AmortizationOffset;
 
 	MortgageDetails Details => Payments.Details;
 
@@ -27,29 +27,24 @@ public sealed class PaymentStatistics()
 	{
 		if (Payments.HasData())
 		{
-			EffectiveAnnualRate = GetEffectiveAnnualRate(Details.InterestRates.InitialRate);
+			EffectiveAnnualRate = Payments.GetEffectiveAnnualRate(Details.InterestRates.InitialRate) * 100;
+			//EffectiveAnnualRate = GetEffectiveAnnualRate(Details.InterestRates.InitialRate);
 			PaymentAmount = Payments.First().PaymentAmount;
 			InterestAmount = Payments.First().InterestAmount;
 			PrincipalAmount = Payments.First().PrincipalAmount;
 
 			if (PaymentsNoExtras.HasData())
 			{
-				var totalDays = (Payments.Last().PaymentDate - Payments.Details.AdvanceDate).TotalDays;
+				var totalDays = (Payments.Last().PaymentDate - Details.AdvanceDate).TotalDays;
 				YearsToPayOff = Math.Round(totalDays / 365.2425, 1);
-				AmmortizationOffset = (((double)Payments.Count / PaymentsNoExtras.Count) - 1) * 100;
+				AmortizationOffset = (((double)Payments.Count / PaymentsNoExtras.Count) - 1) * 100;
 			}
 			else
 			{
 				YearsToPayOff = Details.AmortizationPeriodInYears;
-				AmmortizationOffset = default;
+				AmortizationOffset = default;
 			}
 		}
-	}
-
-	double GetEffectiveAnnualRate(double contractRate)
-	{
-		var rate = (Math.Pow(1D + Details.InterestRates.InitialRate / 100 / Details.CompoundPeriod, (double)Details.CompoundPeriod) - 1) * 100;
-		return Math.Round(rate, 2);
 	}
 
 	public void CalculateForYear(int year)
