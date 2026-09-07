@@ -1,6 +1,6 @@
 ﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class MortgageDetailsValidation
+public sealed class MortgageDetailsValidation
 {
 	private string ValidateLoanAmountCore(double arg)
 	{

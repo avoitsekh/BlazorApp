@@ -1,6 +1,6 @@
 ﻿namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class PaymentStatistics()
+public sealed class PaymentStatistics()
 {
 	public PaymentCollection? Payments;
 	public PaymentCollection? PaymentsNoExtras;

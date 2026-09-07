@@ -3,7 +3,7 @@
 @using SkiaSharp.QrCode.Image
 
 @inject IJSRuntime JS
-@inject ISnackbar snackbar
+@inject ISnackbar Snackbar
 
 <div>
 	<img id="qrcode" height="@PreviewImageSize" width="@PreviewImageSize" class="checkered" />
@@ -177,7 +177,7 @@
 			using var stream = new MemoryStream();
 			RenderToStream(ExportImageSize, stream);
 			await JS.InvokeVoidAsync("copyToClipboard", "image/png", stream.ToArray());
-			snackbar.Add("QR Code copied to clipboard", Severity.Info);
+			Snackbar.Add("QR Code copied to clipboard", Severity.Info);
 		}
 		catch (Exception ex)
 		{

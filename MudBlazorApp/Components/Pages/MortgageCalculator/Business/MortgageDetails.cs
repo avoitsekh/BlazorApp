@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel;
+using System.Text.Json;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public class MortgageDetails
+public sealed class MortgageDetails
 {
 	public double LoanAmount = 320000D;
 	public InterestCollection InterestRates = new(2.49D);

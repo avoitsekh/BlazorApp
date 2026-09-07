@@ -159,7 +159,7 @@ public sealed class PaymentCollection : List<Payment>
 	double CalculateInterestForDay(DateTime date, double balance, double rate)
 	{
 		var isLeapYear = DateTime.IsLeapYear(date.Year);
-		//return balance * (rate / 100) / (isLeapYear ? 366 : 365);	// Scotiabank formula (bad) - no compounding
+		//return balance * (rate / 100) / (isLeapYear ? 366 : 365);	// no compounding
 		return balance * (Math.Pow(1D + rate / 100 / Details.CompoundPeriod, (double)Details.CompoundPeriod / (isLeapYear ? 366 : 365)) - 1);
 	}
 

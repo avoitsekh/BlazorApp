@@ -2,6 +2,8 @@
 
 public static class Constants
 {
+	#region Dropdowns
+
 	public static Dictionary<string, MortgageDetails.InterestRateTypes> InterestRateType = new()
 	{
 		{ "Fixed", MortgageDetails.InterestRateTypes.Fixed },
@@ -27,4 +29,24 @@ public static class Constants
 		{ "Weekly", 52 },
 		{ "Bi-Weekly", 26 },
 	};
+
+	#endregion
+
+	#region Labels
+	#endregion
+
+	#region Grid Headers
+
+	public const string No = "No.";
+	public const string PaymentDate = "Payment Date";
+	public const string Year = "Year";
+	public const string Interest = "Interest";
+	public const string InterestAccrualPeriod = "Interest Accrual Period";
+	public const string InterestAmount = "Interest Amount";
+	public const string PrincipalAmount = "Principal Amount";
+	public const string ExtraAmount = "Extra Amount";
+	public const string PaymentAmount = "Payment Amount";
+	public const string RemainingBalance = "Remaining Balance";
+
+	#endregion
 }

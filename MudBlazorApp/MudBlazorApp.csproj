@@ -9,8 +9,8 @@
 
 
   <ItemGroup>
+    <PackageReference Include="EPPlus" Version="8.7.0" />
     <PackageReference Include="MudBlazor" Version="9.*" />
     <PackageReference Include="SkiaSharp.QrCode" Version="1.1.1" />
-    <PackageReference Include="SkiaSharp.Views.Blazor" Version="4.150.1" />
   </ItemGroup>
 </Project>

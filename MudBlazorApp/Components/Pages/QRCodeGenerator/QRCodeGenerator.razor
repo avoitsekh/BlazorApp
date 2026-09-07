@@ -26,10 +26,10 @@
 						}
 						else
 						{
-							<MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-								<MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary" OnClick="@(x => qrCodeImage!.DownloadPngAsync())">PNG</MudButton>
-								<MudButton StartIcon="@Icons.Material.Filled.Download" Color="Color.Primary" OnClick="@(x => qrCodeImage!.DownloadSvgAsync())">SVG</MudButton>
-								<MudButton StartIcon="@Icons.Material.Filled.ContentCopy" IconSize="Size.Small" Color="Color.Primary" OnClick="@(x => qrCodeImage!.CopyToClipboardAsync())">Copy</MudButton>
+							<MudButtonGroup Color="Color.Inherit" Variant="Variant.Filled">
+								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="@(x => qrCodeImage!.DownloadPngAsync())">PNG</MudButton>
+								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="@(x => qrCodeImage!.DownloadSvgAsync())">SVG</MudButton>
+								<MudButton StartIcon="@Icons.Material.Filled.ContentCopy" IconSize="Size.Small" OnClick="@(x => qrCodeImage!.CopyToClipboardAsync())">Copy</MudButton>
 							</MudButtonGroup>
 						}
 					</MudStack>

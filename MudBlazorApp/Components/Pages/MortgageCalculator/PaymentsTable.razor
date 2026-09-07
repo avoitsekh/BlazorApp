@@ -1,40 +1,71 @@
-﻿<MudTable Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="mud-table-small-cell" Virtualize="true" FixedHeader Height="400px">
+﻿<MudTable @ref="_table" Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="small-cell" Virtualize="@(!Expanded)" FixedHeader="@(!Expanded)" Height="@(!Expanded ? "400px" : null)">
 	<HeaderContent>
-		<MudTh>No.</MudTh>
-		<MudTh>Payment Date</MudTh>
-		<MudTh>Year</MudTh>
-		<MudTh>Interest</MudTh>
-		<MudTh>Interest Accrual Period</MudTh>
-		<MudTh Style="text-align: right;">Interest Amount</MudTh>
-		<MudTh Style="text-align: right;">Principal Amount</MudTh>
-		<MudTh Style="text-align: right;">Extra Amount</MudTh>
-		<MudTh Style="text-align: right;">Payment Amount</MudTh>
-		<MudTh Style="text-align: right;">Remaining Balance</MudTh>
+		<MudTh>@Constants.No</MudTh>
+		<MudTh>@Constants.PaymentDate</MudTh>
+		<MudTh>@Constants.Year</MudTh>
+		<MudTh>@Constants.Interest</MudTh>
+		<MudTh>@Constants.InterestAccrualPeriod</MudTh>
+		<MudTh Class="text-right">@Constants.InterestAmount</MudTh>
+		<MudTh Class="text-right">@Constants.PrincipalAmount</MudTh>
+		<MudTh Class="text-right">@Constants.ExtraAmount</MudTh>
+		<MudTh Class="text-right">@Constants.PaymentAmount</MudTh>
+		<MudTh Class="text-right">@Constants.RemainingBalance</MudTh>
 	</HeaderContent>
 	<RowTemplate>
-		<MudTd DataLabel="No.">@context.Number</MudTd>
-		<MudTd DataLabel="Payment Date">@context.PaymentDate.ToString("yyyy-MM-dd")</MudTd>
-		<MudTd DataLabel="Year">@context.Year</MudTd>
-		<MudTd DataLabel="Interest">@context.IterestRate</MudTd>
-		<MudTd DataLabel="Interest Accrual Period">@context.InterestAccrualPeriod</MudTd>
-		<MudTd DataLabel="Interest Amount" Style="text-align: right;">@context.InterestAmount.ToString("N2")</MudTd>
-		<MudTd DataLabel="Principal Amount" Style="text-align: right;">@context.PrincipalAmount.ToString("N2")</MudTd>
-		<MudTd DataLabel="Extra Amount" Style="text-align: right;">@context.ExtraAmount.ToString("N2")</MudTd>
-		<MudTd DataLabel="Payment Amount" Style="text-align: right;">@context.PaymentAmount.ToString("N2")</MudTd>
-		<MudTd DataLabel="Remaining Balance" Style="text-align: right;">@context.Balance.ToString("N2")</MudTd>
+		<MudTd DataLabel="@Constants.No">@context.Number</MudTd>
+		<MudTd DataLabel="@Constants.PaymentDate">@context.PaymentDate.ToString("yyyy-MM-dd")</MudTd>
+		<MudTd DataLabel="@Constants.Year">@context.Year</MudTd>
+		<MudTd DataLabel="@Constants.Interest">@context.IterestRate</MudTd>
+		<MudTd DataLabel="@Constants.InterestAccrualPeriod">@context.InterestAccrualPeriod</MudTd>
+		<MudTd DataLabel="@Constants.InterestAmount" Class="text-right">@context.InterestAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="@Constants.PrincipalAmount" Class="text-right">@context.PrincipalAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="@Constants.ExtraAmount" Class="text-right">@context.ExtraAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="@Constants.PaymentAmount" Class="text-right">@context.PaymentAmount.ToString("N2")</MudTd>
+		<MudTd DataLabel="@Constants.RemainingBalance" Class="text-right">@context.Balance.ToString("N2")</MudTd>
 	</RowTemplate>
 </MudTable>
 
 <style>
-	.mud-table-small-cell {
+	.small-cell {
 		padding: 4px 12px 4px 12px !important
+	}
+
+	.text-right {
+		text-align: right;
 	}
 </style>
 
 @code {
-	MudDataGrid<Payment> elementGrid = default!;
+
+	MudTable<Payment>? _table = null;
 
 	[Parameter]
 	public List<Payment>? Payments { get; set; }
+
+	[Parameter]
+	public bool Expanded { get; set; } = false;
+
+	async Task ScrollToRow(Payment payment)
+	{
+		await _table.ScrollToItemAsync(payment);
+	}
+
+	public async Task ScrollToTop()
+	{
+		var payment = Payments.FirstOrDefault();
+		if (payment != null)
+		{
+			await ScrollToRow(payment);
+		}
+	}
+
+	public async Task ScrollToBottom()
+	{
+		var payment = Payments.LastOrDefault();
+		if (payment != null)
+		{
+			await ScrollToRow(payment);
+		}
+	}
 
 }
