@@ -21,6 +21,16 @@ public sealed class ExtraPaymentCollection : IList<ExtraPayment>
 		return _payments.Where(x => x.FromPayment <= paymentNumber && (x.ToPayment == null || x.ToPayment >= paymentNumber)).Sum(x => x.Amount);
 	}
 
+	public IEnumerable<ExtraPayment> GetLumpSums()
+	{
+		return _payments.Where(x => x.IsLumpSum);
+	}
+
+	public IEnumerable<ExtraPayment> GetRecurring()
+	{
+		return _payments.Where(x => x.IsRecurring);
+	}
+
 	#region IList
 
 	public int Count => _payments.Count;

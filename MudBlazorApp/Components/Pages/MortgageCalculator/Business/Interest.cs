@@ -6,6 +6,7 @@ public sealed class Interest
 {
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public DateTime? EffectiveDate;
+
 	public double Rate;
 
 	[JsonIgnore]

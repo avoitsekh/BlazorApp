@@ -23,10 +23,10 @@
 			<CascadingValue Value="@currentBreakpoint">
 
 			<MudGrid Spacing="3"> <!-- Grid for Mortgage Details and Summary panels -->
-				<MudItem xs="12" sm="4">
+				<MudItem xs="12" md="4">
 					<Panel Title="Mortgage Details">
 						<HeaderContent>
-							<MudFileUpload T="IBrowserFile" Accept=".json,.*" OnFilesChanged="DetailsLoadClicked">
+							<MudFileUpload T="IBrowserFile" Accept=".json,.*" OnFilesChanged="OnDetailsLoadClicked">
 								<CustomContent>
 									<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
 										<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune">
@@ -37,7 +37,7 @@
 										</MudMenu>
 										<MudDivider />
 										<MudMenuItem Label="Load..." OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" />
-										<MudMenuItem Label="Save..." OnClick="DetailsSaveClicked" Icon="@Icons.Material.Filled.Save" />
+										<MudMenuItem Label="Save..." OnClick="OnDetailsSaveClicked" Icon="@Icons.Material.Filled.Save" />
 									</MudMenu>
 								</CustomContent>
 								<SelectedTemplate />
@@ -47,26 +47,26 @@
 							<MudForm @ref="form" Spacing="4">
 								<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
 									<MudGrid Spacing="@adaptiveSpacing">
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")"
 											Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
-												Adornment="@(isVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
+												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
 												@* @Icons.Material.Filled.Menu *@
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" />
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense" />
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.CompoundPeriod)
 												{
@@ -75,7 +75,7 @@
 											</MudSelect>
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.PaymentFrequency)
 												{
@@ -84,7 +84,7 @@
 											</MudSelect>
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.InterestRateAccrualMethod)
 												{
@@ -93,7 +93,7 @@
 											</MudSelect>
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudSelect T="MortgageDetails.FinancialYears" Label="Financial Year" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" 
 												Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
 												@foreach (var keyValuePair in Constants.FinancialYear)
@@ -103,7 +103,7 @@
 											</MudSelect>
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
+										<MudItem xs="6" sm="3" md="6">
 											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense">
 												@foreach (var keyValuePair in Constants.InterestRateType)
 												{
@@ -112,8 +112,8 @@
 											</MudSelect>
 										</MudItem>
 
-										<MudItem xs="6" sm="12" md="6">
-											<MudTextField T="string" Label="Extra Payments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@("aaa bbb ccc ddd eee fff ggg hhh iii")"
+										<MudItem xs="6" sm="3" md="6">
+											<MudTextField T="string" Label="Extra Payments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@extraPaymentsDescription"
 												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
 										</MudItem>
 
@@ -131,7 +131,7 @@
 					</Panel>
 				</MudItem>
 
-				<MudItem xs="12" sm="8">
+				<MudItem xs="12" md="8">
 					<Panel Title="Summary">
 						<HeaderContent>
 							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -214,12 +214,12 @@
 					@if (payments.HasData())
 					{
 						<MudStack Row Spacing="0">
-							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="ScrollToTopClicked" />
-							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Inherit" OnClick="ScrollToBottomClicked" />
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="OnScrollToTopClicked" />
+							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Inherit" OnClick="OnScrollToBottomClicked" />
 							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
-								<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="ExpandContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" Class="pe-6" />
+								<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="OnExpandOrContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" Class="pe-6" />
 								<MudDivider />
-								<MudMenuItem Label="Download as Excel" OnClick="DownloadAsExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" Class="pe-6" />
+								<MudMenuItem Label="Download as Excel" OnClick="OnDownloadAsExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" Class="pe-6" />
 							</MudMenu>
 						</MudStack>
 					}
@@ -273,8 +273,6 @@
 	PaymentStatistics stats = new();
 	PresetCollection presets = new();
 
-	bool isVariableRateMortgage => details.InterestRateType != MortgageDetails.InterestRateTypes.Fixed;
-
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
 	// Workaround for MudDatePicker requiring DateTime? instead of DateTime
@@ -286,9 +284,10 @@
 
 	int summaryPage = 0;
 	int adaptiveSpacing = 6;
-	int balanceMaxYear;
+	int balanceMaxYear = 1;
 	int? balanceAtYear = 5;
 	bool paymentsTableExpanded = false;
+	string extraPaymentsDescription = "None";
 
 	async Task Calculate()
 	{
@@ -326,7 +325,7 @@
 		}
 	}
 
-	async Task DetailsSaveClicked()
+	async Task OnDetailsSaveClicked()
 	{
 		try
 		{
@@ -340,7 +339,7 @@
 		}
 	}
 
-	async Task DetailsLoadClicked(InputFileChangeEventArgs arg)
+	async Task OnDetailsLoadClicked(InputFileChangeEventArgs arg)
 	{
 		var file = arg.File;
 
@@ -357,6 +356,8 @@
 				string jsonText = await reader.ReadToEndAsync();
 				details = MortgageDetails.FromJsonString(jsonText);
 				Snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
+				SetExtraPaymentsFieldDescription();
+
 				await Calculate();
 			}
 			catch (Exception ex)
@@ -366,22 +367,22 @@
 		}
 	}
 
-	async Task DownloadAsExcelClicked()
+	async Task OnDownloadAsExcelClicked()
 	{
 		Export.ToExcel(payments);
 	}
 
-	async Task ExpandContractClicked()
+	async Task OnExpandOrContractClicked()
 	{
 		paymentsTableExpanded = !paymentsTableExpanded;
 	}
 
-	async Task ScrollToBottomClicked()
+	async Task OnScrollToBottomClicked()
 	{
 		paymentsTable?.ScrollToBottom();
 	}
 
-	async Task ScrollToTopClicked()
+	async Task OnScrollToTopClicked()
 	{
 		paymentsTable?.ScrollToTop();
 	}
@@ -421,12 +422,30 @@
 
 		var dialogReference = await DialogService.ShowAsync<ExtraPaymentsDialog>(parameters, options);
 		await dialogReference.Result;
+
+		SetExtraPaymentsFieldDescription();
 		StateHasChanged();
+	}
+
+	void SetExtraPaymentsFieldDescription()
+	{
+		if (details.ExtraPayments.Count == 0)
+		{
+			extraPaymentsDescription = "None";
+		}
+		else
+		{
+			extraPaymentsDescription = string.Empty;
+			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.GetLumpSums().Select(x => x.Amount.ToString("N2") + "; "));
+			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.GetRecurring().Select(x => x.Amount.ToString("N2") + "+; "));
+		}
 	}
 
 	async Task OnPresetChanged(Func<MortgageDetails> preset)
 	{
 		details = preset();
+		SetExtraPaymentsFieldDescription();
+
 		await Calculate();
 	}
 

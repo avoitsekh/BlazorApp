@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
@@ -19,6 +20,10 @@ public sealed class MortgageDetails
 	public enum InterestAccrualMethods { PerDay, PerPayment }
 	public enum FinancialYears { _365or366, _365, _360 }
 
+	[JsonIgnore]
+	public bool IsVariableRateMortgage => InterestRateType != InterestRateTypes.Fixed;
+
+
 	#region JSON Import/Export
 
 	public static string ToJsonString(MortgageDetails details)
@@ -32,9 +37,8 @@ public sealed class MortgageDetails
 		{
 			return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
 		}
-		catch (Exception ex)
+		catch
 		{
-			var aaa = ex.Message;
 			throw new Exception("File appears to be corrupted or invalid.");
 		}
 	}
