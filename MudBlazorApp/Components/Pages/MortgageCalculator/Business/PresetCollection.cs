@@ -2,11 +2,11 @@
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public sealed class PresetCollection : Dictionary<string, MortgageDetails>
+public sealed class PresetCollection : Dictionary<string, Func<MortgageDetails>>
 {
 	public PresetCollection()
 	{
-		Add("Fixed Rate with Extra Payments", new()
+		Add("Fixed Rate with Extra Payments", () => new()
 		{
 			LoanAmount = 300000D,
 			InterestRates = new InterestCollection(8D),
@@ -22,7 +22,7 @@ public sealed class PresetCollection : Dictionary<string, MortgageDetails>
 			},
 		});
 
-		Add("Variable Rate with Extra Payments", new()
+		Add("Variable Rate with Extra Payments", () => new()
 		{
 			LoanAmount = 700000D,
 			InterestRates = new InterestCollection(4.5D)

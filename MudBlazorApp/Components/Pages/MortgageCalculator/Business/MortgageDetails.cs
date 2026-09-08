@@ -10,9 +10,9 @@ public sealed class MortgageDetails
 	public DateTime AdvanceDate = new DateTime(2025, 01, 01);			// mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;									// ppy - payments per year
-	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
 	public FinancialYears FinancialYear = FinancialYears._365or366;
+	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public ExtraPaymentCollection ExtraPayments = new();
 
 	public enum InterestRateTypes { Fixed, ARM }
@@ -32,8 +32,9 @@ public sealed class MortgageDetails
 		{
 			return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
 		}
-		catch
+		catch (Exception ex)
 		{
+			var aaa = ex.Message;
 			throw new Exception("File appears to be corrupted or invalid.");
 		}
 	}

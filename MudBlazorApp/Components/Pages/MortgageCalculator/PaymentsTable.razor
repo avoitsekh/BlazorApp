@@ -1,5 +1,5 @@
 ﻿<div>
-	<MudTable @ref="_table" Items="Payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="small-cell" Virtualize="@(!Expanded)" FixedHeader="@(!Expanded)" Height="@(!Expanded ? "400px" : null)">
+	<MudTable @ref="_table" Items="_payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="small-cell" Virtualize="@(!Expanded)" FixedHeader="@(!Expanded)" Height="@(!Expanded ? "400px" : null)">
 		<HeaderContent>
 			<MudTh>@Constants.No</MudTh>
 			<MudTh>@Constants.PaymentDate</MudTh>
@@ -31,11 +31,22 @@
 
 	MudTable<Payment>? _table = null;
 
-	[CascadingParameter(Name = "payments")]
+	[CascadingParameter(Name = "&payments")]
 	PaymentCollection? Payments { get; set; }
+
+	PaymentCollection? _payments;
 
 	[Parameter]
 	public bool Expanded { get; set; } = false;
+
+	protected override void OnParametersSet()
+	{
+		var hasChanges = _payments != Payments;
+		if (hasChanges && Payments.HasData())
+		{
+			_payments = Payments;
+		}
+	}
 
 	async Task ScrollToRow(Payment payment)
 	{
@@ -59,5 +70,5 @@
 			await ScrollToRow(payment);
 		}
 	}
-
+	
 }

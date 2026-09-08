@@ -8,14 +8,20 @@
 
 @code {
 
-	[CascadingParameter(Name = "payments")]
+	[CascadingParameter(Name = "&payments")]
 	PaymentCollection? Payments { get; set; }
 
-	[CascadingParameter(Name = "paymentsNoExtras")]
+	[CascadingParameter(Name = "&PaymentsNoExtras")]
 	PaymentCollection? PaymentsNoExtras { get; set; }
 
 	[CascadingParameter]
 	Breakpoint? CurrentBreakpoint { get; set; }
+
+	/// <summary>
+	/// The number of milliseconds to wait before rendering the chart.
+	/// </summary>
+	[Parameter]
+	public int DebounceInterval { get; set; } = 0;
 
 	LineChartOptions options = new()
 	{
@@ -32,23 +38,47 @@
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
 	string adaptivePadding = "padding: 0px 20px 0px 20px;";
+	Action? DebounceDraw = null;
+
+	PaymentCollection? _payments = null;
+	PaymentCollection? _paymentsNoExtras = null;
+	Breakpoint? _currentBreakpoint = null;
+	int _debounceInterval = -1;
 
 	protected override void OnParametersSet()
 	{
-		base.OnParametersSet();
-
-		if (CurrentBreakpoint != null)
+		var hasChanges = _currentBreakpoint != CurrentBreakpoint;
+		if (hasChanges && CurrentBreakpoint != null)
 		{
-			bool isSmallOrExtraSmallScreen = CurrentBreakpoint == Breakpoint.Sm || CurrentBreakpoint == Breakpoint.Xs;
-			adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 20px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
+			SetPadding();
+			_currentBreakpoint = CurrentBreakpoint;
 		}
 
-		if (Payments.HasData())
+		hasChanges = _debounceInterval != DebounceInterval;
+		if (hasChanges)
+		{
+			DebounceDraw = DebounceInterval > 0 ? new Action(Draw).Debounce(DebounceInterval) : new Action(Draw);
+			_debounceInterval = DebounceInterval;
+		}
+
+		hasChanges = _payments != Payments || _paymentsNoExtras != PaymentsNoExtras;
+		if (hasChanges && Payments.HasData())
+		{
+			DebounceDraw?.Invoke();
+			_payments = Payments;
+			_paymentsNoExtras = PaymentsNoExtras;
+		}
+	}
+
+	void Draw()
+	{
+		InvokeAsync(() =>
 		{
 			SetGraphValues();
 			SetXAxisLabels();
 			SetYAxisLabels();
-		}
+			StateHasChanged();
+		});
 	}
 
 	void SetGraphValues()
@@ -57,20 +87,18 @@
 
 		if (PaymentsNoExtras.HasData())
 		{
-			series.Add(new ChartSeries<double>()
+			series.Add(new()
 			{
 				Name = "Without extra payments",
 				Data = PaymentsNoExtras!.Select(x => x.Balance).ToArray(),
-				TooltipTitleFormat = "{{SERIES_NAME}}"
 			});
 		}
 
-		series.Add(new ChartSeries<double>()
+		series.Add(new()
 		{
 			Name = "With extra payments",
 			Data = Payments!.Select(x => x.Balance).ToArray(),
-			TooltipTitleFormat = "{{SERIES_NAME}}" }
-		);
+		});
 
 		options.ShowLegend = series.Count > 1;
 		options.SeriesDisplayOverrides = new Dictionary<IChartSeries, SeriesDisplayOverride>(series.Count);
@@ -92,7 +120,7 @@
 
 	void SetYAxisLabels()
 	{
-		var loanAmount = Payments.Details.LoanAmount;
+		var loanAmount = Payments!.Details.LoanAmount;
 		options.YAxisTicks = loanAmount switch
 		{
 			<= 1000 => 100,
@@ -104,5 +132,11 @@
 			<= 1000000 => 100000,
 			_ => 250000
 		};
+	}
+
+	void SetPadding()
+	{
+		bool isSmallOrExtraSmallScreen = CurrentBreakpoint == Breakpoint.Sm || CurrentBreakpoint == Breakpoint.Xs;
+		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 20px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
 	}
 }

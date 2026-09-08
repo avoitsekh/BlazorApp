@@ -11,38 +11,37 @@
 	[CascadingParameter]
 	Breakpoint? CurrentBreakpoint { get; set; }
 
-	[CascadingParameter(Name = "isDarkMode")]
-	bool isDarkMode { get; set; }
+	[CascadingParameter(Name = "&IsDarkMode")]
+	bool IsDarkMode { get; set; }
 
-	string[] labels = [];
+	string[] labels = ["Principal Paid", "Extra Paid", "Interest Paid", "Remaining Balance"];
 	double[] data = [];
 	Position legendPosition = Position.Right;
 
-	string PrincipalPaidColor => Colors.Blue.Default;
-	string ExtraPaidColor => Colors.Cyan.Default;
-	string InterestPaidColor => Colors.Red.Lighten1;
-	string RemainingBalanceColor => isDarkMode ? Colors.Gray.Darken3 : Colors.Gray.Lighten2;
+	Breakpoint? _currentBreakpoint = null;
+
 
 	DonutChartOptions options = new()
 	{
 		ShowToolTips = false,
+		ChartPalette = [Colors.Blue.Default, Colors.Cyan.Default, Colors.Red.Lighten1, Colors.Gray.Lighten2]
 	};
 
 	protected override void OnParametersSet()
 	{
-		base.OnParametersSet();
-
-		if (CurrentBreakpoint != null)
+		var hasChanges = _currentBreakpoint != CurrentBreakpoint;
+		if (hasChanges && CurrentBreakpoint != null)
 		{
-			bool isExtraSmallScreen = CurrentBreakpoint == Breakpoint.Xs;
+			var isExtraSmallScreen = CurrentBreakpoint == Breakpoint.Xs;
 			legendPosition = isExtraSmallScreen ? Position.Bottom : Position.Right;
-			options.ChartPalette = [PrincipalPaidColor, ExtraPaidColor, InterestPaidColor, RemainingBalanceColor];
+			_currentBreakpoint = CurrentBreakpoint;
 		}
 
 		if (Statistics != null)
 		{
-			labels = ["Principal Paid", "Extra Paid", "Interest Paid", "Remaining Balance"];
 			data = [Statistics.PrincipalPaid, Statistics.ExtraPaid, Statistics.InterestPaid, Statistics.RemainingBalance];
 		}
+
+		options.ChartPalette[3] = IsDarkMode ? Colors.Gray.Darken3 : Colors.Gray.Lighten2;
 	}
 }

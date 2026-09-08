@@ -1,5 +1,4 @@
 ﻿using static MudBlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
@@ -36,7 +35,6 @@ public sealed class PaymentCollection : List<Payment>
 		{
 			DateTime previousPaymentDate = paymentDate;
 			paymentDate = GetNextPaymentDate(paymentDate, i);
-
 
 			double interestAmount = CalculateInterestAmount(previousPaymentDate, paymentDate, balance);
 			double principalAmount = RoundToCents(paymentAmount - interestAmount);
@@ -222,9 +220,9 @@ public sealed class PaymentCollection : List<Payment>
 		return new DateTime(date.Year, date.Month, Math.Min(day, DateTime.DaysInMonth(date.Year, date.Month)));
 	}
 
-	public Payment LastPaymentForYear(int year)
+	public Payment? LastPaymentForYear(int year)
 	{
-		return this.FirstOrDefault(x => x.Year == year);
+		return this.FirstOrDefault(x => x.Year.HasValue && x.Year.Value == year);
 	}
 
 	public List<Payment> GetPaymentsForPeriod(int fromPayment, int toPayment)

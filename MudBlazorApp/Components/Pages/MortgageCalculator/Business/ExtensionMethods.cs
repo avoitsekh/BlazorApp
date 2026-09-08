@@ -11,4 +11,25 @@ public static class ExtensionMethods
 	{
 		return value != null && value.Count > 0;
 	}
+
+	public static Action Debounce(this Action action, int milliseconds = 300)
+	{
+		CancellationTokenSource lastToken = null;
+
+		return () =>
+		{
+			lastToken?.Cancel();
+
+			try
+			{
+				lastToken?.Dispose();
+			}
+			catch
+			{
+			}
+
+			var token = lastToken = new CancellationTokenSource();
+			Task.Delay(milliseconds).ContinueWith(task => action(), token.Token);
+		};
+	}
 }

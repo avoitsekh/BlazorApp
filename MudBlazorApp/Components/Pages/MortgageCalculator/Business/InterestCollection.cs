@@ -14,6 +14,7 @@ public sealed class InterestCollection : IList<Interest>
 		set => _interests[0].Rate = value;
 	}
 
+	// Default constructor for JSON deserialization
 	public InterestCollection()
 	{
 	}
@@ -55,7 +56,7 @@ public sealed class InterestCollection : IList<Interest>
 
 	public double[] GetRatesForPeriod(DateTime from, DateTime to)
 	{
-		List<double> result = new()
+		List<double> result = new(4)
 		{
 			GetRate(from)
 		};
@@ -71,7 +72,15 @@ public sealed class InterestCollection : IList<Interest>
 
 	public void Add(Interest interest)
 	{
-		_interests.Add(interest);
+		Interest interestToUpdate;
+		if (interest.IsInitial && (interestToUpdate = this.FirstOrDefault(x => x.IsInitial)) != null)
+		{
+			interestToUpdate.Rate = interest.Rate;
+		}
+		else
+		{
+			_interests.Add(interest);
+		}
 		SortByEffectiveDate();
 	}
 
