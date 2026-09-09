@@ -4,6 +4,13 @@ namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
 public static class Constants
 {
+	#region Filenames
+
+	public const string MortgageDetailsSettingsFilename = "mortgage-details.json";
+	public const string AmortizationScheduleExcelFilename = "amortization-schedule.xlsx";
+
+	#endregion
+
 	#region Dropdowns
 
 	public static Dictionary<string, InterestRateTypes> InterestRateType = new()
@@ -43,6 +50,9 @@ public static class Constants
 	#endregion
 
 	#region Labels
+
+	// todo
+
 	#endregion
 
 	#region Grid Headers

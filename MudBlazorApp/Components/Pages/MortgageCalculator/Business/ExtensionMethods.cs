@@ -12,7 +12,7 @@ public static class ExtensionMethods
 		return value != null && value.Count > 0;
 	}
 
-	public static Action Debounce(this Action action, int milliseconds = 300)
+	public static Action Debounce(this Action action, int milliseconds)
 	{
 		CancellationTokenSource lastToken = null;
 

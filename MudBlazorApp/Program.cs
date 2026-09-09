@@ -8,14 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
-//builder.Services.AddMudServices(config =>
-//{
-//	config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
-//	config.SnackbarConfiguration.ShowTransitionDuration = 200;
-//	config.SnackbarConfiguration.HideTransitionDuration = 200;
-//	config.SnackbarConfiguration.VisibleStateDuration = 4000;
-//	config.SnackbarConfiguration.MaximumOpacity = 100;
-//});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -33,11 +25,10 @@ builder.Services.AddMudBlazorSnackbar(options =>
 	options.HideTransitionDuration = 200;
 	options.VisibleStateDuration = 4000;
 	options.MaximumOpacity = 100;
+	options.PreventDuplicates = false;
 });
 
 builder.Services.AddScoped<ClipboardService>();
-
-
 builder.Services.AddCors(options => options.AddPolicy("Allow All CORS", p => p.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()));
 
 
@@ -52,12 +43,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-
 app.UseHttpsRedirection();
-
 app.UseCors("Allow All CORS");	// Allow connections from anywhere
-
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();

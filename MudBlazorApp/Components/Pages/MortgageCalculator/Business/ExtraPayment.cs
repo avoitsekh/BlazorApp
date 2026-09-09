@@ -16,6 +16,6 @@ public sealed class ExtraPayment
 	public bool IsLumpSum => FromPayment.HasValue && ToPayment.HasValue && FromPayment == ToPayment;
 
 	[JsonIgnore]
-	public bool IsRecurring => FromPayment.HasValue && (!ToPayment.HasValue || FromPayment != ToPayment);
+	public bool IsRecurring => FromPayment.HasValue && (!ToPayment.HasValue || FromPayment < ToPayment);
 
 }

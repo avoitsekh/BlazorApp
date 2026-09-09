@@ -1,46 +1,68 @@
 ﻿using OfficeOpenXml;
+using System.Reflection;
 
 namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
-public static class Export
+public static class ExportToExcel
 {
-	static Export()
+	static ExportToExcel()
 	{
 		ExcelPackage.License.SetNonCommercialPersonal("Blazor Portfolio Project - AV");
 	}
 
-	public static void ToExcel(PaymentCollection payments)
+	public static byte[] GetByteArray(PaymentCollection payments)
 	{
-		string filename = "C:\\Temp\\my-file.xlsx";
+		var columnNames = new string[]
+		{
+			Constants.No,
+			Constants.PaymentDate,
+			Constants.Year,
+			Constants.Interest,
+			Constants.InterestAccrualPeriod,
+			Constants.InterestAmount,
+			Constants.PrincipalAmount,
+			Constants.ExtraAmount,
+			Constants.PaymentAmount,
+			Constants.RemainingBalance,
+		};
 
+		var fields = new string[]
+		{
+			nameof(Payment.Number),
+			nameof(Payment.PaymentDate),
+			nameof(Payment.Year),
+			nameof(Payment.IterestRate),
+			nameof(Payment.InterestAccrualPeriod),
+			nameof(Payment.InterestAmount),
+			nameof(Payment.PrincipalAmount),
+			nameof(Payment.ExtraAmount),
+			nameof(Payment.PaymentAmount),
+			nameof(Payment.Balance),
+		};
+
+		var table = new List<object[]>(payments.Count + 1);
+		table.Add(columnNames);
+
+		var objType = typeof(Payment);
+		var fieldInfos = fields.Select(objType.GetField).ToList();
+
+		foreach (var payment in payments)
+		{
+			var values = fieldInfos.Select(x => x.GetValue(payment)).ToArray();
+			table.Add(values);
+		}
 
 		using ExcelPackage ep = new();
 		using ExcelWorksheet ws = ep.Workbook.Worksheets.Add("Amortization Schedule");
 
 		ws.Cells.Style.Font.Name = "Arial";
 		ws.Cells.Style.Font.Size = 9.0f;
+		ws.Cells.LoadFromArrays(table);
 
-		// ws.Cells.LoadFromCollection<Payment>(payments, PrintHeaders: true);
-
-		var fields = typeof(Payment).GetFields();
-		var attributes = fields.Select(x => x.GetCustomAttributes(typeof(LabelAttribute), true).First() as LabelAttribute).ToArray();
-		
-		var list = new List<object[]>(payments.Count + 1)
-		{
-			attributes.Select(x => x.Name).ToArray(),
-		};
-
-		foreach (var payment in payments)
-		{
-			list.Add(fields.Select(x => x.GetValue(payment)).ToArray());
-		}
-
-		ws.Cells.LoadFromArrays(list);
-
-		for (int i = 0; i < fields.Length; i++)
+		for (int i = 0; i < fieldInfos.Count; i++)
 		{
 			var idx = i + 1;
-			var dataType = fields[i].FieldType;
+			var dataType = fieldInfos[i].FieldType;
 
 			if (dataType == typeof(DateTime))
 			{
@@ -78,6 +100,6 @@ public static class Export
 		ws.PrinterSettings.FooterMargin = 0.2D;
 		ws.PrinterSettings.HorizontalCentered = true;
 
-		ep.SaveAs(new FileInfo(filename));
+		return ep.GetAsByteArray();
 	}
 }

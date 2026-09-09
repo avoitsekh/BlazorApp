@@ -14,9 +14,9 @@ public sealed class InterestCollection : IList<Interest>
 		set => _interests[0].Rate = value;
 	}
 
-	// Default constructor for JSON deserialization
 	public InterestCollection()
 	{
+		// Default constructor for JSON deserialization
 	}
 
 	public InterestCollection(double initialRate)

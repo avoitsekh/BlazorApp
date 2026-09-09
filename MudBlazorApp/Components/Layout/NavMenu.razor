@@ -1,9 +1,35 @@
 ﻿<MudNavMenu>
-	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary"><MudText>Home</MudText></MudNavLink>
-	<MudNavLink Href="currency" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Primary"><MudText>Currency Converter</MudText></MudNavLink>
-	<MudNavLink Href="guid" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Code" IconColor="Color.Primary"><MudText>Guid Generator</MudText></MudNavLink>
-	<MudNavLink Href="qrcode" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QrCode" IconColor="Color.Primary"><MudText>QRCode Generator</MudText></MudNavLink>
-	<MudNavLink Href="mortgage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Percent" IconColor="Color.Primary"><MudText>Mortgage Calculator</MudText></MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home" IconColor="Color.Primary" Class="modern-nav-link">
+        <MudText>Home</MudText>
+    </MudNavLink>
+    <MudNavLink Href="currency" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CurrencyExchange" IconColor="Color.Primary">
+        <MudText>Currency Converter</MudText>
+    </MudNavLink>
+    <MudNavLink Href="guid" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Code" IconColor="Color.Primary">
+        <MudText>Guid Generator</MudText>
+    </MudNavLink>
+    <MudNavLink Href="qrcode" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.QrCode" IconColor="Color.Primary">
+        <MudText>QRCode Generator</MudText>
+    </MudNavLink>
+    <MudNavLink Href="mortgage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Percent" IconColor="Color.Primary">
+        <MudText>Mortgage Calculator</MudText>
+    </MudNavLink>
 </MudNavMenu>
 
 
+<style>
+    
+    .modern-nav-link {
+/*         margin-bottom: 8px;
+        border-radius: 12px !important;
+        padding: 12px 16px !important; */
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* color: #424242 !important; */
+    }
+
+        .modern-nav-link:hover {
+            /* background: linear-gradient(135deg, rgba(25, 118, 210, 0.08) 0%, rgba(21, 101, 192, 0.12) 100%) !important; */
+            transform: translateX(4px);
+        }
+
+</style>

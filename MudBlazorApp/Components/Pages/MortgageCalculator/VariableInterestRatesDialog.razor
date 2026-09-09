@@ -25,7 +25,7 @@
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
 					<MudDatePicker Label="Effective Date" @bind-Date="interest.EffectiveDate" Editable="true" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
-						AdornmentColor="Color.Primary" Margin="Margin.Dense" Validation="ValidateEffectiveDate" MinDate="MinDate" OpenTo="OpenTo.Month" ShowToolbar="false" />
+						Margin="Margin.Dense" Validation="ValidateEffectiveDate" MinDate="MinDate" OpenTo="OpenTo.Month" ShowToolbar="false" />
 					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="interest.Rate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
 						Validation="ValidateRate" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />

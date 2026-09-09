@@ -7,11 +7,11 @@
 
 @inject IBrowserViewportService BrowserViewportService
 @inject IDialogService DialogService
-@inject IJSRuntime JS
 @inject ISnackbar Snackbar
 
 
 <PageTitle>Mortgage Calculator</PageTitle>
+<BrowserDownload @ref="browserDownload" OnDownloadError="OnDownloadError" OnDownloadSuccess="OnDownloadSuccess" />
 
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
 	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
@@ -32,7 +32,7 @@
 										<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune">
 											@foreach (var keyValuePair in presets)
 											{
-												<MudMenuItem Label="@keyValuePair.Key" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Info" OnClick="@(() => OnPresetChanged(keyValuePair.Value))" />
+												<MudMenuItem Label="@keyValuePair.Key" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Info" OnClick="@(() => OnPresetChanged(keyValuePair.Key, keyValuePair.Value))" />
 											}
 										</MudMenu>
 										<MudDivider />
@@ -46,7 +46,7 @@
 						<MainContent>
 							<MudForm @ref="form" Spacing="4">
 								<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
-									<MudGrid Spacing="@adaptiveSpacing">
+									<MudGrid Spacing="6">
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")"
 											Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
@@ -119,13 +119,7 @@
 
 									</MudGrid>
 								</MudStack>
-
-								@* <MudStack AlignItems="AlignItems.Center" Spacing="2">
-									<MudButton OnClick="OpenExtraPaymentsDialogAsync" Size="Size.Large" Style="width: 200px">Extra Payments</MudButton>
-									<MudButton Variant="Variant.Filled" OnClick="Calculate" Size="Size.Large" Color="Color.Inherit" Style="width: 200px">Calculate</MudButton>
-								</MudStack> *@
-								<MudButton Variant="Variant.Filled" OnClick="Calculate" Size="Size.Large" Color="Color.Inherit">Calculate</MudButton>
-
+								<MudButton Variant="Variant.Filled" OnClick="Calculate" Size="Size.Large" Color="Color.Dark">Calculate</MudButton>
 							</MudForm>
 						</MainContent>
 					</Panel>
@@ -141,7 +135,7 @@
 							</MudStack>
 						</HeaderContent>
 						<MainContent>
-							<MudCarousel Class="mud-width-full mud-height-full" Style="min-height:400px;" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" EnableSwipeGesture="false" AutoCycle="false" TData="object">
+							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" TData="object">
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4">
@@ -211,22 +205,18 @@
 
 			<Panel Title="Amortization Schedule">
 				<HeaderContent>
-					@if (payments.HasData())
-					{
-						<MudStack Row Spacing="0">
-							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="OnScrollToTopClicked" />
-							<MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Inherit" OnClick="OnScrollToBottomClicked" />
-							<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight">
-								<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="OnExpandOrContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" Class="pe-6" />
-								<MudDivider />
-								<MudMenuItem Label="Download as Excel" OnClick="OnDownloadAsExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" Class="pe-6" />
-							</MudMenu>
-						</MudStack>
-					}
+					<MudStack Row Spacing="0">
+						<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="OnScrollToTopClicked" Disabled="@(!payments.HasData())" />
+						<MudIconButton Icon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Inherit" OnClick="OnScrollToBottomClicked" Disabled="@(!payments.HasData())" />
+						<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.TopLeft" TransformOrigin="Origin.TopRight" Disabled="@(!payments.HasData())">
+							<MudMenuItem Label="@(paymentsTableExpanded ? "Contract" : "Expand")" OnClick="OnExpandOrContractClicked" Icon="@(paymentsTableExpanded ? Icons.Material.Filled.Compress : Icons.Material.Filled.Expand)" Class="pe-6" />
+							<MudDivider />
+							<MudMenuItem Label="Download as Excel" OnClick="OnDownloadAsExcelClicked" Icon="@Icons.Custom.FileFormats.FileExcel" Class="pe-6" />
+						</MudMenu>
+					</MudStack>
 				</HeaderContent>
 				<MainContent>
 					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded"></PaymentsTable>
-					@* <PaymentsTable @ref="paymentsTable" Payments="payments" Expanded="paymentsTableExpanded"></PaymentsTable> *@
 				</MainContent>
 			</Panel>
 
@@ -244,27 +234,18 @@
 	.animation-duration {
 		animation-duration: .3s;
 	}
+
+	.mud-swipearea {
+		touch-action: pan-y;
+	}
 </style>
 	
 
 
-<script>
-
-	window.downloadFile = (fileName, contentType, bytes) => {
-	const blob = new Blob([bytes], { type: contentType });
-	const url = URL.createObjectURL(blob);
-	const anchor = document.createElement('a');
-	anchor.href = url;
-	anchor.download = fileName;
-	anchor.click();
-	URL.revokeObjectURL(url);
-	};
-
-</script>
-
 @code {
 
 	MudForm? form = null;
+	BrowserDownload? browserDownload = null;
 
 	PaymentsTable? paymentsTable;
 	PaymentCollection? payments;
@@ -283,7 +264,7 @@
 	}
 
 	int summaryPage = 0;
-	int adaptiveSpacing = 6;
+	string summaryPageHeight = "400px";
 	int balanceMaxYear = 1;
 	int? balanceAtYear = 5;
 	bool paymentsTableExpanded = false;
@@ -325,20 +306,6 @@
 		}
 	}
 
-	async Task OnDetailsSaveClicked()
-	{
-		try
-		{
-			var jsonText = MortgageDetails.ToJsonString(details);
-			await JS.InvokeVoidAsync("downloadFile", "mortgage-details.json", "text/plain", Encoding.UTF8.GetBytes(jsonText));
-			Snackbar.Add("Saved to mortgage-details.json", Severity.Info);
-		}
-		catch (Exception ex)
-		{
-			Snackbar.Add($"Error saving to mortgage-details.json. {ex.GetBaseException().Message}", Severity.Error);
-		}
-	}
-
 	async Task OnDetailsLoadClicked(InputFileChangeEventArgs arg)
 	{
 		var file = arg.File;
@@ -355,21 +322,56 @@
 				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
 				string jsonText = await reader.ReadToEndAsync();
 				details = MortgageDetails.FromJsonString(jsonText);
-				Snackbar.Add("Successfully loaded from mortgage-details.json", Severity.Success);
+				Snackbar.Add($"Successfully loaded from '{file.Name}'", Severity.Success);
 				SetExtraPaymentsFieldDescription();
 
 				await Calculate();
 			}
 			catch (Exception ex)
 			{
-				Snackbar.Add($"Error loading from {file.Name}. {ex.GetBaseException().Message}", Severity.Error);
+				Snackbar.Add($"Error loading from '{file.Name}'. {ex.GetBaseException().Message}", Severity.Error);
 			}
+		}
+	}
+
+	async Task OnDetailsSaveClicked()
+	{
+		var filename = Constants.MortgageDetailsSettingsFilename;
+
+		try
+		{
+			var jsonText = MortgageDetails.ToJsonString(details);
+			await browserDownload!.Download(filename, "text/json", Encoding.UTF8.GetBytes(jsonText));
+		}
+		catch (Exception ex)
+		{
+			await OnDownloadError((ex, filename));
 		}
 	}
 
 	async Task OnDownloadAsExcelClicked()
 	{
-		Export.ToExcel(payments);
+		var filename = Constants.AmortizationScheduleExcelFilename;
+
+		try
+		{
+			var bytes = ExportToExcel.GetByteArray(payments);
+			await browserDownload!.Download(filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
+		}
+		catch (Exception ex)
+		{
+			await OnDownloadError((ex, filename));
+		}
+	}
+
+	async Task OnDownloadSuccess(string filename)
+	{
+		Snackbar.Add($"Saved to '{filename}'", Severity.Info);
+	}
+
+	async Task OnDownloadError((Exception Exception, string Filename) args)
+	{
+		Snackbar.Add($"Error saving to '{args.Filename}'. {args.Exception.GetBaseException().Message}", Severity.Error);
 	}
 
 	async Task OnExpandOrContractClicked()
@@ -441,10 +443,11 @@
 		}
 	}
 
-	async Task OnPresetChanged(Func<MortgageDetails> preset)
+	async Task OnPresetChanged(string presetName, Func<MortgageDetails> preset)
 	{
 		details = preset();
 		SetExtraPaymentsFieldDescription();
+		Snackbar.Add($"Loaded preset '{presetName}'", Severity.Success);
 
 		await Calculate();
 	}
@@ -473,8 +476,9 @@
 	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
 	{
 		currentBreakpoint = browserViewportEventArgs.Breakpoint;
-		bool isSmallScreen = currentBreakpoint == Breakpoint.Sm;
-		adaptiveSpacing = isSmallScreen ? 3 : 6;
+		var isExtraSmallScreen = currentBreakpoint == Breakpoint.Xs;
+		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
+		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
 		return InvokeAsync(StateHasChanged);
 	}
 
