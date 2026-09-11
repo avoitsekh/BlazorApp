@@ -92,7 +92,7 @@
 
 	string ValidateRate(double rate)
 	{
-		var result = MortgageDetailsValidation.ValidateInterestRate(rate);
+		var result = Details.ValidateInterestRate(rate);
 		if (string.IsNullOrEmpty(result))
 		{
 			if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)

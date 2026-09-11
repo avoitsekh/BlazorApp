@@ -1,0 +1,43 @@
+﻿@page "/"
+
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+
+<PageTitle>About</PageTitle>
+<BrowserLocalTimeZoneProvider OnTimeZoneChanged="OnTimeZoneChanged" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="pa-2">
+	<MudStack Wrap="Wrap.Wrap">
+
+		<MudText Typo="Typo.h4">@greetings</MudText>
+
+		<MudText>Welcome to my Blazor portfolio app. I've been learning Blazor recently and this web app demonstrates my skillset coding 
+			in .NET and Blazor. Feel free to navigate to the side menu located on the left to see various tools. In particular, make sure 
+			to try the 
+			<MudTooltip Arrow Color="Color.Transparent" Delay="60">
+				<ChildContent>
+					<MudLink OnClick="@(() => NavManager.NavigateTo("/mortgage"))">Mortgage Calculator</MudLink>
+				</ChildContent>
+				<TooltipContent>
+					<MudImage Src="images/mortgage.png" Class="rounded-lg" />
+				</TooltipContent>
+			</MudTooltip> ;)
+		</MudText>
+
+		<MudText>
+			Tech stack used:
+		</MudText>
+
+		<MudText>
+			<ul class="pl-3">
+				<li>.NET Core 10</li>
+				<li>Blazor w/ MudBlazor component library</li>
+			</ul>
+		</MudText>
+
+		<MudText>
+			The source code is available on GitHub and can be accessed via the links menu.
+		</MudText>
+
+	</MudStack>
+</MudContainer>

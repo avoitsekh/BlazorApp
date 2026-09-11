@@ -49,21 +49,23 @@
 									<MudGrid Spacing="6">
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")"
-											Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
+												Validation="details.ValidateLoanAmount" Margin="Margin.Dense" />
+												@* Validation="@(() => details.Validate(nameof(details.LoanAmount)))" Margin="Margin.Dense" /> *@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
-												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync" />
-												@* @Icons.Material.Filled.Menu *@
+												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
+												Validation="details.ValidateInterestRate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" />
+											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="details.ValidateAmortizationPeriodInYears" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense" />
+											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense"
+												Validation="details.ValidateAdvanceDate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
@@ -166,10 +168,10 @@
 												<DataField T="DateTime" Label="Last Payment Date" Value="@stats.LastPaymentDate" Format="yyyy-MM-dd" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Interest Paid" Value="@stats.InterestPaid" Format="N2" />
+												<DataField T="double" Label="Principal Paid" Value="@stats.PrincipalPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Extra Paid" Value="@stats.ExtraPaid" Format="N2" />
+												<DataField T="double" Label="Interest Paid" Value="@stats.InterestPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
 												<DataField T="double" Label="Interest Savings" Value="@stats.InterestSavings" Format="N2" />
@@ -178,7 +180,7 @@
 												<DataField T="double" Label="Number Of Payments" Value="@stats.NumberOfPayments" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Principal Paid" Value="@stats.PrincipalPaid" Format="N2" />
+												<DataField T="double" Label="Extra Paid" Value="@stats.ExtraPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
 												<DataField T="double" Label="Total Paid" Value="@stats.TotalPaid" Format="N2" />

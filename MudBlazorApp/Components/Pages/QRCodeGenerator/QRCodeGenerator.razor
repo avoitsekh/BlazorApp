@@ -19,7 +19,7 @@
 					</div>
 
 					<MudStack AlignItems="AlignItems.Center">
-						<QRCodeImage @ref="qrCodeImage" Options="@options" OnError="@OnError" />
+						<QrCodeImage @ref="qrCodeImage" Options="@options" OnError="@OnError" />
 					</MudStack>
 					<MudStack Row Justify="Justify.Center">
 						@if (errorMessage != null)
@@ -107,7 +107,7 @@
 
 						<MudStack Spacing="6">
 							<MudSelect T="Preset" @bind-Value="options.Preset" @bind-Value:after="OnPresetChanged" Label="Preset" Variant="Variant.Text" Dense>
-								@foreach (var keyValuePair in QRCodeOptions.Presets)
+								@foreach (var keyValuePair in QrCodeOptions.Presets)
 								{
 									if (keyValuePair.Value != Preset.Custom)
 									{
@@ -115,15 +115,15 @@
 									}
 								}
 							</MudSelect>
-							<MudStack Row>
+							<MudStack Row Wrap="Wrap.Wrap">
 								<MudSelect Label="Finder Pattern" @bind-Value="options.FinderPatternShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Disabled="@(options.Symbology is not SymbologyKind.QrCode)" Dense>
-									@foreach (var keyValuePair in QRCodeOptions.FinderPatternShapes)
+									@foreach (var keyValuePair in QrCodeOptions.FinderPatternShapes)
 									{
 										<MudSelectItem T="FinderPatternShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
 								<MudSelect Label="Module Shape" @bind-Value="options.ModuleShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
-									@foreach (var keyValuePair in QRCodeOptions.ModuleShapes)
+									@foreach (var keyValuePair in QrCodeOptions.ModuleShapes)
 									{
 										<MudSelectItem T="ModuleShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
@@ -135,19 +135,19 @@
 								<MudSlider T="float" @bind-Value="options.ModuleSizePercent" @bind-Value:after="OnStyleChanged" Variant="Variant.Filled" Color="@(OnMudSliderColorTreshold(options.ModuleSizePercent, 0.65f, 0.85f))" Min="0.5f" Max="1.0f" Step="0.01f">Module Size: @options.ModuleSizePercent.ToString("P0")</MudSlider>
 							</MudStack>
 
-							<MudStack Row>
+							<MudStack Row Wrap="Wrap.Wrap">
 								<MudColorPicker Label="Module Color 1" @bind-Value="moduleColor1" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" />
 								<MudColorPicker Label="Module Color 2" @bind-Value="moduleColor2" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" Disabled="@(options.GradientDirection == GradientDirection.None)" />
 							</MudStack>
 
-							<MudStack Row>
+							<MudStack Row Wrap="Wrap.Wrap">
 								<MudSelect Label="Gradient Options" @bind-Value="options.GradientDirection" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
-									@foreach (var keyValuePair in QRCodeOptions.GradientOptions)
+									@foreach (var keyValuePair in QrCodeOptions.GradientOptions)
 									{
 										<MudSelectItem T="GradientDirection" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
-								<MudCheckBox @bind-Value="options.TransparentBackground" @bind-Value:after="OnStyleChanged" Color="Color.Primary" Style="width:30%">Transparent Background</MudCheckBox>
+								<MudCheckBox @bind-Value="options.TransparentBackground" @bind-Value:after="OnStyleChanged" Color="Color.Primary" >Transparent Background</MudCheckBox>
 							</MudStack>
 						</MudStack>
 
@@ -162,7 +162,7 @@
 						</div>
 					</TitleContent>
 					<ChildContent>
-						<QRCodeDecoder />
+						<QrCodeDecoder />
 					</ChildContent>
 				</MudExpansionPanel>
 			</MudExpansionPanels>
@@ -173,7 +173,7 @@
 
 @code
 {
-	QRCodeImage? qrCodeImage;
+	QrCodeImage? qrCodeImage;
 	string? errorMessage;
 
 	MudColor moduleColor1
@@ -188,7 +188,7 @@
 		set => options.ModuleColor2 = value.ToString(MudColorOutputFormats.Hex);
 	}
 
-	QRCodeOptions options = new();
+	QrCodeOptions options = new();
 
 	void Regenerate()
 	{

@@ -8,7 +8,7 @@ public sealed class MortgageDetails
 	public double LoanAmount = 320000D;
 	public InterestCollection InterestRates = new(2.49D);
 	public int AmortizationPeriodInYears = 25;							// term
-	public DateTime AdvanceDate = new DateTime(2025, 01, 01);			// mortgage start date
+	public DateTime AdvanceDate = new(2025, 01, 01);					// mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;									// ppy - payments per year
 	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
@@ -22,6 +22,33 @@ public sealed class MortgageDetails
 
 	[JsonIgnore]
 	public bool IsVariableRateMortgage => InterestRateType != InterestRateTypes.Fixed;
+
+	public string ValidateLoanAmount(double amount) => amount switch
+	{
+		< 1000D => "Value cannot be less than 1,000",
+		_ => string.Empty
+	};
+
+	public string ValidateInterestRate(double rate) => rate switch
+	{
+		0D => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	public string ValidateAmortizationPeriodInYears(int years) => years switch
+	{
+		0 => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	public string ValidateAdvanceDate(DateTime? date)
+	{
+		if (!date.HasValue || date == DateTime.MinValue)
+		{
+			return "Value cannot be empty";
+		}
+		return string.Empty;
+	}
 
 
 	#region JSON Import/Export

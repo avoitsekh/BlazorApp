@@ -5,16 +5,21 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
+
 <MudLayout>
 	@* <MudAppBar Elevation="2" Style="background-image: linear-gradient( 109.6deg,  rgba(0,182,255,.1) 11.2%, rgba(102,51,153,.1) 91.1% ); backdrop-filter: blur(8px);"> *@
 	<MudAppBar Elevation="2" Class="appbar-blur">
 		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-		<MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
+		<MudText Typo="Typo.h5" Class="ml-3">Blazor Portfolio App</MudText>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-		<MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" Color="Color.Default" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
+			<MudFabMenuItem EndIcon="@Icons.Custom.Brands.LinkedIn" Color="Color.Info" Href="https://www.linkedin.com/in/voitsekh" Target="_blank" Size="Size.Small" />
+			<MudFabMenuItem EndIcon="@Icons.Custom.Brands.GitHub" Color="Color.Success" Href="https://github.com" Target="_blank" Size="Size.Small" />
+			<MudFabMenuItem EndIcon="@Icons.Material.Outlined.Email" Color="Color.Warning" Href="mailto:voitsekh@hotmail.com" Size="Size.Small" />
+		</MudFabMenu>
 	</MudAppBar>
-	<MudDrawer id="nav-drawer" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
+	<MudDrawer id="nav-drawer" @onclick="@((x) => DrawerClose())" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
 		<NavMenu />
 	</MudDrawer>
 	<MudMainContent Class="pt-16 pa-4">
@@ -32,8 +37,15 @@
 </div>
 
 <style>
+	.fab-button-links {
+		background-color: transparent;
+	}
+
+	.fab-button-links:hover {
+		background-color: var(--mud-palette-action-default-hover);
+	}
+
 	.appbar-blur {
-		/* From https://css.glass */
 		background: rgba(255, 255, 255, 0);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
@@ -79,6 +91,14 @@
 	private void DarkModeToggle()
 	{
 		_isDarkMode = !_isDarkMode;
+	}
+
+	private void DrawerClose()
+	{
+		if (_drawerOpen)
+		{
+			_drawerOpen = false;
+		}
 	}
 
 	private readonly PaletteLight _lightPalette = new()
@@ -141,7 +161,7 @@
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
 		_drawerClipMode = breakpoint == Breakpoint.Xs ? DrawerClipMode.Never : DrawerClipMode.Docked;
-		_drawerOpen = false;
+		DrawerClose();
 	}
 }
 

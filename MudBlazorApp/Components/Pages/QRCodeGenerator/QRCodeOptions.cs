@@ -1,9 +1,9 @@
 using SkiaSharp.QrCode;
 using SkiaSharp.QrCode.Image;
 
-namespace MudBlazorApp.Components.Pages.QRCodeGenerator;
+namespace MudBlazorApp.Components.Pages.QrCodeGenerator;
 
-public sealed class QRCodeOptions
+public sealed class QrCodeOptions
 {
 	public string Content { get; set; } = "Hello World!";
 
