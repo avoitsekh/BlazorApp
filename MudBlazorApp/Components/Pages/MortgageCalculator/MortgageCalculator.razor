@@ -2,16 +2,13 @@
 
 @using System.Text
 
-@implements IBrowserViewportObserver
-@implements IAsyncDisposable
-
-@inject IBrowserViewportService BrowserViewportService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
 
 <PageTitle>Mortgage Calculator</PageTitle>
 <BrowserDownload @ref="browserDownload" OnDownloadError="OnDownloadError" OnDownloadSuccess="OnDownloadSuccess" />
+<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
 	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
@@ -20,7 +17,6 @@
 			<CascadingValue Value="@payments" Name="&Payments">
 			<CascadingValue Value="@paymentsNoExtras" Name="&PaymentsNoExtras">
 			<CascadingValue Value="@stats">
-			<CascadingValue Value="@currentBreakpoint">
 
 			<MudGrid Spacing="3"> <!-- Grid for Mortgage Details and Summary panels -->
 				<MudItem xs="12" md="4">
@@ -116,7 +112,7 @@
 
 										<MudItem xs="6" sm="3" md="6">
 											<MudTextField T="string" Label="Extra Payments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@extraPaymentsDescription"
-												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
+												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" AdornmentColor="@(details.ExtraPayments.HasExtraPayments ? Color.Error : Color.Default)" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
 										</MudItem>
 
 									</MudGrid>
@@ -218,11 +214,10 @@
 					</MudStack>
 				</HeaderContent>
 				<MainContent>
-					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded"></PaymentsTable>
+					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded" />
 				</MainContent>
 			</Panel>
 
-			</CascadingValue>
 			</CascadingValue>
 			</CascadingValue>
 			</CascadingValue>
@@ -248,13 +243,13 @@
 
 	MudForm? form = null;
 	BrowserDownload? browserDownload = null;
+	PaymentsTable? paymentsTable = null;
 
-	PaymentsTable? paymentsTable;
-	PaymentCollection? payments;
-	PaymentCollection? paymentsNoExtras;
 	MortgageDetails details = new();
 	PaymentStatistics stats = new();
 	PresetCollection presets = new();
+	PaymentCollection? payments;
+	PaymentCollection? paymentsNoExtras;
 
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
@@ -462,31 +457,10 @@
 		}
 	}
 
-	protected override async Task OnAfterRenderAsync(bool firstRender)
+	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		if (firstRender)
-		{
-			await BrowserViewportService.SubscribeAsync(this, fireImmediately: true);
-		}
-
-		await base.OnAfterRenderAsync(firstRender);
-	}
-
-	Guid IBrowserViewportObserver.Id => Guid.NewGuid();
-	Breakpoint? currentBreakpoint;
-
-	Task IBrowserViewportObserver.NotifyBrowserViewportChangeAsync(BrowserViewportEventArgs browserViewportEventArgs)
-	{
-		currentBreakpoint = browserViewportEventArgs.Breakpoint;
-		var isExtraSmallScreen = currentBreakpoint == Breakpoint.Xs;
+		var isExtraSmallScreen = breakpoint == Breakpoint.Xs;
 		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
-		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
-		return InvokeAsync(StateHasChanged);
-	}
-
-	async ValueTask IAsyncDisposable.DisposeAsync()
-	{
-		await BrowserViewportService.UnsubscribeAsync(this);
 	}
 
 }

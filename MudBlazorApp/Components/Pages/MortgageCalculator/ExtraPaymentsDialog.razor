@@ -96,7 +96,7 @@
 		}
 		else if (fromPayment <= 0)
 		{
-			result = "Value cannot be 0 or negative";
+			result = "Value cannot be 0";
 		}
 		return result;
 	}
@@ -106,7 +106,7 @@
 		var result = string.Empty;
 		if (toPayment <= 0)
 		{
-			result = "Value cannot be 0 or negative";
+			result = "Value cannot be 0";
 		}
 		else if (toPayment < payment.FromPayment)
 		{
@@ -120,7 +120,7 @@
 		var result = string.Empty;
 		if (amount <= 0)
 		{
-			result = "Value cannot be 0 or negative";
+			result = "Value cannot be 0";
 		}
 		return result;
 	}

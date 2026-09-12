@@ -9,7 +9,10 @@
 <MudLayout>
 	@* <MudAppBar Elevation="2" Style="background-image: linear-gradient( 109.6deg,  rgba(0,182,255,.1) 11.2%, rgba(102,51,153,.1) 91.1% ); backdrop-filter: blur(8px);"> *@
 	<MudAppBar Elevation="2" Class="appbar-blur">
-		<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+		@if (_isSmallOrExtraSmallScreen)
+		{
+			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+		}
 		<MudText Typo="Typo.h5" Class="ml-3">Blazor Portfolio App</MudText>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
@@ -19,8 +22,8 @@
 			<MudFabMenuItem EndIcon="@Icons.Material.Outlined.Email" Color="Color.Warning" Href="mailto:voitsekh@hotmail.com" Size="Size.Small" />
 		</MudFabMenu>
 	</MudAppBar>
-	<MudDrawer id="nav-drawer" @onclick="@((x) => DrawerClose())" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
-		<NavMenu />
+	<MudDrawer id="nav-drawer" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
+		<NavMenu MenuColor="@_navMenuColor" />
 	</MudDrawer>
 	<MudMainContent Class="pt-16 pa-4">
 		<CascadingValue Value="@_isDarkMode" Name="&IsDarkMode">
@@ -53,14 +56,19 @@
 </style>
 
 @code {
-	private bool _drawerOpen = false;
-	private bool _isDarkMode = true;
-	private bool _isDarkModeSystemPreference = false;
 
-	private MudTheme? _theme = null;
-	private MudThemeProvider? _mudThemeProvider = null;
+	bool _drawerOpen = false;
+	bool _isDarkMode = true;
+	bool _isDarkModeSystemPreference = false;
 
+	MudTheme? _theme = null;
+	MudThemeProvider? _mudThemeProvider = null;
+
+	bool _isSmallOrExtraSmallScreen => _breakpoint == Breakpoint.Sm || _breakpoint == Breakpoint.Xs;
+	Breakpoint? _breakpoint = null;
 	DrawerClipMode _drawerClipMode = DrawerClipMode.Docked;
+	Color _navMenuColor => _isDarkMode ? Color.Tertiary : Color.Info;
+
 
 	protected override void OnInitialized()
 	{
@@ -83,17 +91,7 @@
 		}
 	}
 
-	private void DrawerToggle()
-	{
-		_drawerOpen = !_drawerOpen;
-	}
-
-	private void DarkModeToggle()
-	{
-		_isDarkMode = !_isDarkMode;
-	}
-
-	private void DrawerClose()
+	void DrawerClose()
 	{
 		if (_drawerOpen)
 		{
@@ -101,7 +99,17 @@
 		}
 	}
 
-	private readonly PaletteLight _lightPalette = new()
+	void DrawerToggle()
+	{
+		_drawerOpen = !_drawerOpen;
+	}
+
+	void DarkModeToggle()
+	{
+		_isDarkMode = !_isDarkMode;
+	}
+
+	readonly PaletteLight _lightPalette = new()
 	{
 		Background = "#fafafa",
 		Black = "#110e2d",
@@ -110,10 +118,10 @@
 		DrawerBackground = "#ffffff",
 		GrayLight = "#e8e8e8",
 		GrayLighter = "#f9f9f9",
-		ActionDefault = "#424242ff",
+		ActionDefault = "#424242",
 	};
 
-	private readonly PaletteDark _darkPalette = new()
+	readonly PaletteDark _darkPalette = new()
 	{
 		Primary = "#7e6fff",
 		Surface = "#1e1e2d",
@@ -141,6 +149,8 @@
 		TableLines = "#33323e",
 		Divider = "#292838",
 		OverlayLight = "#1e1e2d80",
+		Dark = "#22222e",
+		DarkDarken = "#232332",
 	};
 
 	string DarkLightModeButtonIcon
@@ -160,9 +170,9 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
+		_breakpoint = breakpoint;
 		_drawerClipMode = breakpoint == Breakpoint.Xs ? DrawerClipMode.Never : DrawerClipMode.Docked;
 		DrawerClose();
 	}
+
 }
-
-

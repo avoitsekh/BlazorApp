@@ -28,7 +28,7 @@ public sealed class PresetCollection : Dictionary<string, Func<MortgageDetails>>
 			InterestRates = new InterestCollection(4.5D)
 			{
 				{ new DateTime(2020, 10, 20), 5.5D },
-				{ new DateTime(2021, 05, 07), 2.8D },
+				{ new DateTime(2021, 05, 07), 4.9D },
 				{ new DateTime(2025, 09, 18), 6.8D },
 			},
 			AmortizationPeriodInYears = 25,
@@ -40,7 +40,8 @@ public sealed class PresetCollection : Dictionary<string, Func<MortgageDetails>>
 			ExtraPayments = new ExtraPaymentCollection()
 			{
 				{ 3, null, 300D },
-				{ 201, 201, 100000D },
+				{ 115, 115, 50000D },
+				{ 200, 200, 50000D },
 			},
 		});
 	}

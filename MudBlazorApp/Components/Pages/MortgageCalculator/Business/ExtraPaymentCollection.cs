@@ -6,6 +6,8 @@ public sealed class ExtraPaymentCollection : IList<ExtraPayment>
 {
 	List<ExtraPayment> _payments = new();
 
+	public bool HasExtraPayments => Count > 0;
+
 	public void Add(int? fromPayment, int? toPayment, double amount)
 	{
 		_payments.Add(new() { FromPayment = fromPayment, ToPayment = toPayment, Amount = amount });

@@ -1,14 +1,14 @@
-div ::deep .adjust-this-line-chart .mud-chart-legend {
+div ::deep .apply-to-this-line-chart-only .mud-chart-legend {
 	height: 8px;
 	margin-bottom: -10px;
 }
 
-div ::deep .adjust-this-line-chart .mud-chart-legend-item {
+div ::deep .apply-to-this-line-chart-only .mud-chart-legend-item {
 	position: relative;
 	bottom: 26px;
 }
 
-div ::deep .adjust-this-line-chart .mud-chart-legend-marker {
+div ::deep .apply-to-this-line-chart-only .mud-chart-legend-marker {
 	padding-left: 10px;
 	position: relative;
 	top: 2px;

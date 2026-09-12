@@ -1,4 +1,4 @@
-﻿<MudNavMenu Bordered="true" Style="white-space: nowrap;" Color="Color.Tertiary" Class="pt-1">
+﻿<MudNavMenu Bordered="true" Style="white-space: nowrap;" Color="@MenuColor" Class="pt-1">
 
 	<MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Info" IconColor="Color.Surface">
 		<MudText>About</MudText>
@@ -32,6 +32,9 @@
 
 
 @code {
+
+	[Parameter]
+	public Color MenuColor { get; set; } = Color.Tertiary;
 
 	const string brackets =
 @"<svg width=""24px"" height=""24px"" viewBox=""1 1 21 21"" version=""1.1"" xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"">
@@ -92,6 +95,5 @@
 	C84.749,185.414,86.976,184.405,88.453,182.481z M175.352,160.976c0-13.475-10.962-24.438-24.437-24.438
 	c-13.475,0-24.438,10.963-24.438,24.438s10.962,24.438,24.438,24.438C164.39,185.414,175.352,174.451,175.352,160.976z""/>
 </svg>";
-
 
 }

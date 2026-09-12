@@ -13,12 +13,12 @@ public partial class About
 
 	string GetTimeOfDayAsString(DateTime time)
 	{
-		TimeSpan now = time.TimeOfDay;
-		TimeSpan _5am = new TimeSpan(5, 0, 0);
-		TimeSpan _7am = new TimeSpan(7, 0, 0);
-		TimeSpan _noon = new TimeSpan(12, 0, 0);
-		TimeSpan _5pm = new TimeSpan(17, 0, 0);
-		TimeSpan _11pm = new TimeSpan(23, 0, 0);
+		var now = time.TimeOfDay;
+		var _5am = new TimeSpan(5, 0, 0);
+		var _7am = new TimeSpan(7, 0, 0);
+		var _noon = new TimeSpan(12, 0, 0);
+		var _5pm = new TimeSpan(17, 0, 0);
+		var _11pm = new TimeSpan(23, 30, 0);
 
 		if (now.IsBetween(_5am, _7am))
 		{
@@ -41,7 +41,7 @@ public partial class About
 	}
 }
 
-static class ExtentionMethods
+static class ExtensionMethods
 {
 	public static bool IsBetween(this TimeSpan value, TimeSpan from, TimeSpan to)
 	{

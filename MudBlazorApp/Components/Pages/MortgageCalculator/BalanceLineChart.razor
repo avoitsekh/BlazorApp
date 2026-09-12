@@ -1,8 +1,10 @@
 ﻿@using MudBlazor.Charts
 
+<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
+
 <div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" />
-	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="adjust-this-line-chart pointer-events-none"
+	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="apply-to-this-line-chart-only pointer-events-none"
 		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@adaptivePadding" />
 </div>
 
@@ -13,9 +15,6 @@
 
 	[CascadingParameter(Name = "&PaymentsNoExtras")]
 	PaymentCollection? PaymentsNoExtras { get; set; }
-
-	[CascadingParameter]
-	Breakpoint? CurrentBreakpoint { get; set; }
 
 	/// <summary>
 	/// The number of milliseconds to wait before rendering the chart.
@@ -37,31 +36,22 @@
 
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
-	string adaptivePadding = "padding: 0px 20px 0px 20px;";
+	string adaptivePadding = "padding: 10px 20px 0px 20px;";
 	Action? DebounceDraw = null;
 
 	PaymentCollection? _payments = null;
 	PaymentCollection? _paymentsNoExtras = null;
-	Breakpoint? _currentBreakpoint = null;
 	int _debounceInterval = -1;
 
 	protected override void OnParametersSet()
 	{
-		var hasChanges = _currentBreakpoint != CurrentBreakpoint;
-		if (hasChanges && CurrentBreakpoint != null)
-		{
-			SetPadding();
-			_currentBreakpoint = CurrentBreakpoint;
-		}
-
-		hasChanges = _debounceInterval != DebounceInterval;
-		if (hasChanges)
+		if (_debounceInterval != DebounceInterval)
 		{
 			DebounceDraw = DebounceInterval > 0 ? new Action(Draw).Debounce(DebounceInterval) : new Action(Draw);
 			_debounceInterval = DebounceInterval;
 		}
 
-		hasChanges = _payments != Payments || _paymentsNoExtras != PaymentsNoExtras;
+		var hasChanges = _payments != Payments || _paymentsNoExtras != PaymentsNoExtras;
 		if (hasChanges && Payments.HasData())
 		{
 			DebounceDraw?.Invoke();
@@ -134,9 +124,9 @@
 		};
 	}
 
-	void SetPadding()
+	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		bool isSmallOrExtraSmallScreen = CurrentBreakpoint == Breakpoint.Sm || CurrentBreakpoint == Breakpoint.Xs;
+		bool isSmallOrExtraSmallScreen = breakpoint == Breakpoint.Sm || breakpoint == Breakpoint.Xs;
 		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 10px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
 	}
 }

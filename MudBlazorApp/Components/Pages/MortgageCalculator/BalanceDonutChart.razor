@@ -1,6 +1,8 @@
-﻿<div style="position: relative;">
+﻿<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
+
+<div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" />
-	<MudChart T="double" ChartType="ChartType.Donut" ChartSeries="@([data])" ChartLabels="@labels" LegendPosition="@legendPosition" ChartOptions="@options" Width="180px" Height="100%" Class="adjust-this-donut-chart pointer-events-none" />
+	<MudChart T="double" ChartType="ChartType.Donut" ChartSeries="@([data])" ChartLabels="@labels" LegendPosition="@legendPosition" ChartOptions="@options" Width="180px" Height="100%" Class="apply-to-this-donut-chart-only pointer-events-none" />
 </div>
 
 @code {
@@ -8,18 +10,12 @@
 	[CascadingParameter]
 	PaymentStatistics? Statistics { get; set; }
 
-	[CascadingParameter]
-	Breakpoint? CurrentBreakpoint { get; set; }
-
 	[CascadingParameter(Name = "&IsDarkMode")]
 	bool IsDarkMode { get; set; }
 
 	string[] labels = ["Principal Paid", "Extra Paid", "Interest Paid", "Remaining Balance"];
 	double[] data = [];
 	Position legendPosition = Position.Right;
-
-	Breakpoint? _currentBreakpoint = null;
-
 
 	DonutChartOptions options = new()
 	{
@@ -29,14 +25,6 @@
 
 	protected override void OnParametersSet()
 	{
-		var hasChanges = _currentBreakpoint != CurrentBreakpoint;
-		if (hasChanges && CurrentBreakpoint != null)
-		{
-			var isExtraSmallScreen = CurrentBreakpoint == Breakpoint.Xs;
-			legendPosition = isExtraSmallScreen ? Position.Bottom : Position.Right;
-			_currentBreakpoint = CurrentBreakpoint;
-		}
-
 		if (Statistics != null)
 		{
 			data = [Statistics.PrincipalPaid, Statistics.ExtraPaid, Statistics.InterestPaid, Statistics.RemainingBalance];
@@ -44,4 +32,11 @@
 
 		options.ChartPalette[3] = IsDarkMode ? Colors.Gray.Darken3 : Colors.Gray.Lighten2;
 	}
+
+	void OnBreakpointChanged(Breakpoint breakpoint)
+	{
+		var isExtraSmallScreen = breakpoint == Breakpoint.Xs;
+		legendPosition = isExtraSmallScreen ? Position.Bottom : Position.Right;
+	}
+
 }

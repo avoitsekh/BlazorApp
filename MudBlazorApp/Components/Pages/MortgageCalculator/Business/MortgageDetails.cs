@@ -5,10 +5,10 @@ namespace MudBlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class MortgageDetails
 {
-	public double LoanAmount = 320000D;
-	public InterestCollection InterestRates = new(2.49D);
-	public int AmortizationPeriodInYears = 25;							// term
-	public DateTime AdvanceDate = new(2025, 01, 01);					// mortgage start date
+	public double LoanAmount = 300000D;
+	public InterestCollection InterestRates = new(5.49D);
+	public int AmortizationPeriodInYears = 30;                          // term
+	public DateTime AdvanceDate = DateTime.Today;						// mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;									// ppy - payments per year
 	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
@@ -53,16 +53,18 @@ public sealed class MortgageDetails
 
 	#region JSON Import/Export
 
+	static JsonSerializerOptions options => field ??= new JsonSerializerOptions { IncludeFields = true, WriteIndented = true };
+
 	public static string ToJsonString(MortgageDetails details)
 	{
-		return JsonSerializer.Serialize(details, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+		return JsonSerializer.Serialize(details, options);
 	}
 
 	public static MortgageDetails FromJsonString(string jsonString)
 	{
 		try
 		{
-			return JsonSerializer.Deserialize<MortgageDetails>(jsonString, new JsonSerializerOptions { IncludeFields = true });
+			return JsonSerializer.Deserialize<MortgageDetails>(jsonString, options);
 		}
 		catch
 		{
