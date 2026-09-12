@@ -1,9 +1,9 @@
 using SkiaSharp.QrCode;
 using SkiaSharp.QrCode.Image;
 
-namespace BlazorApp.Components.Pages.QRCodeGenerator;
+namespace BlazorApp.Components.Pages.QrCodeGenerator;
 
-public sealed class QRCodeOptions
+public sealed class QrCodeOptions
 {
 	public string Content { get; set; } = "Hello World!";
 
