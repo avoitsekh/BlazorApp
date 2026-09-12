@@ -63,7 +63,7 @@ public partial class CurrencyConverter
 			if (!hasQueryString)
 			{
 				// Prefetch supported currencies
-				GetSupportedCurrenciesAsync();
+				await GetSupportedCurrenciesAsync();
 			}
 			else
 			{
@@ -164,5 +164,10 @@ public partial class CurrencyConverter
 			Snackbar.Add("Error fetching currency list from public API", Severity.Error, config => config.VisibleStateDuration = int.MaxValue);
 			State.SupportedCurrencies = [];
 		}
+	}
+
+	string? GetHelperText(CurrencyType? currency)
+	{
+		return currency != null ? $"ISO code: {currency.iso_code}, symbol: {currency.symbol}" : null;
 	}
 }

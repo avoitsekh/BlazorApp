@@ -6,12 +6,12 @@
 
 <PageTitle>QR Code Generator</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Style="padding: 1px">
+<MudContainer MaxWidth="MaxWidth.Medium" Gutters="false">
 
 	<MudGrid Spacing="4" Class="pa-6">
 
-		<MudItem xs="12" md="6" Class="order-1 order-md-2">
-			<MudPaper MinHeight="200px" Width="100%" Square="false" Class="pa-5">
+		<MudItem xs="12" md="6" Class="order-1 order-md-2" >
+			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 88px;">
 				<MudStack Spacing="1">
 					<div class="d-flex pa-n5">
 						<MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" class="mr-2"></MudIcon>
@@ -41,6 +41,7 @@
 
 		<MudItem xs="12" md="6" Class="order-2 order-md-1">
 			<MudExpansionPanels MultiExpansion="true">
+
 				<MudExpansionPanel Expanded>
 					<TitleContent>
 						<div class="d-flex">
@@ -55,7 +56,6 @@
 				</MudExpansionPanel>
 
 				<MudExpansionPanel>
-
 					<TitleContent>
 						<div class="d-flex">
 							<MudIcon Icon="@Icons.Material.Filled.Settings" class="mr-2"></MudIcon>
@@ -63,39 +63,43 @@
 						</div>
 					</TitleContent>
 					<ChildContent>
-						<MudStack Spacing="6">
-							<MudStack Row>
+						<MudGrid Spacing="6">
+							<MudItem xs="12" sm="6">
 								<MudSelect Label="Symbology" @bind-Value="options.Symbology" @bind-Value:after="OnSymbologyChanged" Variant="Variant.Text" Dense>
 									<MudSelectItem Value="SymbologyKind.QrCode">QR Code</MudSelectItem>
 									<MudSelectItem Value="SymbologyKind.MicroQR">Micro QR</MudSelectItem>
 								</MudSelect>
-
-								@if(options.Symbology == SymbologyKind.QrCode)
-								{
+								</MudItem>
+								<MudItem xs="12" sm="6">
+									@if(options.Symbology == SymbologyKind.QrCode)
+									{
 									<MudSelect Label="Error Correction" @bind-Value="options.Ecc" @bind-Value:after="Regenerate" Variant="Variant.Text" Dense>
 										<MudSelectItem Value="ECCLevel.L">L, 7%</MudSelectItem>
 										<MudSelectItem Value="ECCLevel.M">M, 15%</MudSelectItem>
 										<MudSelectItem Value="ECCLevel.Q">Q, 25%</MudSelectItem>
 										<MudSelectItem Value="ECCLevel.H">H, 30%</MudSelectItem>
 									</MudSelect>
-								}
-								else
-								{
+									}
+									else
+									{
 									<MudSelect Label="Error Correction" @bind-Value="options.MicroEcc" @bind-Value:after="Regenerate" Variant="Variant.Text" Dense>
 										<MudSelectItem Value="MicroQREccLevel.ErrorDetectionOnly">Error Detection Only (M1)</MudSelectItem>
 										<MudSelectItem Value="MicroQREccLevel.L">L, 7%</MudSelectItem>
 										<MudSelectItem Value="MicroQREccLevel.M">M, 15%</MudSelectItem>
 										<MudSelectItem Value="MicroQREccLevel.Q">Q, 25% (M4 only)</MudSelectItem>
 									</MudSelect>
-								}
-							</MudStack>
-							<MudStack Row>
-								<MudSlider T="int" @bind-Value="options.Size" Variant="Variant.Filled" Min="64" Max="2048">Image Size: @options.Size.ToString("0 'px'")</MudSlider>
-								<MudSlider T="int" @bind-Value="options.QuietZone" @bind-Value:after="Regenerate" Variant="Variant.Filled" Min="0" Max="10">Quiet Zone: @options.QuietZone.ToString("0 'modules'")</MudSlider>
-							</MudStack>
-						</MudStack>
+									}
+								</MudItem>
+								<MudItem xs="12" sm="6">
+									<MudSlider T="int" @bind-Value="options.Size" Variant="Variant.Filled" Min="64" Max="2048">Image Size: @options.Size.ToString("0 'px'")</MudSlider>
+								</MudItem>
+								<MudItem xs="12" sm="6">
+									<MudSlider T="int" @bind-Value="options.QuietZone" @bind-Value:after="Regenerate" Variant="Variant.Filled" Min="0" Max="10">Quiet Zone: @options.QuietZone.ToString("0 'modules'")</MudSlider>
+								</MudItem>
+						</MudGrid>
 					</ChildContent>
 				</MudExpansionPanel>
+
 				<MudExpansionPanel>
 					<TitleContent>
 						<div class="d-flex">
@@ -104,53 +108,58 @@
 						</div>
 					</TitleContent>
 					<ChildContent>
-
-						<MudStack Spacing="6">
-							<MudSelect T="Preset" @bind-Value="options.Preset" @bind-Value:after="OnPresetChanged" Label="Preset" Variant="Variant.Text" Dense>
-								@foreach (var keyValuePair in QrCodeOptions.Presets)
-								{
-									if (keyValuePair.Value != Preset.Custom)
+						<MudGrid Spacing="6">
+							<MudItem xs="12">
+								<MudSelect T="Preset" @bind-Value="options.Preset" @bind-Value:after="OnPresetChanged" Label="Preset" Variant="Variant.Text" Dense>
+									@foreach (var keyValuePair in QrCodeOptions.Presets)
 									{
-										<MudSelectItem Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+										if (keyValuePair.Value != Preset.Custom)
+										{
+											<MudSelectItem Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+										}
 									}
-								}
-							</MudSelect>
-							<MudStack Row Wrap="Wrap.Wrap">
+								</MudSelect>
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudSelect Label="Finder Pattern" @bind-Value="options.FinderPatternShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Disabled="@(options.Symbology is not SymbologyKind.QrCode)" Dense>
 									@foreach (var keyValuePair in QrCodeOptions.FinderPatternShapes)
 									{
 										<MudSelectItem T="FinderPatternShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudSelect Label="Module Shape" @bind-Value="options.ModuleShape" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
 									@foreach (var keyValuePair in QrCodeOptions.ModuleShapes)
 									{
 										<MudSelectItem T="ModuleShape" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
-							</MudStack>
-
-							<MudStack Row>
-								<MudSlider T="float" @bind-Value="options.ModuleShapeCornerRadius" @bind-Value:after="OnStyleChanged" Variant="@(options.ModuleShape is not RoundedRectangleModuleShape ? Variant.Outlined : Variant.Filled)" Min="0f" Max="0.5f" Step="0.01f" Disabled="@(options.ModuleShape is not RoundedRectangleModuleShape)">Corner Radius: @options.ModuleShapeCornerRadius.ToString("P0")</MudSlider>
+							</MudItem>
+							<MudItem xs="12" sm="6">
+							<MudSlider T="float" @bind-Value="options.ModuleShapeCornerRadius" @bind-Value:after="OnStyleChanged" Variant="@(options.ModuleShape is not RoundedRectangleModuleShape ? Variant.Outlined : Variant.Filled)" Min="0f" Max="0.5f" Step="0.01f" Disabled="@(options.ModuleShape is not RoundedRectangleModuleShape)">Corner Radius: @options.ModuleShapeCornerRadius.ToString("P0")</MudSlider>
+								</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudSlider T="float" @bind-Value="options.ModuleSizePercent" @bind-Value:after="OnStyleChanged" Variant="Variant.Filled" Color="@(OnMudSliderColorTreshold(options.ModuleSizePercent, 0.65f, 0.85f))" Min="0.5f" Max="1.0f" Step="0.01f">Module Size: @options.ModuleSizePercent.ToString("P0")</MudSlider>
-							</MudStack>
-
-							<MudStack Row Wrap="Wrap.Wrap">
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudColorPicker Label="Module Color 1" @bind-Value="moduleColor1" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" />
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudColorPicker Label="Module Color 2" @bind-Value="moduleColor2" @bind-Value:after="OnStyleChanged" AdornmentColor="Color.Primary" PickerVariant="PickerVariant.Inline" ShowToolbar="true" ShowAlpha="false" ThrottleInterval="150" Disabled="@(options.GradientDirection == GradientDirection.None)" />
-							</MudStack>
-
-							<MudStack Row Wrap="Wrap.Wrap">
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudSelect Label="Gradient Options" @bind-Value="options.GradientDirection" @bind-Value:after="OnStyleChanged" Variant="Variant.Text" Dense>
 									@foreach (var keyValuePair in QrCodeOptions.GradientOptions)
 									{
 										<MudSelectItem T="GradientDirection" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 									}
 								</MudSelect>
+							</MudItem>
+							<MudItem xs="12" sm="6">
 								<MudCheckBox @bind-Value="options.TransparentBackground" @bind-Value:after="OnStyleChanged" Color="Color.Primary" >Transparent Background</MudCheckBox>
-							</MudStack>
-						</MudStack>
-
+							</MudItem>
+						</MudGrid>
 					</ChildContent>
 				</MudExpansionPanel>
 
@@ -165,6 +174,7 @@
 						<QrCodeDecoder />
 					</ChildContent>
 				</MudExpansionPanel>
+
 			</MudExpansionPanels>
 		</MudItem>
 

@@ -53,6 +53,12 @@ public sealed class PaymentCollection : List<Payment>
 				balance = 0;
 				isLastPayment = true;
 			}
+			else if (i == paymentCount && balance > 0)
+			{
+				principalAmount += balance;
+				paymentAmount = interestAmount + principalAmount;
+				balance = 0;
+			}
 
 			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 			string ratesForPeriodFormatted = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x)));

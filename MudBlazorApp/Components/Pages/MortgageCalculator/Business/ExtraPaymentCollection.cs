@@ -8,6 +8,10 @@ public sealed class ExtraPaymentCollection : IList<ExtraPayment>
 
 	public bool HasExtraPayments => Count > 0;
 
+	public IEnumerable<ExtraPayment> LumpSums => _payments.Where(x => x.IsLumpSum);
+
+	public IEnumerable<ExtraPayment> Recurring => _payments.Where(x => x.IsRecurring);
+
 	public void Add(int? fromPayment, int? toPayment, double amount)
 	{
 		_payments.Add(new() { FromPayment = fromPayment, ToPayment = toPayment, Amount = amount });
@@ -21,16 +25,6 @@ public sealed class ExtraPaymentCollection : IList<ExtraPayment>
 	public double GetExtraPaymentAmounts(int paymentNumber)
 	{
 		return _payments.Where(x => x.FromPayment <= paymentNumber && (x.ToPayment == null || x.ToPayment >= paymentNumber)).Sum(x => x.Amount);
-	}
-
-	public IEnumerable<ExtraPayment> GetLumpSums()
-	{
-		return _payments.Where(x => x.IsLumpSum);
-	}
-
-	public IEnumerable<ExtraPayment> GetRecurring()
-	{
-		return _payments.Where(x => x.IsRecurring);
 	}
 
 	#region IList

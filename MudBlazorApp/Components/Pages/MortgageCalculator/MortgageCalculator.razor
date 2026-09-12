@@ -267,6 +267,14 @@
 	bool paymentsTableExpanded = false;
 	string extraPaymentsDescription = "None";
 
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await Calculate();
+		}
+	}
+
 	async Task Calculate()
 	{
 		await form!.ValidateAsync();
@@ -402,6 +410,7 @@
 
 		var dialogReference = await DialogService.ShowAsync<VariableInterestRatesDialog>(parameters, options);
 		await dialogReference.Result;
+
 		StateHasChanged();
 	}
 
@@ -435,8 +444,9 @@
 		else
 		{
 			extraPaymentsDescription = string.Empty;
-			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.GetLumpSums().Select(x => x.Amount.ToString("N2") + "; "));
-			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.GetRecurring().Select(x => x.Amount.ToString("N2") + "+; "));
+			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.LumpSums.Select(x => x.Amount.ToString("N2") + "; "));
+			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.Recurring.Select(x => x.Amount.ToString("N2") + "+; "));
+			extraPaymentsDescription = extraPaymentsDescription.TrimEnd(' ', ';');
 		}
 	}
 
