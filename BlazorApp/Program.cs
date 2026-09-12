@@ -1,8 +1,8 @@
 using MudBlazor;
 using MudBlazor.Services;
-using MudBlazorApp.Components;
-using MudBlazorApp.Components.Pages.CurrencyConverter;
-using MudBlazorApp.Services;
+using BlazorApp.Components;
+using BlazorApp.Components.Pages.CurrencyConverter;
+using BlazorApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

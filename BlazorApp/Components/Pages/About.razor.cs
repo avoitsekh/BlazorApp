@@ -1,4 +1,4 @@
-namespace MudBlazorApp.Components.Pages;
+namespace BlazorApp.Components.Pages;
 
 public partial class About
 {

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
-using MudBlazorApp.Services;
+using BlazorApp.Components.Pages.CurrencyConverter.DTOs;
+using BlazorApp.Services;
 using System.Globalization;
 
-namespace MudBlazorApp.Components.Pages.CurrencyConverter;
+namespace BlazorApp.Components.Pages.CurrencyConverter;
 
 public partial class CurrencyConverter
 {

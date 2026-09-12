@@ -1,4 +1,4 @@
-﻿namespace MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
+﻿namespace BlazorApp.Components.Pages.CurrencyConverter.DTOs;
 
 public class ExchangeRate
 {

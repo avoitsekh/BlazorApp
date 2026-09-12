@@ -1,7 +1,7 @@
 ﻿using OfficeOpenXml;
 using System.Reflection;
 
-namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+namespace BlazorApp.Components.Pages.MortgageCalculator;
 
 public static class ExportToExcel
 {

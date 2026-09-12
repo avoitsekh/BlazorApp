@@ -1,6 +1,6 @@
-﻿using static MudBlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
+﻿using static BlazorApp.Components.Pages.MortgageCalculator.MortgageDetails;
 
-namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+namespace BlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class PaymentCollection : List<Payment>
 {

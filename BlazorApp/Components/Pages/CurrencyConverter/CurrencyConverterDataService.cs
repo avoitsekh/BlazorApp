@@ -1,6 +1,6 @@
-﻿using MudBlazorApp.Components.Pages.CurrencyConverter.DTOs;
+﻿using BlazorApp.Components.Pages.CurrencyConverter.DTOs;
 
-namespace MudBlazorApp.Components.Pages.CurrencyConverter;
+namespace BlazorApp.Components.Pages.CurrencyConverter;
 
 public class CurrencyConverterDataService(HttpClient httpClient, IConfiguration config)
 {

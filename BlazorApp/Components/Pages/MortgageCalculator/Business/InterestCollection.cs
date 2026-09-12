@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+namespace BlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class InterestCollection : IList<Interest>
 {

@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace MudBlazorApp.Components.Pages.GuidGenerator;
+namespace BlazorApp.Components.Pages.GuidGenerator;
 
 public class GuidFactory
 {

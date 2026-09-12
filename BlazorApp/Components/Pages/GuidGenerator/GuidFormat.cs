@@ -1,4 +1,4 @@
-﻿namespace MudBlazorApp.Components.Pages.GuidGenerator;
+﻿namespace BlazorApp.Components.Pages.GuidGenerator;
 
 public class GuidFormat
 {

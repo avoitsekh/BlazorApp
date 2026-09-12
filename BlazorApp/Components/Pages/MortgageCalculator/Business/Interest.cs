@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MudBlazorApp.Components.Pages.MortgageCalculator;
+namespace BlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class Interest
 {

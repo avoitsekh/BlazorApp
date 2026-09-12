@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
-using MudBlazorApp.Services;
+using BlazorApp.Services;
 
-namespace MudBlazorApp.Components.Pages.GuidGenerator;
+namespace BlazorApp.Components.Pages.GuidGenerator;
 
 public partial class GuidGenerator
 {

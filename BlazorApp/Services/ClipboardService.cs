@@ -1,7 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using MudBlazor;
 
-namespace MudBlazorApp.Services;
+namespace BlazorApp.Services;
 
 public class ClipboardService(IJSRuntime jsRuntime, ISnackbar snackbar)
 {

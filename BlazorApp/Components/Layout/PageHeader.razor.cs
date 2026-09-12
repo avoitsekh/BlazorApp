@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace MudBlazorApp.Components.Layout
+namespace BlazorApp.Components.Layout
 {
 	public partial class PageHeader
 	{
