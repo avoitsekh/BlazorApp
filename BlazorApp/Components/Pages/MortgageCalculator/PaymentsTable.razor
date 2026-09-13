@@ -1,5 +1,5 @@
 ﻿<div>
-	<MudTable @ref="_table" Items="_payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="small-cell" Virtualize="@(!Expanded)" FixedHeader="@(!Expanded)" Height="@(!Expanded ? "400px" : null)">
+	<MudTable @ref="_table" Items="_payments" Striped Dense Hover Bordered Outlined Elevation="0" CellClass="small-cell" Virtualize="@(!Expanded)" FixedHeader="@(!Expanded)" Height="@(!Expanded ? "400px" : null)" OverscanCount="32" ItemSize="30">
 		<HeaderContent>
 			<MudTh>@Constants.No</MudTh>
 			<MudTh>@Constants.PaymentDate</MudTh>

@@ -28,7 +28,6 @@ public sealed class PaymentStatistics()
 		if (Payments.HasData())
 		{
 			EffectiveAnnualRate = Payments.GetEffectiveAnnualRate(Details.InterestRates.InitialRate) * 100;
-			//EffectiveAnnualRate = GetEffectiveAnnualRate(Details.InterestRates.InitialRate);
 			PaymentAmount = Payments.First().PaymentAmount;
 			InterestAmount = Payments.First().InterestAmount;
 			PrincipalAmount = Payments.First().PrincipalAmount;

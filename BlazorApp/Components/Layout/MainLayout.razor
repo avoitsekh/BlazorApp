@@ -14,9 +14,9 @@
 		}
 		else
 		{
-			<MudIcon Icon="@blazorIcon" Size="Size.Large" Class="me-3" />
+			<MudIcon Icon="@blazorIcon" Size="Size.Medium" Class="me-3" />
 		}
-		<MudText Typo="Typo.h5" Class="ml-3">Blazor Portfolio App</MudText>
+		<MudText Typo="Typo.h5" Class="ml-1">Blazor Portfolio App</MudText>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
 		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" Color="Color.Default" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
@@ -64,6 +64,8 @@
 </style>
 
 @code {
+
+	DrawerVariant variant = DrawerVariant.Mini;
 
 	bool _drawerOpen = false;
 	bool _isDarkMode = true;
