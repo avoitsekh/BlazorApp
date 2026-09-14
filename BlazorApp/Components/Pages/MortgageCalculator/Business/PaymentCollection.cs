@@ -65,7 +65,7 @@ public sealed class PaymentCollection : List<Payment>
 
 			string accrualPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
 				? string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1))
-				: $"{ratesForPeriodFormatted} ÷ {Details.PaymentFrequency}";
+				: $"({ratesForPeriodFormatted}) ÷ {Details.PaymentFrequency}";
 
 
 			Add(new()

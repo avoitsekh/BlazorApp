@@ -7,7 +7,7 @@
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
 <MudLayout>
-	<MudAppBar Elevation="2">
+	<MudAppBar Dense Elevation="2">
 		@if (_showMenuButton)
 		{
 			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
@@ -28,7 +28,7 @@
 	<MudDrawer id="nav-drawer" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
 		<NavMenu MenuColor="@_navMenuColor" />
 	</MudDrawer>
-	<MudMainContent Class="pt-16 pa-4">
+	<MudMainContent Class="pt-12 pa-4">
 		<CascadingValue Value="@_isDarkMode" Name="&IsDarkMode">
 			@Body
 		</CascadingValue>
