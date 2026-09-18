@@ -28,7 +28,7 @@ builder.Services.AddMudBlazorSnackbar(options =>
 	options.PreventDuplicates = false;
 });
 
-builder.Services.AddScoped<ClipboardService>();
+builder.Services.AddScoped<JSExtensionsService>();
 builder.Services.AddCors(options => options.AddPolicy("Allow All CORS", p => p.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()));
 
 

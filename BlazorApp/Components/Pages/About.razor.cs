@@ -4,11 +4,19 @@ public partial class About
 {
 	string greetings = "Hello...";
 
-	async Task OnTimeZoneChanged(TimeZoneInfo timeZone)
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
-		var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
-		var timeOfDay = GetTimeOfDayAsString(localTime);
-		greetings = "Hello..." + (timeOfDay != "night" ? $" and good {timeOfDay}!" : string.Empty);
+		if (firstRender)
+		{
+			var timeZone = await JS.GetBrowserTimeZoneAsync();
+			if (timeZone != null)
+			{
+				var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
+				var timeOfDay = GetTimeOfDayAsString(localTime);
+				greetings = "Hello..." + (timeOfDay != "night" ? $" and good {timeOfDay}!" : string.Empty);
+				StateHasChanged();
+			}
+		}
 	}
 
 	string GetTimeOfDayAsString(DateTime time)

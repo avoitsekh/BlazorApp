@@ -1,0 +1,24 @@
+﻿<script>
+
+	window.downloadFile = (fileName, contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = fileName;
+		anchor.click();
+		URL.revokeObjectURL(url);
+	};
+
+	window.copyToClipboard = async (contentType, bytes) => {
+		const blob = new Blob([bytes], { type: contentType });
+		await navigator.clipboard.write([new ClipboardItem({ [contentType]: blob })]);
+	}
+
+	window.getBrowserTimeZone = () => {
+		const options = Intl.DateTimeFormat().resolvedOptions();
+		return options.timeZone;
+	}
+
+</script>
+

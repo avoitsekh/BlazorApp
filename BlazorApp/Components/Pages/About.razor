@@ -1,10 +1,9 @@
 ﻿@page "/"
 
 @inject NavigationManager NavManager
-@inject IJSRuntime JS
+@inject JSExtensionsService JS
 
 <PageTitle>About</PageTitle>
-<BrowserLocalTimeZoneProvider OnTimeZoneChanged="OnTimeZoneChanged" />
 
 <MudContainer MaxWidth="MaxWidth.Small" Class="pa-2">
 	<MudStack Wrap="Wrap.Wrap">

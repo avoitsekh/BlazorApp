@@ -97,7 +97,7 @@
 		{
 			if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
 			{
-				result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}.";
+				result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}";
 			}
 		}
 		return result;
@@ -108,15 +108,15 @@
 		var result = string.Empty;
 		if (!effectiveDate.HasValue)
 		{
-			result = "Value cannot be empty.";
+			result = "Value cannot be empty";
 		}
 		else if (effectiveDate < MinDate)
 		{
-			result = "Value cannot be less (or equal to) Advance Date.";
+			result = "Value cannot be less (or equal to) Advance Date";
 		}
 		else if (Details.InterestRates.Any(x => x.EffectiveDate == effectiveDate))
 		{
-			result = "Interest rate with such date already exists in the list.";
+			result = "Interest rate with such date already exists in the list";
 		}
 		return result;
 	}

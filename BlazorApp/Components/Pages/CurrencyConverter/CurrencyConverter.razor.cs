@@ -16,7 +16,7 @@ public partial class CurrencyConverter
 	CurrencyConverterState State { get; set; } = default!;
 
 	[Inject]
-	ClipboardService ClipboardService { get; set; } = default!;
+	JSExtensionsService JS { get; set; } = default!;
 
 	[Inject]
 	NavigationManager NavigationManager { get; set; } = default!;
@@ -122,9 +122,10 @@ public partial class CurrencyConverter
 		State.ResetToAmount();
 	}
 
-	void CopyToClipboard(decimal? amount)
+	async Task CopyToClipboard(decimal? amount)
 	{
-		ClipboardService.Write(amount, "Amount copied to clipboard");
+		await JS.CopyToClipboardAsync(amount.ToString());
+		Snackbar?.Add("Amount copied to clipboard", Severity.Info);
 	}
 
 	string Pluralize(string currencyName, decimal? amount)

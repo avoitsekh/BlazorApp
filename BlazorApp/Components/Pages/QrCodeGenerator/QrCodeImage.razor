@@ -2,8 +2,9 @@
 @using SkiaSharp.QrCode
 @using SkiaSharp.QrCode.Image
 
-@inject IJSRuntime JS
+@inject IJSRuntime JSR
 @inject ISnackbar Snackbar
+@inject JSExtensionsService JS
 
 <div>
 	<img id="qrcode" height="@PreviewImageSize" width="@PreviewImageSize" class="checkered" />
@@ -22,23 +23,6 @@
 			URL.revokeObjectURL(url);
 		}
 		element.src = url;
-	}
-
-	// Client-side file download helper used by the Download PNG/SVG buttons
-	window.downloadFile = (fileName, contentType, bytes) => {
-		const blob = new Blob([bytes], { type: contentType });
-		const url = URL.createObjectURL(blob);
-		const anchor = document.createElement('a');
-		anchor.href = url;
-		anchor.download = fileName;
-		anchor.click();
-		URL.revokeObjectURL(url);
-	};
-
-	// Copy QR Code image to clipboard
-	window.copyToClipboard = async (contentType, bytes) => {
-		const blob = new Blob([bytes], { type: contentType });
-		await navigator.clipboard.write([new ClipboardItem({ [contentType]: blob })]);
 	}
 
 </script>
@@ -126,7 +110,7 @@
 
 				using var stream = new MemoryStream();
 				RenderToStream(PreviewImageSize, stream);
-				await JS.InvokeVoidAsync("setPreviewImage", "qrcode", "image/png", stream.ToArray());
+				await JSR.InvokeVoidAsync("setPreviewImage", "qrcode", "image/png", stream.ToArray());
 			}
 		}
 		catch (Exception ex)
@@ -141,7 +125,7 @@
 		{
 			using var stream = new MemoryStream();
 			RenderToStream(ExportImageSize, stream);
-			await JS.InvokeVoidAsync("downloadFile", "qrcode.png", "image/png", stream.ToArray());
+			await JS.DownloadFileAsync("qrcode.png", "image/png", stream.ToArray());
 		}
 		catch (Exception ex)
 		{
@@ -162,7 +146,7 @@
 			{
 				GetMicroQRCodeImageBuilder(ExportImageSize).SaveToSvg(stream);
 			}
-			await JS.InvokeVoidAsync("downloadFile", "qrcode.svg", "image/svg+xml", stream.ToArray());
+			await JS.DownloadFileAsync("qrcode.svg", "image/svg+xml", stream.ToArray());
 		}
 		catch (Exception ex)
 		{
@@ -176,7 +160,7 @@
 		{
 			using var stream = new MemoryStream();
 			RenderToStream(ExportImageSize, stream);
-			await JS.InvokeVoidAsync("copyToClipboard", "image/png", stream.ToArray());
+			await JS.CopyToClipboardAsync("image/png", stream.ToArray());
 			Snackbar.Add("QR Code copied to clipboard", Severity.Info);
 		}
 		catch (Exception ex)

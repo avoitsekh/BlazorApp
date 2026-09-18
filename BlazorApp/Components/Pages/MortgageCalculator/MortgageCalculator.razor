@@ -2,12 +2,12 @@
 
 @using System.Text
 
+
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-
+@inject JSExtensionsService JS
 
 <PageTitle>Mortgage Calculator</PageTitle>
-<BrowserDownload @ref="browserDownload" OnDownloadError="OnDownloadError" OnDownloadSuccess="OnDownloadSuccess" />
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
@@ -65,7 +65,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense">
+											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.CompoundPeriod)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -74,7 +74,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense">
+											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.PaymentFrequency)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -83,7 +83,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense">
+											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.InterestRateAccrualMethod)
 												{
 													<MudSelectItem T="MortgageDetails.InterestAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -92,7 +92,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.FinancialYears" Label="Financial Year" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" 
+											<MudSelect T="MortgageDetails.FinancialYears" Label="Financial Year" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
 												Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
 												@foreach (var keyValuePair in Constants.FinancialYear)
 												{
@@ -102,7 +102,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense">
+											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense"  AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.InterestRateType)
 												{
 													<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -185,13 +185,15 @@
 												<DataField T="double" Label="Remaining Balance" Value="@stats.RemainingBalance" Format="N2" />
 											</MudItem>
 										</MudGrid>
-										<MudStack Row Spacing="6" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-											<div style="width: 45px">
-												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel />
-											</div>
-											<div>
+										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+											<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
+												<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(-1))" />
+												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="max-w align-center" />
+												<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(1))" />
+											</MudStack>
+											@* <div style="width: 55%"> *@
 												<BalanceDonutChart />
-											</div>
+											@* </div> *@
 										</MudStack>
 									</MudStack>
 								</MudCarouselItem>
@@ -235,6 +237,14 @@
 	.mud-swipearea {
 		touch-action: pan-y;
 	}
+
+	.max-w {
+		max-width: 20px;
+	}
+
+	.align-center input {
+		text-align: center;
+	}
 </style>
 	
 
@@ -242,7 +252,6 @@
 @code {
 
 	MudForm? form = null;
-	BrowserDownload? browserDownload = null;
 	PaymentsTable? paymentsTable = null;
 
 	MortgageDetails details = new();
@@ -346,7 +355,7 @@
 		try
 		{
 			var jsonText = MortgageDetails.ToJsonString(details);
-			await browserDownload!.Download(filename, "text/json", Encoding.UTF8.GetBytes(jsonText));
+			await JS.DownloadFileAsync(filename, "text/json", Encoding.UTF8.GetBytes(jsonText));
 		}
 		catch (Exception ex)
 		{
@@ -361,17 +370,12 @@
 		try
 		{
 			var bytes = ExportToExcel.GetByteArray(payments);
-			await browserDownload!.Download(filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
+			await JS.DownloadFileAsync(filename, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", bytes);
 		}
 		catch (Exception ex)
 		{
 			await OnDownloadError((ex, filename));
 		}
-	}
-
-	async Task OnDownloadSuccess(string filename)
-	{
-		Snackbar.Add($"Saved to '{filename}'", Severity.Info);
 	}
 
 	async Task OnDownloadError((Exception Exception, string Filename) args)
@@ -465,6 +469,13 @@
 		{
 			stats.CalculateForYear(balanceAtYear.Value);
 		}
+	}
+
+	void OnSummaryYearArrowClicked(int increment)
+	{
+		balanceAtYear = Math.Clamp((balanceAtYear ?? 0) + increment, 1, balanceMaxYear);
+		OnSummaryYearChanged();
+		StateHasChanged();
 	}
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
