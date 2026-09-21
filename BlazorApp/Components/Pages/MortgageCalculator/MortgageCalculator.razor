@@ -187,7 +187,7 @@
 										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
 											<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
 												<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(-1))" />
-												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="max-w align-center" />
+												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
 												<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(1))" />
 											</MudStack>
 											<BalanceDonutChart />
@@ -235,8 +235,8 @@
 		touch-action: pan-y;
 	}
 
-	.max-w {
-		max-width: 20px;
+	.year-max-width {
+		max-width: 24px;
 	}
 
 	.align-center input {
