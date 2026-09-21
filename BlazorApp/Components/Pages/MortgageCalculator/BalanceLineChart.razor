@@ -29,7 +29,6 @@
 		YAxisFormat = "N0",
 		XAxisLabelRotation = 45,
 		ChartPalette = [Colors.Blue.Default, Colors.Cyan.Default],
-		//ChartPalette = [themeProvider.Theme.PaletteLight.Primary.ToString()],
 		ShowLegend = false,
 		ShowToolTips = false,
 	};
@@ -126,7 +125,6 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		bool isSmallOrExtraSmallScreen = breakpoint == Breakpoint.Sm || breakpoint == Breakpoint.Xs;
-		adaptivePadding = isSmallOrExtraSmallScreen ? "padding: 10px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
+		adaptivePadding = breakpoint == Breakpoint.Xs ? "padding: 40px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
 	}
 }

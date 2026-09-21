@@ -44,9 +44,8 @@
 								<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
 									<MudGrid Spacing="6">
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")"
+											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")" 
 												Validation="details.ValidateLoanAmount" Margin="Margin.Dense" />
-												@* Validation="@(() => details.Validate(nameof(details.LoanAmount)))" Margin="Margin.Dense" /> *@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
@@ -191,9 +190,7 @@
 												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="max-w align-center" />
 												<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(1))" />
 											</MudStack>
-											@* <div style="width: 55%"> *@
-												<BalanceDonutChart />
-											@* </div> *@
+											<BalanceDonutChart />
 										</MudStack>
 									</MudStack>
 								</MudCarouselItem>
