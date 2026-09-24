@@ -4,6 +4,9 @@
 @using SkiaSharp.QrCode
 @using SkiaSharp.QrCode.Image
 
+@inject ISnackbar Snackbar
+@inject JSExtensionsService JS
+
 <PageTitle>QR Code Generator</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Gutters="false">
@@ -11,7 +14,7 @@
 	<MudGrid Spacing="4" Class="pa-6">
 
 		<MudItem xs="12" md="6" Class="order-1 order-md-2" >
-			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 88px;">
+			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 72px;">
 				<MudStack Spacing="1">
 					<div class="d-flex pa-n5">
 						<MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" class="mr-2"></MudIcon>
@@ -19,7 +22,7 @@
 					</div>
 
 					<MudStack AlignItems="AlignItems.Center">
-						<QrCodeImage @ref="qrCodeImage" Options="@options" OnError="@OnError" />
+						<QrCodeImage @ref="qrCodeImage" Options="@options" OnError="@OnGenerateError" />
 					</MudStack>
 					<MudStack Row Justify="Justify.Center">
 						@if (errorMessage != null)
@@ -29,9 +32,9 @@
 						else
 						{
 							<MudButtonGroup Color="Color.Inherit" Variant="Variant.Filled">
-								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="@(x => qrCodeImage!.DownloadPngAsync())">PNG</MudButton>
-								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="@(x => qrCodeImage!.DownloadSvgAsync())">SVG</MudButton>
-								<MudButton StartIcon="@Icons.Material.Filled.ContentCopy" IconSize="Size.Small" OnClick="@(x => qrCodeImage!.CopyToClipboardAsync())">Copy</MudButton>
+								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="OnDownloadPngAsync">PNG</MudButton>
+								<MudButton StartIcon="@Icons.Material.Filled.Download" OnClick="OnDownloadSvgAsync">SVG</MudButton>
+								<MudButton StartIcon="@Icons.Material.Filled.ContentCopy" IconSize="Size.Small" OnClick="OnCopyToClipboardAsync">Copy</MudButton>
 							</MudButtonGroup>
 						}
 					</MudStack>
@@ -50,7 +53,7 @@
 						</div>
 					</TitleContent>
 					<ChildContent>
-						<MudTextField T="string" @bind-Value="options.Content" @bind-Value:after="Regenerate" Immediate Variant="Variant.Outlined" Lines="1" 
+						<MudTextField T="string" @bind-Value="options.Content" @bind-Value:after="Regenerate" Immediate DebounceInterval="350" Variant="Variant.Outlined" Lines="1" 
 							MaxLines="1000" MaxLength="2000" Sizing="InputSizing.Auto" spellcheck="false" />
 					</ChildContent>
 				</MudExpansionPanel>
@@ -94,7 +97,7 @@
 									<MudSlider T="int" @bind-Value="options.Size" Variant="Variant.Filled" Min="64" Max="2048">Image Size: @options.Size.ToString("0 'px'")</MudSlider>
 								</MudItem>
 								<MudItem xs="12" sm="6">
-									<MudSlider T="int" @bind-Value="options.QuietZone" @bind-Value:after="Regenerate" Variant="Variant.Filled" Min="0" Max="10">Quiet Zone: @options.QuietZone.ToString("0 'modules'")</MudSlider>
+									<MudSlider T="int" @bind-Value="options.QuietZone" @bind-Value:after="debounceRegenerate" Variant="Variant.Filled" Min="0" Max="10">Quiet Zone: @options.QuietZone.ToString("0 'modules'")</MudSlider>
 								</MudItem>
 						</MudGrid>
 					</ChildContent>
@@ -183,8 +186,13 @@
 
 @code
 {
-	QrCodeImage? qrCodeImage;
 	string? errorMessage;
+	QrCodeImage? qrCodeImage;
+	Action? debounceRegenerate;
+	QrCodeOptions options = new();
+	const int debounceInterval = 150;
+
+	int ExportImageSize => Math.Clamp(options.Size, 64, 2048);
 
 	MudColor moduleColor1
 	{
@@ -198,12 +206,18 @@
 		set => options.ModuleColor2 = value.ToString(MudColorOutputFormats.Hex);
 	}
 
-	QrCodeOptions options = new();
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			debounceRegenerate = new Action(Regenerate).Debounce(debounceInterval);
+		}
+	}
 
 	void Regenerate()
 	{
 		errorMessage = null;
-		qrCodeImage?.Generate();
+		qrCodeImage?.Draw();
 	}
 
 	Color OnMudSliderColorTreshold(float currentValue, float? errorTreshold, float? warningTreshold)
@@ -233,8 +247,7 @@
 		{
 			options.Preset = Preset.Custom;
 		}
-
-		Regenerate();
+		debounceRegenerate();
 	}
 
 	void OnPresetChanged()
@@ -276,14 +289,50 @@
 					options.TransparentBackground = false;
 					break;
 			}
-
 			Regenerate();
 		}
 	}
 
-	void OnError(Exception ex)
+	void OnGenerateError(Exception ex)
 	{
 		errorMessage = ex.GetBaseException().Message.Replace("use Standard QR (QRCodeGenerator)", "switch Symbology to QR Code");
+	}
+
+	async Task OnDownloadPngAsync()
+	{
+		try
+		{
+			await JS.DownloadFileAsync("qrcode.png", "image/png", qrCodeImage!.RenderToBytes(ExportImageSize));
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Error downloading PNG. {ex.Message}", Severity.Error);
+		}
+	}
+
+	async Task OnDownloadSvgAsync()
+	{
+		try
+		{
+			await JS.DownloadFileAsync("qrcode.svg", "image/svg+xml", qrCodeImage!.RenderToBytes(ExportImageSize, isSvg: true));
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Error downloading SVG. {ex.Message}", Severity.Error);
+		}
+	}
+
+	async Task OnCopyToClipboardAsync()
+	{
+		try
+		{
+			await JS.CopyToClipboardAsync("image/png", qrCodeImage!.RenderToBytes(ExportImageSize));
+			Snackbar.Add("QR Code copied to clipboard", Severity.Info);
+		}
+		catch (Exception ex)
+		{
+			Snackbar.Add($"Error copying to clipboard. {ex.Message}", Severity.Error);
+		}
 	}
 
 }

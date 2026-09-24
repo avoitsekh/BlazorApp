@@ -60,18 +60,18 @@ public sealed class PaymentStatistics()
 					RemainingBalance = lastPayment.Balance;
 
 					var paymentsForPeriod = Payments.GetPaymentsForPeriod(1, lastPaymentNumber);
-					InterestPaid = paymentsForPeriod.SumAndRoundToCents(x => x.InterestAmount);
-					PrincipalPaid = paymentsForPeriod.SumAndRoundToCents(x => x.PrincipalAmount);
-					ExtraPaid = paymentsForPeriod.SumAndRoundToCents(x => x.ExtraAmount);
-					TotalPaid = paymentsForPeriod.SumAndRoundToCents(x => x.PaymentAmount);
+					InterestPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
+					PrincipalPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
+					ExtraPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.ExtraAmount));
+					TotalPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.PaymentAmount));
 					NumberOfPayments = paymentsForPeriod.Count;
 
 					if (PaymentsNoExtras.HasData())
 					{
-						var lastPaymentNoExtra = PaymentsNoExtras.LastPaymentForYear(year);
-						var paymentsForPeriodNoExtra = PaymentsNoExtras.GetPaymentsForPeriod(1, lastPaymentNumber);
-						var interestPaidNoExtra = paymentsForPeriodNoExtra.SumAndRoundToCents(x => x.InterestAmount);
-						InterestSavings = interestPaidNoExtra - InterestPaid;
+						var lastPaymentNoExtras = PaymentsNoExtras.LastPaymentForYear(year);
+						var paymentsForPeriodNoExtras = PaymentsNoExtras.GetPaymentsForPeriod(1, lastPaymentNumber);
+						var interestPaidNoExtras = PaymentCollection.RoundToCents(paymentsForPeriodNoExtras.Sum(x => x.InterestAmount));
+						InterestSavings = interestPaidNoExtras - InterestPaid;
 					}
 					else
 					{

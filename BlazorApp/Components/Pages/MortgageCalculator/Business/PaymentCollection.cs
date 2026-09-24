@@ -125,9 +125,10 @@ public sealed class PaymentCollection : List<Payment>
 
 	double Compound(double contractRate, double compoundPeriod, int denominator)
 	{
+		var rate = contractRate / 100;
 		return compoundPeriod == 0D
-			? contractRate / 100 / denominator
-			: Math.Pow(1D + contractRate / 100 / compoundPeriod, compoundPeriod / denominator) - 1;
+			? rate / denominator
+			: Math.Pow(1D + rate / compoundPeriod, compoundPeriod / denominator) - 1;
 	}
 
 	double CalculatePaymentAmount(double interestRate, int paymentCount, double balance)
@@ -236,4 +237,12 @@ public sealed class PaymentCollection : List<Payment>
 		return this.Where(x => x.Number >= fromPayment && x.Number <= toPayment).ToList();
 	}
 
+}
+
+public static class PaymentCollectionExtensionMethods
+{
+	public static bool HasData(this PaymentCollection? value)
+	{
+		return value != null && value.Count > 0;
+	}
 }
