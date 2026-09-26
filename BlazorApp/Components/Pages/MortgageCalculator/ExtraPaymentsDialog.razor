@@ -2,11 +2,11 @@
 	<TitleContent>
 		<InfoLabel Title="Extra Payments" Class="pt-3">
 			<MessageContent>
-				<MudStack>
+				<MudStack Spacing="4">
 					<MudText>During the mortgage term it's possible to make extra payments (e.g. pre-payments, additional payments, lump sum payments) towards the principal balance. The extra payments can only be made on set mortgage payment dates or payment numbers. In this dialog box, add extra payments to be made during the mortgage term. See amortization schedule for dates and payment numbers.</MudText>
 					<MudText><b>@Constants.Amount:</b><br />Amount to be paid.</MudText>
 					<MudText><b>@Constants.BeginAtPaymentNo:</b><br />Indicate when you want extra payment(s) to begin. The extra payment(s) will start on this payment number.</MudText>
-					<MudText><b>@Constants.EndAtPaymentNo:</b><br />Indicate when you want extra payment(s) to end. The extra payment(s) will end on this payment number. For single lump sum payments, make this value the same as '@Constants.BeginAtPaymentNo'. For recurring payments, make this value greater than '@Constants.BeginAtPaymentNo' or leave blank to make recurring payments made until the end of the mortgage term.</MudText>
+					<MudText><b>@Constants.EndAtPaymentNo:</b><br />Indicate when you want extra payment(s) to end. The extra payment(s) will end on this payment number. For single lump sum payments, make this value equal to the '@Constants.BeginAtPaymentNo'. For recurring payments, make this value greater than '@Constants.BeginAtPaymentNo' or leave blank to make recurring payments made until the end of the mortgage term.</MudText>
 				</MudStack>
 			</MessageContent>
 		</InfoLabel>

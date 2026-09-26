@@ -2,7 +2,6 @@
 
 @using System.Text
 
-
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject JSExtensionsService JS
@@ -44,27 +43,27 @@
 								<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
 									<MudGrid Spacing="6">
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="Loan Amount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")" 
+											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="@Constants.LoanAmount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")" 
 												Validation="details.ValidateLoanAmount" Margin="Margin.Dense" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
+											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
 												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
 												Validation="details.ValidateInterestRate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="Amortization Period" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="details.ValidateAmortizationPeriodInYears" />
+											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="@Constants.AmortizationPeriod" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="details.ValidateAmortizationPeriodInYears" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudDatePicker Label="Advance Date" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense"
+											<MudDatePicker Label="@Constants.AdvanceDate" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense"
 												Validation="details.ValidateAdvanceDate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="int" Label="Compound Period" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+											<MudSelect T="int" Label="@Constants.CompoundPeriod" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.CompoundPeriodValues)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -73,7 +72,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="int" Label="Payment Frequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+											<MudSelect T="int" Label="@Constants.PaymentFrequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.PaymentFrequencyValues)
 												{
 													<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -82,7 +81,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="Interest Accrual Method" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+											<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="@Constants.InterestAccrualMethod" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.InterestRateAccrualMethodValues)
 												{
 													<MudSelectItem T="MortgageDetails.InterestAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -91,7 +90,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.FinancialYears" Label="Financial Year" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
+											<MudSelect T="MortgageDetails.FinancialYears" Label="@Constants.FinancialYear" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
 												Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
 												@foreach (var keyValuePair in Constants.FinancialYearValues)
 												{
@@ -101,7 +100,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.InterestRateTypes" Label="Rate Type" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense"  AdornmentColor="Color.Inherit">
+											<MudSelect T="MortgageDetails.InterestRateTypes" Label="@Constants.RateType" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense"  AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.InterestRateTypeValues)
 												{
 													<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -110,7 +109,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudTextField T="string" Label="Extra Payments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@extraPaymentsDescription"
+											<MudTextField T="string" Label="@Constants.ExtraPayments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@extraPaymentsDescription"
 												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" AdornmentColor="@(details.ExtraPayments.HasExtraPayments ? Color.Error : Color.Default)" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
 										</MudItem>
 
@@ -136,22 +135,22 @@
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4" Class="order-1 order-sm-1">
-											<DataField T="double" Label="Payment Amount" Value="@stats.PaymentAmount" Format="N2" />
+											<DataField T="double" Label="@Constants.PaymentAmount" Value="@stats.PaymentAmount" Format="N2" />
 										</MudItem>
 										<MudItem xs="6" sm="4" Class="order-3 order-sm-2">
-											<DataField T="double" Label="Interest Amount" Value="@stats.InterestAmount" Format="N2" />
+											<DataField T="double" Label="@Constants.InterestAmount" Value="@stats.InterestAmount" Format="N2" />
 										</MudItem>
 										<MudItem xs="6" sm="4" Class="order-4 order-sm-3">
-											<DataField T="double" Label="Amortization Reduction" Value="@stats.AmortizationOffset" Format="+#'%';-#'%';0'%'" />
+											<DataField T="double" Label="@Constants.AmortizationReduction" Value="@stats.AmortizationOffset" Format="+#'%';-#'%';0'%'" />
 										</MudItem>
 										<MudItem xs="6" sm="4" Class="order-2 order-sm-4">
-											<DataField T="double" Label="Effective Annual Rate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
+											<DataField T="double" Label="@Constants.EffectiveAnnualRate" Value="@stats.EffectiveAnnualRate" Format="0.##'%'" />
 										</MudItem>
 										<MudItem xs="6" sm="4" Class="order-5 order-sm-5">
-											<DataField T="double" Label="Principal Amount" Value="@stats.PrincipalAmount" Format="N2" />
+											<DataField T="double" Label="@Constants.PrincipalAmount" Value="@stats.PrincipalAmount" Format="N2" />
 										</MudItem>
 										<MudItem xs="6" sm="4" Class="order-6 order-sm-6">
-											<DataField T="double" Label="Years to pay-off" Value="@stats.YearsToPayOff" />
+											<DataField T="double" Label="@Constants.YearsToPayoff" Value="@stats.YearsToPayOff" />
 										</MudItem>
 									</MudGrid>
 									<BalanceLineChart DebounceInterval="60" />
@@ -160,34 +159,34 @@
 									<MudStack Spacing="8">
 										<MudGrid Spacing="0">
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="DateTime" Label="Last Payment Date" Value="@stats.LastPaymentDate" Format="yyyy-MM-dd" />
+												<DataField T="DateTime" Label="@Constants.LastPaymentDate" Value="@stats.LastPaymentDate" Format="yyyy-MM-dd" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Principal Paid" Value="@stats.PrincipalPaid" Format="N2" />
+												<DataField T="double" Label="@Constants.PrincipalPaid" Value="@stats.PrincipalPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Interest Paid" Value="@stats.InterestPaid" Format="N2" />
+												<DataField T="double" Label="@Constants.InterestPaid" Value="@stats.InterestPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Interest Savings" Value="@stats.InterestSavings" Format="N2" />
+												<DataField T="double" Label="@Constants.InterestSavings" Value="@stats.InterestSavings" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Number Of Payments" Value="@stats.NumberOfPayments" />
+												<DataField T="double" Label="@Constants.NumberOfPayments" Value="@stats.NumberOfPayments" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Extra Paid" Value="@stats.ExtraPaid" Format="N2" />
+												<DataField T="double" Label="@Constants.ExtraPaid" Value="@stats.ExtraPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Total Paid" Value="@stats.TotalPaid" Format="N2" />
+												<DataField T="double" Label="@Constants.TotalPaid" Value="@stats.TotalPaid" Format="N2" />
 											</MudItem>
 											<MudItem xs="6" sm="4" md="3">
-												<DataField T="double" Label="Remaining Balance" Value="@stats.RemainingBalance" Format="N2" />
+												<DataField T="double" Label="@Constants.RemainingBalance" Value="@stats.RemainingBalance" Format="N2" />
 											</MudItem>
 										</MudGrid>
 										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
 											<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
 												<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(-1))" />
-												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
+												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="@Constants.Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
 												<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(1))" />
 											</MudStack>
 											<BalanceDonutChart />

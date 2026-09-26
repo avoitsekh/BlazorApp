@@ -4,17 +4,11 @@
 	<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" Size="Size.Small" Class="cursor-pointer" @onclick="OnInformationClicked" />
 </MudStack>
 
-<MudMessageBox @ref="messageBox" Title="Information" YesText="OK" Class="apply-to-this-msgbox-only">
+<MudMessageBox @ref="messageBox" Title="Information" YesText="OK">
 	<MessageContent>
 		@MessageContent
 	</MessageContent>
 </MudMessageBox>
-
-<style>
-	.mud-overlay-scrim {
-		backdrop-filter: blur(2px);
-	}
-</style>
 
 @code {
 

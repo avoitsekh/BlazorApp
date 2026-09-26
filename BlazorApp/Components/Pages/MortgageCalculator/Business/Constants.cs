@@ -50,7 +50,7 @@ public static class Constants
 
 	#endregion
 
-	#region Labels
+	#region Headers and Labels
 
 	public const string LoanAmount = "Loan Amount";
 	public const string AnnualPercent = "Annual %";
@@ -62,40 +62,29 @@ public static class Constants
 	public const string FinancialYear = "Financial Year";
 	public const string RateType = "Rate Type";
 	public const string ExtraPayments = "Extra Payments";
-
 	public const string EffectiveDate = "Effective Date";
-
 	public const string Amount = "Amount";
-
-
-
 	public const string BeginAtPaymentNo = "Begin at Payment No.";
 	public const string EndAtPaymentNo = "End at Payment No.";
-
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-	//public const string XXXXXXXXX = "YYYYYYYYY";
-
-	#endregion
-
-	#region Grid Headers
-
+	public const string PaymentAmount = "Payment Amount";
+	public const string InterestAmount = "Interest Amount";
+	public const string PrincipalAmount = "Principal Amount";
+	public const string EffectiveAnnualRate = "Effective Annual Rate";
+	public const string AmortizationReduction = "Amortization Reduction";
+	public const string YearsToPayoff = "Years to pay-off";
+	public const string LastPaymentDate = "Last Payment Date";
+	public const string NumberOfPayments = "Number Of Payments";
+	public const string PrincipalPaid = "Principal Paid";
+	public const string InterestPaid = "Interest Paid";
+	public const string ExtraPaid = "Extra Paid";
+	public const string TotalPaid = "Total Paid";
+	public const string InterestSavings = "Interest Savings";
 	public const string No = "No.";
 	public const string PaymentDate = "Payment Date";
 	public const string Year = "Year";
 	public const string Interest = "Interest";
 	public const string InterestAccrualPeriod = "Interest Accrual Period";
-	public const string InterestAmount = "Interest Amount";
-	public const string PrincipalAmount = "Principal Amount";
 	public const string ExtraAmount = "Extra Amount";
-	public const string PaymentAmount = "Payment Amount";
 	public const string RemainingBalance = "Remaining Balance";
 
 	#endregion

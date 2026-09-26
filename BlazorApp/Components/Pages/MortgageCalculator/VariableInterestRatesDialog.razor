@@ -2,7 +2,7 @@
 	<TitleContent>
 		<InfoLabel Title="Variable Interest Rates" Class="pt-3">
 			<MessageContent>
-				<MudStack>
+				<MudStack Spacing="4">
 					<MudText>For variable rate mortgages (ARM and VRM), interest rate changes during the mortgage term. In this dialog box, add interest rates that differ from the initial @Constants.AnnualPercent.</MudText>
 					<MudText><b>@Constants.EffectiveDate:</b><br />The date the new interest rate takes effect. The value cannot be equal or less than the @Constants.AdvanceDate.</MudText>
 					<MudText><b>@Constants.AnnualPercent:</b><br />The new interest rate.</MudText>
@@ -120,7 +120,7 @@
 		}
 		else if (effectiveDate < MinDate)
 		{
-			result = "Value cannot be less (or equal to) Advance Date";
+			result = $"Value cannot be less (or equal to) {Constants.AdvanceDate}.";
 		}
 		else if (Details.InterestRates.Any(x => x.EffectiveDate == effectiveDate))
 		{
