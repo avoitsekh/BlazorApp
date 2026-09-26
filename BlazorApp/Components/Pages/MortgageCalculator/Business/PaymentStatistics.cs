@@ -52,14 +52,14 @@ public sealed class PaymentStatistics()
 		{
 			if (Payments.HasData())
 			{
-				var lastPayment = Payments.LastPaymentForYear(year);
+				var lastPayment = Payments.GetLastPaymentForYear(year);
 				if (lastPayment != null)
 				{
 					int lastPaymentNumber = lastPayment.Number;
 					LastPaymentDate = lastPayment.PaymentDate;
 					RemainingBalance = lastPayment.Balance;
 
-					var paymentsForPeriod = Payments.GetPaymentsForPeriod(1, lastPaymentNumber);
+					var paymentsForPeriod = Payments.GetAllPaymentsForPeriod(1, lastPaymentNumber);
 					InterestPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.InterestAmount));
 					PrincipalPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.PrincipalAmount));
 					ExtraPaid = PaymentCollection.RoundToCents(paymentsForPeriod.Sum(x => x.ExtraAmount));
@@ -68,8 +68,8 @@ public sealed class PaymentStatistics()
 
 					if (PaymentsNoExtras.HasData())
 					{
-						var lastPaymentNoExtras = PaymentsNoExtras.LastPaymentForYear(year);
-						var paymentsForPeriodNoExtras = PaymentsNoExtras.GetPaymentsForPeriod(1, lastPaymentNumber);
+						var lastPaymentNoExtras = PaymentsNoExtras.GetLastPaymentForYear(year);
+						var paymentsForPeriodNoExtras = PaymentsNoExtras.GetAllPaymentsForPeriod(1, lastPaymentNumber);
 						var interestPaidNoExtras = PaymentCollection.RoundToCents(paymentsForPeriodNoExtras.Sum(x => x.InterestAmount));
 						InterestSavings = interestPaidNoExtras - InterestPaid;
 					}

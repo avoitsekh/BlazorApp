@@ -44,7 +44,7 @@ public static class ExportToExcel
 		table.Add(columnNames);
 
 		var objType = typeof(Payment);
-		var fieldInfos = fields.Select(objType.GetField).ToList();
+		var fieldInfos = fields.Select(objType.GetField).Cast<FieldInfo>().ToList();
 
 		foreach (var payment in payments)
 		{

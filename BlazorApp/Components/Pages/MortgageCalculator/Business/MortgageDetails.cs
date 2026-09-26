@@ -16,7 +16,7 @@ public sealed class MortgageDetails
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public ExtraPaymentCollection ExtraPayments = new();
 
-	public enum InterestRateTypes { Fixed, ARM }
+	public enum InterestRateTypes { Fixed, ARM, VRM }
 	public enum InterestAccrualMethods { PerDay, PerPayment }
 	public enum FinancialYears { _365or366, _365, _360 }
 

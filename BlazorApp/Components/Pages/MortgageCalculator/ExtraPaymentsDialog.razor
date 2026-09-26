@@ -1,14 +1,23 @@
 ﻿<MudDialog>
 	<TitleContent>
-		<MudText Typo="Typo.h5" Class="pt-3">Extra Payments</MudText>
+		<InfoLabel Title="Extra Payments" Class="pt-3">
+			<MessageContent>
+				<MudStack>
+					<MudText>During the mortgage term it's possible to make extra payments (e.g. pre-payments, additional payments, lump sum payments) towards the principal balance. The extra payments can only be made on set mortgage payment dates or payment numbers. In this dialog box, add extra payments to be made during the mortgage term. See amortization schedule for dates and payment numbers.</MudText>
+					<MudText><b>@Constants.Amount:</b><br />Amount to be paid.</MudText>
+					<MudText><b>@Constants.BeginAtPaymentNo:</b><br />Indicate when you want extra payment(s) to begin. The extra payment(s) will start on this payment number.</MudText>
+					<MudText><b>@Constants.EndAtPaymentNo:</b><br />Indicate when you want extra payment(s) to end. The extra payment(s) will end on this payment number. For single lump sum payments, make this value the same as '@Constants.BeginAtPaymentNo'. For recurring payments, make this value greater than '@Constants.BeginAtPaymentNo' or leave blank to make recurring payments made until the end of the mortgage term.</MudText>
+				</MudStack>
+			</MessageContent>
+		</InfoLabel>
 	</TitleContent>
 	<DialogContent>
 
 		<MudTable Items="Details.ExtraPayments" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
-				<MudTh>Amount</MudTh>
-				<MudTh>Begin at Payment No.</MudTh>
-				<MudTh>End at Payment No.</MudTh>
+				<MudTh>@Constants.Amount</MudTh>
+				<MudTh>@Constants.BeginAtPaymentNo</MudTh>
+				<MudTh>@Constants.EndAtPaymentNo</MudTh>
 				<MudTh Style="width: 60px" />
 			</HeaderContent>
 			<RowTemplate>
@@ -26,9 +35,9 @@
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="Begin at Payment No." Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="End at Payment No." Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="@Constants.Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
+					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="@Constants.BeginAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
+					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="@Constants.EndAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
@@ -110,7 +119,7 @@
 		}
 		else if (toPayment < payment.FromPayment)
 		{
-			result = "Value cannot be less than 'Begin at Payment No.";
+			result = $"Value cannot be less than '{Constants.BeginAtPaymentNo}'";
 		}
 		return result;
 	}

@@ -1,13 +1,21 @@
 ﻿<MudDialog>
 	<TitleContent>
-		<MudText Typo="Typo.h5" Class="pt-3">Variable Interest Rates</MudText>
+		<InfoLabel Title="Variable Interest Rates" Class="pt-3">
+			<MessageContent>
+				<MudStack>
+					<MudText>For variable rate mortgages (ARM and VRM), interest rate changes during the mortgage term. In this dialog box, add interest rates that differ from the initial @Constants.AnnualPercent.</MudText>
+					<MudText><b>@Constants.EffectiveDate:</b><br />The date the new interest rate takes effect. The value cannot be equal or less than the @Constants.AdvanceDate.</MudText>
+					<MudText><b>@Constants.AnnualPercent:</b><br />The new interest rate.</MudText>
+				</MudStack>
+			</MessageContent>
+		</InfoLabel>
 	</TitleContent>
 	<DialogContent>
 
 		<MudTable Items="Details.InterestRates.Skip(1)" FixedHeader Height="230px" Dense Hover Elevation="0" Breakpoint="Breakpoint.None">
 			<HeaderContent>
-				<MudTh>Effective Date</MudTh>
-				<MudTh>Annual %</MudTh>
+				<MudTh>@Constants.EffectiveDate</MudTh>
+				<MudTh>@Constants.AnnualPercent</MudTh>
 				<MudTh Style="width: 60px" />
 			</HeaderContent>
 			<RowTemplate>
@@ -24,9 +32,9 @@
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
-					<MudDatePicker Label="Effective Date" @bind-Date="interest.EffectiveDate" Editable="true" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
+					<MudDatePicker Label="@Constants.EffectiveDate" @bind-Date="interest.EffectiveDate" Editable="true" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
 						Margin="Margin.Dense" Validation="ValidateEffectiveDate" MinDate="MinDate" OpenTo="OpenTo.Month" ShowToolbar="false" />
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="interest.Rate" Label="Annual %" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
+					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="interest.Rate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
 						Validation="ValidateRate" />
 					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
@@ -44,15 +52,15 @@
 @code {
 
 	[Parameter]
-	public MortgageDetails Details { get; set; }
+	public MortgageDetails? Details { get; set; }
 
 	[CascadingParameter]
-	IMudDialogInstance MudDialog { get; set; }
+	IMudDialogInstance? MudDialog { get; set; }
 
-	DateTime MinDate => Details.AdvanceDate.AddDays(1);
+	DateTime MinDate => Details?.AdvanceDate.AddDays(1) ?? DateTime.MinValue;
 
-	MudForm form;
-	Interest interest;
+	MudForm? form;
+	Interest? interest;
 	bool addNewExpanded;
 
 	protected async override Task OnInitializedAsync()

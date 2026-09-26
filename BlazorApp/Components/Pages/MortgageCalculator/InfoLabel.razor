@@ -1,0 +1,41 @@
+﻿
+<MudStack Row Breakpoint="Breakpoint.None" Wrap="Wrap.NoWrap" Spacing="2" AlignItems="AlignItems.Center" Class="@Class">
+	<MudText Typo="Typo.h5">@Title</MudText>
+	<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" Size="Size.Small" Class="cursor-pointer" @onclick="OnInformationClicked" />
+</MudStack>
+
+<MudMessageBox @ref="messageBox" Title="Information" YesText="OK" Class="apply-to-this-msgbox-only">
+	<MessageContent>
+		@MessageContent
+	</MessageContent>
+</MudMessageBox>
+
+<style>
+	.mud-overlay-scrim {
+		backdrop-filter: blur(2px);
+	}
+</style>
+
+@code {
+
+	[Parameter]
+	public string? Title { get; set; }
+
+	[Parameter]
+	public string? Class { get; set; }
+
+	[Parameter]
+	public RenderFragment? MessageContent { get; set; }
+
+	MudMessageBox? messageBox = null;
+
+	async Task OnInformationClicked()
+	{
+		var options = new DialogOptions
+		{
+			Position = DialogPosition.TopCenter,
+			CloseOnEscapeKey = true
+		};
+		await messageBox!.ShowAsync(options);
+	}
+}

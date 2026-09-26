@@ -53,7 +53,7 @@ public sealed class PaymentCollection : List<Payment>
 				balance = 0;
 				isLastPayment = true;
 			}
-			else if (i == paymentCount && balance > 0)
+			else if (i == paymentCount && balance > 0 && Details.InterestRateType != InterestRateTypes.VRM)
 			{
 				principalAmount += balance;
 				paymentAmount = interestAmount + principalAmount;
@@ -66,7 +66,6 @@ public sealed class PaymentCollection : List<Payment>
 			string accrualPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
 				? string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1))
 				: $"({ratesForPeriodFormatted}) ÷ {Details.PaymentFrequency}";
-
 
 			Add(new()
 			{
@@ -89,7 +88,7 @@ public sealed class PaymentCollection : List<Payment>
 
 			double previousRate = currentRate;
 			currentRate = Details.InterestRates.GetRate(paymentDate);
-			if (currentRate != previousRate)
+			if (Details.InterestRateType == InterestRateTypes.ARM && currentRate != previousRate)
 			{
 				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
 			}
@@ -227,12 +226,12 @@ public sealed class PaymentCollection : List<Payment>
 		return new DateTime(date.Year, date.Month, Math.Min(day, DateTime.DaysInMonth(date.Year, date.Month)));
 	}
 
-	public Payment? LastPaymentForYear(int year)
+	public Payment? GetLastPaymentForYear(int year)
 	{
 		return this.FirstOrDefault(x => x.Year.HasValue && x.Year.Value == year);
 	}
 
-	public List<Payment> GetPaymentsForPeriod(int fromPayment, int toPayment)
+	public List<Payment> GetAllPaymentsForPeriod(int fromPayment, int toPayment)
 	{
 		return this.Where(x => x.Number >= fromPayment && x.Number <= toPayment).ToList();
 	}

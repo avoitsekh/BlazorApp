@@ -17,7 +17,7 @@
 			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 72px;">
 				<MudStack Spacing="1">
 					<div class="d-flex pa-n5">
-						<MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" class="mr-2"></MudIcon>
+						<MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Class="mr-2"></MudIcon>
 						<MudText><b>Preview</b></MudText>
 					</div>
 
@@ -48,7 +48,7 @@
 				<MudExpansionPanel Expanded>
 					<TitleContent>
 						<div class="d-flex">
-							<MudIcon Icon="@Icons.Material.Filled.TextSnippet" class="mr-2"></MudIcon>
+							<MudIcon Icon="@Icons.Material.Filled.TextSnippet" Class="mr-2"></MudIcon>
 							<MudText><b>Content</b></MudText>
 						</div>
 					</TitleContent>
@@ -61,7 +61,7 @@
 				<MudExpansionPanel>
 					<TitleContent>
 						<div class="d-flex">
-							<MudIcon Icon="@Icons.Material.Filled.Settings" class="mr-2"></MudIcon>
+							<MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2"></MudIcon>
 							<MudText><b>Parameters</b></MudText>
 						</div>
 					</TitleContent>
@@ -106,7 +106,7 @@
 				<MudExpansionPanel>
 					<TitleContent>
 						<div class="d-flex">
-							<MudIcon Icon="@Icons.Material.Filled.Palette" class="mr-2"></MudIcon>
+							<MudIcon Icon="@Icons.Material.Filled.Palette" Class="mr-2"></MudIcon>
 							<MudText><b>Style</b></MudText>
 						</div>
 					</TitleContent>
@@ -169,7 +169,7 @@
 				<MudExpansionPanel>
 					<TitleContent>
 						<div class="d-flex">
-							<MudIcon Icon="@Icons.Material.Filled.Image" class="mr-2"></MudIcon>
+							<MudIcon Icon="@Icons.Material.Filled.Image" Class="mr-2"></MudIcon>
 							<MudText><b>Parse Image</b></MudText>
 						</div>
 					</TitleContent>
@@ -210,7 +210,7 @@
 	{
 		if (firstRender)
 		{
-			debounceRegenerate = new Action(Regenerate).Debounce(debounceInterval);
+			debounceRegenerate = new Action(() => this.InvokeAsync(Regenerate)).Debounce(debounceInterval);
 		}
 	}
 
