@@ -100,7 +100,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.InterestRateTypes" Label="@Constants.RateType" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChange" Variant="Variant.Text" Margin="Margin.Dense"  AdornmentColor="Color.Inherit">
+											<MudSelect T="MortgageDetails.InterestRateTypes" Label="@Constants.RateType" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChanged" Variant="Variant.Text" Margin="Margin.Dense"  AdornmentColor="Color.Inherit">
 												@foreach (var keyValuePair in Constants.InterestRateTypeValues)
 												{
 													<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
@@ -184,11 +184,7 @@
 											</MudItem>
 										</MudGrid>
 										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-											<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
-												<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(-1))" />
-												<MudNumericField FullWidth="false" T="int?" @bind-Value="balanceAtYear" @bind-Value:after="OnSummaryYearChanged" Immediate Label="@Constants.Year" Variant="Variant.Text" Min="1" Max="@balanceMaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
-												<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnSummaryYearArrowClicked(1))" />
-											</MudStack>
+											<YearField @ref="yearField" MaxYear="BalanceMaxYear" YearChanged="OnYearChanged" />
 											<BalanceDonutChart />
 										</MudStack>
 									</MudStack>
@@ -233,14 +229,6 @@
 	.mud-swipearea {
 		touch-action: pan-y;
 	}
-
-	.year-max-width {
-		max-width: 26px;
-	}
-
-	.align-center input {
-		text-align: center;
-	}
 </style>
 	
 
@@ -248,11 +236,12 @@
 @code {
 
 	MudForm? form = null;
+	YearField? yearField = null;
 	PaymentsTable? paymentsTable = null;
 
 	MortgageDetails details = new();
-	PaymentStatistics stats = new();
 	PresetCollection presets = new();
+	PaymentStatistics stats = new();
 	PaymentCollection? payments;
 	PaymentCollection? paymentsNoExtras;
 
@@ -265,11 +254,11 @@
 		set => details.AdvanceDate = value.HasValue ? value.Value : DateTime.MinValue;
 	}
 
+	int BalanceMaxYear => payments?.Max(x => x.Year) ?? 1;
+
 	int summaryPage = 0;
-	string summaryPageHeight = "400px";
-	int balanceMaxYear = 1;
-	int? balanceAtYear = 5;
 	bool paymentsTableExpanded = false;
+	string summaryPageHeight = "400px";
 	string extraPaymentsDescription = "None";
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -287,27 +276,17 @@
 		if (form.IsValid)
 		{
 			paymentsTableExpanded = false;
+
 			payments = PaymentCollection.Create(details);
 			paymentsNoExtras = payments.HasExtraPayments ? PaymentCollection.Create(details, countExtraPayments: false) : null;
 
-			balanceMaxYear = payments?.Max(x => x.Year) ?? 1;
-			if (!balanceAtYear.HasValue)
-			{
-				balanceAtYear = 1;
-			}
-			else if (balanceAtYear > balanceMaxYear)
-			{
-				balanceAtYear = balanceMaxYear;
-			}
-
-			stats.Payments = payments;
-			stats.PaymentsNoExtras = paymentsNoExtras;
+			stats = new(payments, paymentsNoExtras);
 			stats.CalculateSummary();
-			stats.CalculateForYear(balanceAtYear.Value);
+			stats.CalculateForYear(yearField?.Value ?? 0);
 		}
 	}
 
-	async Task OnInterestRateTypeChange()
+	async Task OnInterestRateTypeChanged()
 	{
 		if (details.InterestRateType == MortgageDetails.InterestRateTypes.Fixed)
 		{
@@ -443,8 +422,7 @@
 		}
 		else
 		{
-			extraPaymentsDescription = string.Empty;
-			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.LumpSums.Select(x => x.Amount.ToString("N2") + "; "));
+			extraPaymentsDescription = string.Join(string.Empty, details.ExtraPayments.LumpSums.Select(x => x.Amount.ToString("N2") + "; "));
 			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.Recurring.Select(x => x.Amount.ToString("N2") + "+; "));
 			extraPaymentsDescription = extraPaymentsDescription.TrimEnd(' ', ';');
 		}
@@ -459,19 +437,12 @@
 		await Calculate();
 	}
 
-	void OnSummaryYearChanged()
+	void OnYearChanged(int? year)
 	{
-		if (payments.HasData() && balanceAtYear.HasValue)
+		if (year.HasValue && payments.HasData())
 		{
-			stats.CalculateForYear(balanceAtYear.Value);
+			stats.CalculateForYear(year.Value);
 		}
-	}
-
-	void OnSummaryYearArrowClicked(int increment)
-	{
-		balanceAtYear = Math.Clamp((balanceAtYear ?? 0) + increment, 1, balanceMaxYear);
-		OnSummaryYearChanged();
-		StateHasChanged();
 	}
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
@@ -479,5 +450,6 @@
 		var isExtraSmallScreen = breakpoint == Breakpoint.Xs;
 		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
 	}
+
 
 }

@@ -11,7 +11,7 @@ public sealed class MortgageDetails
 	public DateTime AdvanceDate = DateTime.Today;						// mortgage start date
 	public int CompoundPeriod = 2;										// cp - interest compound period
 	public int PaymentFrequency = 12;									// ppy - payments per year
-	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerDay;
+	public InterestAccrualMethods InterestAccrualMethod = InterestAccrualMethods.PerPayment;
 	public FinancialYears FinancialYear = FinancialYears._365or366;
 	public InterestRateTypes InterestRateType = InterestRateTypes.ARM;
 	public ExtraPaymentCollection ExtraPayments = new();

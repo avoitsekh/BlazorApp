@@ -1,5 +1,52 @@
-﻿<h3>YearField</h3>
+﻿<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
+	<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnArrowClicked(-1))" />
+	<MudNumericField FullWidth="false" T="int?" @bind-Value="Value" @bind-Value:after="OnYearChanged" Immediate Label="@Constants.Year" Variant="Variant.Text" Min="1" Max="@MaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
+	<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnArrowClicked(1))" />
+</MudStack>
+
+<style>
+	.year-max-width {
+		max-width: 26px;
+	}
+	.align-center input {
+		text-align: center;
+	}
+</style>
+
 
 @code {
+
+	public int? Value { get; private set; } = 5;
+
+	[Parameter, EditorRequired]
+	public int? MaxYear { get; set; } = 1;
+
+	[Parameter]
+	public EventCallback<int?> YearChanged { get; set; }
+
+	protected override void OnParametersSet()
+	{
+		if (!Value.HasValue)
+		{
+			Value = 1;
+		}
+		else if (Value > MaxYear)
+		{
+			Value = MaxYear;
+		}
+		OnYearChanged();
+	}
+
+	void OnArrowClicked(int increment)
+	{
+		Value = Math.Clamp((Value ?? 0) + increment, 1, MaxYear ?? 0);
+		OnYearChanged();
+		StateHasChanged();
+	}
+
+	void OnYearChanged()
+	{
+		YearChanged.InvokeAsync(Value);
+	}
 
 }
