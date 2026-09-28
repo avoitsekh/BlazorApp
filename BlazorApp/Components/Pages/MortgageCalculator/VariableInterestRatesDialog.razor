@@ -100,13 +100,14 @@
 
 	string ValidateRate(double rate)
 	{
-		var result = Details.ValidateInterestRate(rate);
-		if (string.IsNullOrEmpty(result))
+		var result = string.Empty;
+		if (rate == 0D)
 		{
-			if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
-			{
-				result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}";
-			}
+			result = "Value cannot be 0";
+		}
+		else if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
+		{
+			result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}";
 		}
 		return result;
 	}

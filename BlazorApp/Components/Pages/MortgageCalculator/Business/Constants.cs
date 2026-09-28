@@ -20,7 +20,7 @@ public static class Constants
 		{ "VRM", InterestRateTypes.VRM },
 	};
 
-	public static Dictionary<string, InterestAccrualMethods> InterestRateAccrualMethodValues = new()
+	public static Dictionary<string, InterestAccrualMethods> InterestAccrualMethodValues = new()
 	{
 		{ "Per Day", InterestAccrualMethods.PerDay },
 		{ "Per Payment", InterestAccrualMethods.PerPayment },

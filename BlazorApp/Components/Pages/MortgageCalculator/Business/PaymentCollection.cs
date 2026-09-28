@@ -9,7 +9,7 @@ public sealed class PaymentCollection : List<Payment>
 	public bool HasExtraPayments => this.Any(x => x.ExtraAmount > 0D);
 
 	PaymentCollection(MortgageDetails settings)
-		: base(settings.PaymentFrequency * settings.AmortizationPeriodInYears)
+		: base(settings.PaymentCount)
 	{
 		Details = settings;
 	}
@@ -23,7 +23,7 @@ public sealed class PaymentCollection : List<Payment>
 
 	void CalculateAmortizationSchedule(bool countExtraPayments)
 	{
-		int paymentCount = Details.PaymentFrequency * Details.AmortizationPeriodInYears;    // nper
+		int paymentCount = Details.PaymentCount;
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
 		double paymentAmount = CalculatePaymentAmount(currentRate, paymentCount, balance);
