@@ -25,9 +25,9 @@
 							<InfoLabel Title="Mortgage Details">
 								<MessageContent>
 									<MudStack Spacing="4">
-										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten the mortgage term. It supports many options, fixed and variable interest rates and projects payment schedule (amortization schedule) so you can mimic your mortgage as close as possible.</MudText>
+										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten the mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule.</MudText>
 										<MudText><b>@Constants.LoanAmount:</b><br />The amount that is borrowed, not the sale price of the home.</MudText>
-										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender.</MudText>
+										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> icon to add variable interest rates.</MudText>
 										<MudText><b>@Constants.AmortizationPeriod:</b><br />The total number of years it will take to pay off the mortgage. Typical values: 30, 25, 20, 15.</MudText>
 										<MudText><b>@Constants.AdvanceDate:</b><br />The date mortgage funds are released by the lender. In other words, mortgage start date.</MudText>
 										<MudText><b>@Constants.CompoundPeriod:</b><br />The number of times per year that the quoted annual interest rate is compounded.
@@ -51,13 +51,13 @@
 										<MudText><b>@Constants.FinancialYear:</b><br />Determines how many days in a given year there is to calculate daily interest. Some lenders do not bother with normal and leap years and calculate interest based on 360 days.</MudText>
 										<MudText><b>@Constants.RateType:</b><br />Determines whether mortgage interest changes during the mortgage term or not.
 											<ul>
-												<li>Fixed: Interest rate does not change through the mortgage term.</li>
+												<li>Fixed: Interest rate does not change throughout the mortgage term.</li>
 												<li>ARM: Adjustable Rate Mortgage, a type of variable-rate mortgage with payment amounts adjusting based on fluctuations in the lender's prime rate.</li>
-												<li>VRM: Variable Rate Mortgage, a type of variable-rate mortgage with fixed payment amount throughout the term. When the lender's prime rate changes, the mortgage payment amount stays the same, but the interest portion of that payment can go up or down depending on 
+												<li>VRM: Variable Rate Mortgage, a type of variable-rate mortgage with fixed payment amounts throughout the term. When the lender's prime rate changes, the mortgage payment amount stays the same, but the interest portion of that payment can go up or down depending on 
 													the prime rate fluctuations. If the prime rate has risen significantly, it might be required to make extra payments or refinance to avoid negative amortization.</li>
 											</ul>
 										</MudText>
-										<MudText><b>@Constants.ExtraPayments:</b><br />Option to add additional payments to the mortgage principal balance in a form of lump sum or recurring payments.</MudText>
+										<MudText><b>@Constants.ExtraPayments:</b><br />Option to add additional payments to the mortgage principal balance in a form of lump sum or recurring payments. Click on the <MudIcon Icon="@Icons.Material.Outlined.AttachMoney" Class="text-icon" /> icon to add extra payments.</MudText>
 									</MudStack>
 								</MessageContent>
 							</InfoLabel>
@@ -84,6 +84,7 @@
 							<MudForm @ref="form" Spacing="4">
 								<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
 									<MudGrid Spacing="6">
+
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="@Constants.LoanAmount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")" 
 												Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
@@ -151,7 +152,7 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudTextField T="string" Label="@Constants.ExtraPayments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@extraPaymentsDescription"
+											<MudTextField T="string" Label="@Constants.ExtraPayments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@ExtraPaymentsFieldDescription" ShrinkLabel
 												AdornmentIcon="@Icons.Material.Outlined.AttachMoney" AdornmentColor="@(details.ExtraPayments.HasExtraPayments ? Color.Error : Color.Default)" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
 										</MudItem>
 
@@ -164,7 +165,37 @@
 				</MudItem>
 
 				<MudItem xs="12" md="8">
-					<Panel Title="Summary">
+					<Panel>
+						<TitleContent>
+							<InfoLabel Title="@(summaryPage == 0 ? "Summary" : "Statistics")">
+								<MessageContent>
+									<MudStack Spacing="4">
+										<MudText>Page 1 displays an overall summary about the mortgage and page 2 displays various statistics for a given year.</MudText>
+										@if (summaryPage == 0)
+										{
+											<MudText><b>@Constants.PaymentAmount:</b><br />Initial payment to be made when mortgage starts.</MudText>
+											<MudText><b>@Constants.InterestAmount:</b><br />Interest portion of the initial payment amount.</MudText>
+											<MudText><b>@Constants.PrincipalAmount:</b><br />Principal portion of the initial payment amount.</MudText>
+											<MudText><b>@Constants.EffectiveAnnualRate:</b><br />Or EAR, is the interest rate that is adjusted for compounding over a given period. This is the real interest rate on the mortgage which differs from the nominal rate quoted by the lender. 
+												Other names might be effective interest rate (EIR), effective annual interest rate (EAIR), annual equivalent rate (AER) or simply effective rate.</MudText>
+											<MudText><b>@Constants.AmortizationReduction:</b><br />Displays reduction in percentage value on overall mortgage term. Typically equals to 0% if no extra payments are made.</MudText>
+											<MudText><b>@Constants.YearsToPayoff:</b><br />Displays number of years until the mortgage is fully paid off. Typically equals to an amortization period if no extra payments are made.</MudText>
+										}
+										else
+										{
+											<MudText><b>@Constants.LastPaymentDate:</b><br />The date of the last payment of the given year.</MudText>
+											<MudText><b>@Constants.NumberOfPayments:</b><br />The number of payments made since the mortgage start date and the end of the given year.</MudText>
+											<MudText><b>@Constants.PrincipalPaid:</b><br />Total principal amount paid since the mortgage start date until the end of the given year.</MudText>
+											<MudText><b>@Constants.InterestPaid:</b><br />Total interest amount paid since the mortgage start date until the end of the given year.</MudText>
+											<MudText><b>@Constants.ExtraPaid:</b><br />Total amount of all extra payments made since the mortgage start date until the end of the given year.</MudText>
+											<MudText><b>@Constants.TotalPaid:</b><br />Total amount paid since the mortgage start date until the end of the given year. The amount includes interest amount, principal amount and all the extra payments made.</MudText>
+											<MudText><b>@Constants.InterestSavings:</b><br />Total amount saved in interest since the mortgage start date until the end of the given year. This amount will be 0 if there are no extra payments.</MudText>
+											<MudText><b>@Constants.RemainingBalance:</b><br />Remaining mortgage amount to be paid off since the given year.</MudText>
+										}
+									</MudStack>
+								</MessageContent>
+							</InfoLabel>
+						</TitleContent>
 						<HeaderContent>
 							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
 								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(summaryPage == 0)" OnClick="@(() => summaryPage--)" />
@@ -225,7 +256,7 @@
 												<DataField T="double" Label="@Constants.RemainingBalance" Value="@stats.RemainingBalance" Format="N2" />
 											</MudItem>
 										</MudGrid>
-										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Breakpoint="Breakpoint.Xs">
 											<YearField @ref="yearField" MaxYear="BalanceMaxYear" YearChanged="OnYearChanged" />
 											<BalanceDonutChart />
 										</MudStack>
@@ -237,7 +268,26 @@
 				</MudItem>
 			</MudGrid>
 
-			<Panel Title="Amortization Schedule">
+			<Panel>
+				<TitleContent>
+					<InfoLabel Title="Amortization Schedule">
+						<MessageContent>
+							<MudStack Spacing="4">
+								<MudText>Displays payment schedule for the entire mortgage term.</MudText>
+								<MudText><b>@Constants.No:</b><br />Payment number.</MudText>
+								<MudText><b>@Constants.PaymentDate:</b><br />The date a payment to be made.</MudText>
+								<MudText><b>@Constants.Year:</b><br />Displays year for the last payment in a given year.</MudText>
+								<MudText><b>@Constants.Interest:</b><br />Current annual interest rate for the payment period. For variable-rate mortgages it can show 3.5% → 3.7% signifying that the annual interest rate has changed within the payment period.</MudText>
+								<MudText><b>@Constants.InterestAccrualPeriod:</b><br />For 'Per Day' interest accrual method, displays date range during which interest rate is accrued, otherwise displays annual interest rate divided by a number of payments in a given year.</MudText>
+								<MudText><b>@Constants.InterestAmount:</b><br />Interest amount portion of the '@Constants.PaymentAmount'.</MudText>
+								<MudText><b>@Constants.PrincipalAmount:</b><br />Principal amount portion of the '@Constants.PaymentAmount'.</MudText>
+								<MudText><b>@Constants.ExtraAmount:</b><br />Additional payment towards the principal balance.</MudText>
+								<MudText><b>@Constants.PaymentAmount:</b><br />Amount to be paid to the lender. Includes interest, principal and extra payment amounts.</MudText>
+								<MudText><b>@Constants.RemainingBalance:</b><br />Remaining mortgage amount to be paid off after this payment is made.</MudText>
+							</MudStack>
+						</MessageContent>
+					</InfoLabel>
+				</TitleContent>
 				<HeaderContent>
 					<MudStack Row Spacing="0">
 						<MudIconButton Icon="@Icons.Material.Filled.ArrowDropUp" Color="Color.Inherit" OnClick="OnScrollToTopClicked" Disabled="@(!payments.HasData())" />
@@ -272,6 +322,12 @@
 		touch-action: pan-y;
 	}
 
+	.text-icon {
+		margin-top: -8px;
+		position: relative;
+		top: 4px;
+	}
+
 	ul {
 		padding-left: 26px;
 	}
@@ -291,21 +347,38 @@
 	PaymentCollection? payments;
 	PaymentCollection? paymentsNoExtras;
 
-	// Workaround for MudDatePicker requiring DateTime? instead of DateTime
+	int summaryPage = 0;
+	bool paymentsTableExpanded = false;
+	string summaryPageHeight = summaryPageHeightForSmAndUp;
+
+	const string summaryPageHeightForSmAndUp = "400px";
+	const string summaryPageHeightForXs = "580px";
+	const string extraPaymentsNoDescription = "None";
+	const int maxUploadFileSize = 4 * 1024;  // 4 KB
+
+	int BalanceMaxYear => payments?.Max(x => x.Year) ?? 1;
+	
 	DateTime? AdvanceDateNullable
-	{
+	{   // Workaround for MudDatePicker requiring DateTime? instead of DateTime
 		get => details.AdvanceDate != DateTime.MinValue ? details.AdvanceDate : null;
 		set => details.AdvanceDate = value.HasValue ? value.Value : DateTime.MinValue;
 	}
 
-	int BalanceMaxYear => payments?.Max(x => x.Year) ?? 1;
+	string ExtraPaymentsFieldDescription
+	{
+		get
+		{
+			if (details.ExtraPayments.Count == 0)
+			{
+				return extraPaymentsNoDescription;
+			}
 
-	const int maxUploadFileSize = 4 * 1024;  // 4 KB
-
-	int summaryPage = 0;
-	bool paymentsTableExpanded = false;
-	string summaryPageHeight = "400px";
-	string extraPaymentsDescription = "None";
+			var list = new List<string>(10);
+			list.AddRange(details.ExtraPayments.LumpSums.Select(x => string.Format(x.Amount % 1D == 0D ? "({0:N0})" : "({0:N2})", x.Amount)));
+			list.AddRange(details.ExtraPayments.Recurring.Select(x => string.Format(x.Amount % 1D == 0D ? "({0:N0}+)" : "({0:N2}+)", x.Amount)));
+			return string.Join(" ", list);
+		}
+	}
 
 
 	protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -359,8 +432,7 @@
 				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
 				string jsonText = await reader.ReadToEndAsync();
 				details = JsonSerializer.Deserialize<MortgageDetails>(jsonText, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
-				
-				SetExtraPaymentsFieldDescription();
+
 				await Calculate();
 			}
 			catch (JsonException)
@@ -472,28 +544,12 @@
 		var dialogReference = await DialogService.ShowAsync<ExtraPaymentsDialog>(parameters, options);
 		await dialogReference.Result;
 
-		SetExtraPaymentsFieldDescription();
 		StateHasChanged();
-	}
-
-	void SetExtraPaymentsFieldDescription()
-	{
-		if (details.ExtraPayments.Count == 0)
-		{
-			extraPaymentsDescription = "None";
-		}
-		else
-		{
-			extraPaymentsDescription = string.Join(string.Empty, details.ExtraPayments.LumpSums.Select(x => x.Amount.ToString("N2") + "; "));
-			extraPaymentsDescription += string.Join(string.Empty, details.ExtraPayments.Recurring.Select(x => x.Amount.ToString("N2") + "+; "));
-			extraPaymentsDescription = extraPaymentsDescription.TrimEnd(' ', ';');
-		}
 	}
 
 	async Task OnPresetChanged(string presetName, Func<MortgageDetails> preset)
 	{
 		details = preset();
-		SetExtraPaymentsFieldDescription();
 		Snackbar.Add($"Loaded preset '{presetName}'", Severity.Success);
 
 		await Calculate();
@@ -509,8 +565,7 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		var isExtraSmallScreen = breakpoint == Breakpoint.Xs;
-		summaryPageHeight = isExtraSmallScreen ? "580px" : "400px";
+		summaryPageHeight = breakpoint == Breakpoint.Xs ? summaryPageHeightForXs : summaryPageHeightForSmAndUp;
 	}
 
 
