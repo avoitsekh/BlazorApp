@@ -22,28 +22,28 @@
 				<MudTd><MudText>@(context.EffectiveDate.HasValue ? context.EffectiveDate.Value.ToString("yyyy-MM-dd") : "")</MudText></MudTd>
 				<MudTd><MudText>@context.Rate.ToString("0.##'%'")</MudText></MudTd>
 				<MudTd Style="text-align: right;">
-					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context.EffectiveDate))" Style="position: relative; top: 2px" />
+					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => OnDeleteClicked(context.EffectiveDate))" Style="position: relative; top: 2px" />
 				</MudTd>
 			</RowTemplate>
 		</MudTable>
 
-		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="AddNewClicked">Add New</MudButton>
+		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="OnAddNewExpandClicked">Add New</MudButton>
 
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
 					<MudDatePicker Label="@Constants.EffectiveDate" @bind-Date="interest.EffectiveDate" Editable="true" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text"
 						Margin="Margin.Dense" Validation="ValidateEffectiveDate" MinDate="MinDate" OpenTo="OpenTo.Month" ShowToolbar="false" />
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="interest.Rate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
+					<MudNumericField T="double" HideSpinButtons="true" @bind-Value="interest.Rate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" Format="0.##" Margin="Margin.Dense"
 						Validation="ValidateRate" />
-					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
+					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="OnAddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
 		</MudCollapse>
 
 	</DialogContent>
 	<DialogActions>
-		<MudButton Color="Color.Primary" OnClick="CloseClicked">Close</MudButton>
+		<MudButton Color="Color.Primary" OnClick="OnCloseClicked">Close</MudButton>
 	</DialogActions>
 </MudDialog>
 
@@ -72,12 +72,14 @@
 		interest.Rate = 0D;
 	}
 
-	void AddNewClicked()
+	#region Events
+
+	void OnAddNewExpandClicked()
 	{
 		addNewExpanded = !addNewExpanded;
 	}
 
-	async Task AddClicked()
+	async Task OnAddClicked()
 	{
 		await form.ValidateAsync();
 
@@ -87,32 +89,37 @@
 		}
 	}
 
-	void DeleteClicked(DateTime? effectiveDate)
+	void OnDeleteClicked(DateTime? effectiveDate)
 	{
 		Details.InterestRates.RemoveAt(effectiveDate);
 		form.ResetValidationAsync();
 	}
 
-	void CloseClicked()
+	void OnCloseClicked()
 	{
 		MudDialog.Close(DialogResult.Ok(Details.InterestRates.Count));
 	}
 
-	string ValidateRate(double rate)
+	#endregion
+
+	#region Validations
+
+	Func<double, string> ValidateRate => rate =>
 	{
 		var result = string.Empty;
+		rate = interest.Rate;   // take rounded rate instead
 		if (rate == 0D)
 		{
 			result = "Value cannot be 0";
 		}
-		else if (Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
+		else if (interest.EffectiveDate.HasValue && Details.InterestRates.GetRate(interest.EffectiveDate.Value) == rate)
 		{
 			result = $"There is already a rate of {rate}% in the list that is effective on (or before) {interest.EffectiveDate:yyyy-MM-dd}";
 		}
 		return result;
-	}
+	};
 
-	string ValidateEffectiveDate(DateTime? effectiveDate)
+	Func<DateTime?, string> ValidateEffectiveDate => effectiveDate =>
 	{
 		var result = string.Empty;
 		if (!effectiveDate.HasValue)
@@ -128,7 +135,7 @@
 			result = "Interest rate with such date already exists in the list";
 		}
 		return result;
-	}
+	};
 
-
+	#endregion
 }

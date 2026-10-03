@@ -37,7 +37,7 @@ public static class Constants
 	{
 		{ "Semi-Annually", 2 },
 		{ "Montly", 12 },
-		{ "None", 0 },
+		{ "Annually", 1 },
 	};
 
 	public static Dictionary<string, int> PaymentFrequencyValues = new()

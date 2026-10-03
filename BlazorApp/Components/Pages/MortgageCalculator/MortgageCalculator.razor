@@ -34,7 +34,7 @@
 											<ul>
 												<li>Semi-Annually: 2 times per year (mostly applies to Canadian Mortgages)</li>
 												<li>Monthly: 12 times per year (mostly applies to US Mortgages)</li>
-												<li>None: No compounding applied</li>
+												<li>Annually: 1 time per year</li>
 											</ul>
 										</MudText>
 										<MudText><b>@Constants.PaymentFrequency:</b><br />Determines the number of payments per year.
@@ -86,23 +86,23 @@
 									<MudGrid Spacing="6">
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="@Constants.LoanAmount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@(details.LoanAmount % 1D == 0D ? "N0" : "N2")" 
-												Validation="MortgageDetailsValidation.ValidateLoanAmount" Margin="Margin.Dense" />
+											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="@Constants.LoanAmount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@MortgageDetails.ConditionalFormat(details.LoanAmount)"
+												Validation="ValidateLoanAmount" Margin="Margin.Dense" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
 												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
-												Validation="MortgageDetailsValidation.ValidateInterestRate" />
+												Validation="ValidateInterestRate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriodInYears" Label="@Constants.AmortizationPeriod" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="MortgageDetailsValidation.ValidateAmortizationPeriodInYears" />
+											<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriod" Label="@Constants.AmortizationPeriod" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="ValidateAmortizationPeriod" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
 											<MudDatePicker Label="@Constants.AdvanceDate" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense"
-												Validation="MortgageDetailsValidation.ValidateAdvanceDate" />
+												Validation="ValidateAdvanceDate" />
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
@@ -167,18 +167,18 @@
 				<MudItem xs="12" md="8">
 					<Panel>
 						<TitleContent>
-							<InfoLabel Title="@(summaryPage == 0 ? "Summary" : "Statistics")">
+							<InfoLabel Title="@(currentPage == 0 ? "Summary" : "Statistics")">
 								<MessageContent>
 									<MudStack Spacing="4">
 										<MudText>Page 1 displays an overall summary about the mortgage and page 2 displays various statistics for a given year.</MudText>
-										@if (summaryPage == 0)
+										@if (currentPage == 0)
 										{
 											<MudText><b>@Constants.PaymentAmount:</b><br />Initial payment to be made when mortgage starts.</MudText>
 											<MudText><b>@Constants.InterestAmount:</b><br />Interest portion of the initial payment amount.</MudText>
 											<MudText><b>@Constants.PrincipalAmount:</b><br />Principal portion of the initial payment amount.</MudText>
 											<MudText><b>@Constants.EffectiveAnnualRate:</b><br />Or EAR, is the interest rate that is adjusted for compounding over a given period. This is the real interest rate on the mortgage which differs from the nominal rate quoted by the lender. 
 												Other names might be effective interest rate (EIR), effective annual interest rate (EAIR), annual equivalent rate (AER) or simply effective rate.</MudText>
-											<MudText><b>@Constants.AmortizationReduction:</b><br />Displays reduction in percentage value on overall mortgage term. Typically equals to 0% if no extra payments are made.</MudText>
+											<MudText><b>@Constants.AmortizationReduction:</b><br />Displays reduction in percentage value on overall mortgage term implying on how much faster the mortgage can be paid off. Typically equals to 0% if no extra payments are made.</MudText>
 											<MudText><b>@Constants.YearsToPayoff:</b><br />Displays number of years until the mortgage is fully paid off. Typically equals to an amortization period if no extra payments are made.</MudText>
 										}
 										else
@@ -198,13 +198,13 @@
 						</TitleContent>
 						<HeaderContent>
 							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(summaryPage == 0)" OnClick="@(() => summaryPage--)" />
-								<MudText Typo="Typo.body2">@(summaryPage + 1) / 2</MudText>
-								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(summaryPage == 1)" OnClick="@(() => summaryPage++)" />
+								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(currentPage == 0)" OnClick="@(() => currentPage--)" />
+								<MudText Typo="Typo.body2">@(currentPage + 1) / 2</MudText>
+								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(currentPage == 1)" OnClick="@(() => currentPage++)" />
 							</MudStack>
 						</HeaderContent>
 						<MainContent>
-							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="summaryPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" TData="object">
+							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="currentPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" TData="object">
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4" Class="order-1 order-sm-1">
@@ -347,7 +347,7 @@
 	PaymentCollection? payments;
 	PaymentCollection? paymentsNoExtras;
 
-	int summaryPage = 0;
+	int currentPage = 0;
 	bool paymentsTableExpanded = false;
 	string summaryPageHeight = summaryPageHeightForSmAndUp;
 
@@ -357,7 +357,7 @@
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
 	int BalanceMaxYear => payments?.Max(x => x.Year) ?? 1;
-	
+
 	DateTime? AdvanceDateNullable
 	{   // Workaround for MudDatePicker requiring DateTime? instead of DateTime
 		get => details.AdvanceDate != DateTime.MinValue ? details.AdvanceDate : null;
@@ -374,9 +374,14 @@
 			}
 
 			var list = new List<string>(10);
-			list.AddRange(details.ExtraPayments.LumpSums.Select(x => string.Format(x.Amount % 1D == 0D ? "({0:N0})" : "({0:N2})", x.Amount)));
-			list.AddRange(details.ExtraPayments.Recurring.Select(x => string.Format(x.Amount % 1D == 0D ? "({0:N0}+)" : "({0:N2}+)", x.Amount)));
+			list.AddRange(details.ExtraPayments.LumpSums.Select(x => Format(x.Amount)));
+			list.AddRange(details.ExtraPayments.Recurring.Select(x => Format(x.Amount, "+")));
 			return string.Join(" ", list);
+
+			string Format(double value, string suffix = default)
+			{
+				return string.Format("({0:" + MortgageDetails.ConditionalFormat(value) + "}" + suffix + ")", value);
+			}
 		}
 	}
 
@@ -405,6 +410,8 @@
 			stats.CalculateForYear(yearField?.Value ?? 0);
 		}
 	}
+
+	#region Events
 
 	async Task OnInterestRateTypeChanged()
 	{
@@ -568,5 +575,30 @@
 		summaryPageHeight = breakpoint == Breakpoint.Xs ? summaryPageHeightForXs : summaryPageHeightForSmAndUp;
 	}
 
+	#endregion
 
+	#region Validations
+
+	Func<double, string> ValidateLoanAmount => amount => amount switch
+	{
+		< 1000D => "Value cannot be less than 1,000",
+		_ => string.Empty
+	};
+
+	Func<double, string> ValidateInterestRate => rate => rate switch
+	{
+		0D => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	Func<int, string> ValidateAmortizationPeriod => years => years switch
+	{
+		0 => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	Func<DateTime?, string> ValidateAdvanceDate => date =>
+		!date.HasValue || date == DateTime.MinValue ? "Value cannot be empty" : string.Empty;
+
+	#endregion
 }

@@ -37,9 +37,9 @@ public sealed class PaymentCollection : List<Payment>
 			paymentDate = GetNextPaymentDate(paymentDate, i);
 
 			double interestAmount = CalculateInterestAmount(previousPaymentDate, paymentDate, balance);
-			double principalAmount = RoundToCents(paymentAmount - interestAmount);
+			double principalAmount = paymentAmount - interestAmount;
 			double extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
-			balance = RoundToCents(balance - principalAmount - extraAmount);
+			balance = balance - principalAmount - extraAmount;
 
 			if (balance <= 0)
 			{
@@ -72,7 +72,7 @@ public sealed class PaymentCollection : List<Payment>
 				Number = i,
 				PaymentDate = paymentDate,
 				Year = i % Details.PaymentFrequency == 0 || isLastPayment ? year++ : null,
-				IterestRate = ratesForPeriodFormatted,
+				Interest = ratesForPeriodFormatted,
 				InterestAccrualPeriod = accrualPeriod,
 				InterestAmount = interestAmount,
 				PrincipalAmount = principalAmount,
@@ -138,10 +138,9 @@ public sealed class PaymentCollection : List<Payment>
 
 	double CalculateInterestAmount(DateTime from, DateTime to, double balance)
 	{
-		var result = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
+		return Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
 				? CalculateInterestAmountForPeriod(from, to, balance)
 				: CalculateInterestAmountForPayment(from, to, balance);
-		return RoundToCents(result);
 	}
 
 	double CalculateInterestAmountForPayment(DateTime from, DateTime to, double balance)
@@ -178,12 +177,7 @@ public sealed class PaymentCollection : List<Payment>
 	double PMT(double rate, int numberOfPayments, double loanAmount)
 	{
 		var denominator = Math.Pow(1 + rate, numberOfPayments) - 1;
-		return RoundToCents((rate + (rate / denominator)) * loanAmount);
-	}
-
-	public static double RoundToCents(double amount)
-	{
-		return Math.Round(amount, 2);
+		return Math.Round((rate + (rate / denominator)) * loanAmount, 2);
 	}
 
 	DateTime GetNextPaymentDate(DateTime currentDate, int currentPaymentNumber)

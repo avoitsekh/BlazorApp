@@ -26,12 +26,12 @@ public static class ExportToExcel
 			Constants.RemainingBalance,
 		};
 
-		var fields = new string[]
+		var props = new string[]
 		{
 			nameof(Payment.Number),
 			nameof(Payment.PaymentDate),
 			nameof(Payment.Year),
-			nameof(Payment.IterestRate),
+			nameof(Payment.Interest),
 			nameof(Payment.InterestAccrualPeriod),
 			nameof(Payment.InterestAmount),
 			nameof(Payment.PrincipalAmount),
@@ -44,11 +44,11 @@ public static class ExportToExcel
 		table.Add(columnNames);
 
 		var objType = typeof(Payment);
-		var fieldInfos = fields.Select(objType.GetField).Cast<FieldInfo>().ToList();
+		var propInfos = props.Select(objType.GetProperty).Cast<PropertyInfo>().ToList();
 
 		foreach (var payment in payments)
 		{
-			var values = fieldInfos.Select(x => x.GetValue(payment)).ToArray();
+			var values = propInfos.Select(x => x.GetValue(payment)).ToArray();
 			table.Add(values);
 		}
 
@@ -59,10 +59,10 @@ public static class ExportToExcel
 		ws.Cells.Style.Font.Size = 9.0f;
 		ws.Cells.LoadFromArrays(table);
 
-		for (int i = 0; i < fieldInfos.Count; i++)
+		for (int i = 0; i < propInfos.Count; i++)
 		{
 			var idx = i + 1;
-			var dataType = fieldInfos[i].FieldType;
+			var dataType = propInfos[i].PropertyType;
 
 			if (dataType == typeof(DateTime))
 			{

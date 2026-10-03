@@ -25,27 +25,27 @@
 				<MudTd><MudText>@context.FromPayment</MudText></MudTd>
 				<MudTd><MudText>@context.ToPayment</MudText></MudTd>
 				<MudTd Style="text-align: right;">
-					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => DeleteClicked(context))" Style="position: relative; top: 2px" />
+					<MudIcon Icon="@Icons.Material.Outlined.RemoveCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="@(() => OnDeleteClicked(context))" Style="position: relative; top: 2px" />
 				</MudTd>
 			</RowTemplate>
 		</MudTable>
 
-		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="AddLumpSumClicked">Add New</MudButton>
+		<MudButton Variant="Variant.Text" StartIcon="@(addNewExpanded ? Icons.Material.Filled.ExpandLess : Icons.Material.Filled.ExpandMore)" Color="Color.Primary" Class="mt-3" OnClick="OnAddNewExpandClicked">Add New</MudButton>
 
 		<MudCollapse Expanded="addNewExpanded">
 			<MudForm @ref="form" Style="padding: 20px 20px 5px 20px">
 				<MudStack Row>
-					<MudNumericField T="double" HideSpinButtons="true" Immediate @bind-Value="payment.Amount" Label="@Constants.Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Validation="ValidateAmount" />
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.FromPayment" Label="@Constants.BeginAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
-					<MudNumericField T="int?" HideSpinButtons="true" Immediate @bind-Value="payment.ToPayment" Label="@Constants.EndAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
-					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="AddClicked" Style="position: relative; top: 20px" />
+					<MudNumericField T="double" HideSpinButtons="true" @bind-Value="payment.Amount" Label="@Constants.Amount" Variant="Variant.Text" Min="0" Max="100000000" Margin="Margin.Dense" ShrinkLabel Format="@MortgageDetails.ConditionalFormat(payment.Amount)" Validation="ValidateAmount" />
+					<MudNumericField T="int?" HideSpinButtons="true" @bind-Value="payment.FromPayment" Label="@Constants.BeginAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateFromPayment" />
+					<MudNumericField T="int?" HideSpinButtons="true" @bind-Value="payment.ToPayment" Label="@Constants.EndAtPaymentNo" Variant="Variant.Text" Min="1" Max="9999" Margin="Margin.Dense" ShrinkLabel Validation="ValidateToPayment" />
+					<MudIcon Icon="@Icons.Material.Outlined.AddCircleOutline" Color="Color.Primary" Class="cursor-pointer" @onclick="OnAddClicked" Style="position: relative; top: 20px" />
 				</MudStack>
 			</MudForm>
 		</MudCollapse>
 
 	</DialogContent>
 	<DialogActions>
-		<MudButton Color="Color.Primary" OnClick="CloseClicked">Close</MudButton>
+		<MudButton Color="Color.Primary" OnClick="OnCloseClicked">Close</MudButton>
 	</DialogActions>
 </MudDialog>
 
@@ -54,28 +54,25 @@
 @code {
 
 	[Parameter]
-	public MortgageDetails Details { get; set; }
+	public MortgageDetails? Details { get; set; }
 
 	[CascadingParameter]
-	IMudDialogInstance MudDialog { get; set; }
+	IMudDialogInstance? MudDialog { get; set; }
 
 	DateTime MinDate => Details.AdvanceDate.AddDays(1);
 
-	MudForm form;
-	ExtraPayment payment;
+	MudForm? form = null;
+	ExtraPayment payment = new() { FromPayment = 1 };
 	bool addNewExpanded;
 
-	protected async override Task OnInitializedAsync()
-	{
-		payment = new() { FromPayment = 1 };
-	}
+	#region Events
 
-	void AddLumpSumClicked()
+	void OnAddNewExpandClicked()
 	{
 		addNewExpanded = !addNewExpanded;
 	}
 
-	async Task AddClicked()
+	async Task OnAddClicked()
 	{
 		await form.ValidateAsync();
 
@@ -85,18 +82,22 @@
 		}
 	}
 
-	void DeleteClicked(ExtraPayment payment)
+	void OnDeleteClicked(ExtraPayment payment)
 	{
 		Details.ExtraPayments.Remove(payment);
 		form.ResetValidationAsync();
 	}
 
-	void CloseClicked()
+	void OnCloseClicked()
 	{
 		MudDialog.Close();
 	}
 
-	string ValidateFromPayment(int? fromPayment)
+	#endregion
+
+	#region Validations
+
+	Func<int?, string> ValidateFromPayment => fromPayment =>
 	{
 		var result = string.Empty;
 		if (!fromPayment.HasValue)
@@ -108,9 +109,9 @@
 			result = "Value cannot be 0";
 		}
 		return result;
-	}
+	};
 
-	string ValidateToPayment(int? toPayment)
+	Func<int?, string> ValidateToPayment => toPayment =>
 	{
 		var result = string.Empty;
 		if (toPayment <= 0)
@@ -119,19 +120,13 @@
 		}
 		else if (toPayment < payment.FromPayment)
 		{
-			result = $"Value cannot be less than '{Constants.BeginAtPaymentNo}'";
+			result = $"Value cannot be less than field '{Constants.BeginAtPaymentNo}'";
 		}
 		return result;
-	}
+	};
 
-	string ValidateAmount(double amount)
-	{
-		var result = string.Empty;
-		if (amount <= 0)
-		{
-			result = "Value cannot be 0";
-		}
-		return result;
-	}
+	Func<double, string> ValidateAmount => amount => amount <= 0 ? "Value cannot be 0" : null;
+
+	#endregion
 
 }
