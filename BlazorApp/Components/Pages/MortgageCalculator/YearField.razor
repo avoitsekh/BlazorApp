@@ -39,7 +39,7 @@
 
 	void OnArrowClicked(int increment)
 	{
-		Value = Math.Clamp((Value ?? 0) + increment, 1, MaxYear ?? 0);
+		Value = Math.Clamp((Value ?? 0) + increment, 1, MaxYear ?? 1);
 		OnYearChanged();
 		StateHasChanged();
 	}

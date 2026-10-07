@@ -25,9 +25,9 @@
 							<InfoLabel Title="Mortgage Details">
 								<MessageContent>
 									<MudStack Spacing="4">
-										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten the mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule.</MudText>
+										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten your mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule.</MudText>
 										<MudText><b>@Constants.LoanAmount:</b><br />The amount that is borrowed, not the sale price of the home.</MudText>
-										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> icon to add variable interest rates.</MudText>
+										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages (ARM and VRM) click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> icon to add variable interest rates.</MudText>
 										<MudText><b>@Constants.AmortizationPeriod:</b><br />The total number of years it will take to pay off the mortgage. Typical values: 30, 25, 20, 15.</MudText>
 										<MudText><b>@Constants.AdvanceDate:</b><br />The date mortgage funds are released by the lender. In other words, mortgage start date.</MudText>
 										<MudText><b>@Constants.CompoundPeriod:</b><br />The number of times per year that the quoted annual interest rate is compounded.
@@ -278,7 +278,7 @@
 								<MudText><b>@Constants.PaymentDate:</b><br />The date a payment to be made.</MudText>
 								<MudText><b>@Constants.Year:</b><br />Displays year for the last payment in a given year.</MudText>
 								<MudText><b>@Constants.Interest:</b><br />Current annual interest rate for the payment period. For variable-rate mortgages it can show 3.5% → 3.7% signifying that the annual interest rate has changed within the payment period.</MudText>
-								<MudText><b>@Constants.InterestAccrualPeriod:</b><br />For 'Per Day' interest accrual method, displays date range during which interest rate is accrued, otherwise displays annual interest rate divided by a number of payments in a given year.</MudText>
+								<MudText><b>@Constants.InterestAccrualPeriod:</b><br />Displays how the interest is accrued for the payment period. For 'Per Day' interest accrual method, displays date range during which interest rate is accrued, otherwise displays annual interest rate divided by a number of payments per year.</MudText>
 								<MudText><b>@Constants.InterestAmount:</b><br />Interest amount portion of the '@Constants.PaymentAmount'.</MudText>
 								<MudText><b>@Constants.PrincipalAmount:</b><br />Principal amount portion of the '@Constants.PaymentAmount'.</MudText>
 								<MudText><b>@Constants.ExtraAmount:</b><br />Additional payment towards the principal balance.</MudText>
@@ -351,9 +351,8 @@
 	bool paymentsTableExpanded = false;
 	string summaryPageHeight = summaryPageHeightForSmAndUp;
 
-	const string summaryPageHeightForSmAndUp = "400px";
 	const string summaryPageHeightForXs = "580px";
-	const string extraPaymentsNoDescription = "None";
+	const string summaryPageHeightForSmAndUp = "400px";
 	const int maxUploadFileSize = 4 * 1024;  // 4 KB
 
 	int BalanceMaxYear => payments?.Max(x => x.Year) ?? 1;
@@ -370,7 +369,7 @@
 		{
 			if (details.ExtraPayments.Count == 0)
 			{
-				return extraPaymentsNoDescription;
+				return "None";
 			}
 
 			var list = new List<string>(10);
