@@ -1,8 +1,10 @@
-using MudBlazor;
-using MudBlazor.Services;
 using BlazorApp.Components;
+using BlazorApp.Components.Pages.ChatRoom;
 using BlazorApp.Components.Pages.CurrencyConverter;
 using BlazorApp.Services;
+using MudBlazor;
+using MudBlazor.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,5 +52,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapHub<ChatHub>(ChatHub.HubUrl);
 
 app.Run();
