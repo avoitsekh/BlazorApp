@@ -17,9 +17,10 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddHttpClient<CurrencyConverterDataService>();
 builder.Services.AddScoped<CurrencyConverterState>();
+builder.Services.AddScoped<AppBarOptions>();
+builder.Services.AddScoped<JSExtensionsService>();
 
 builder.Services.AddScoped<ISnackbar, SnackbarService>();
-
 builder.Services.AddMudBlazorSnackbar(options =>
 {
 	options.PositionClass = Defaults.Classes.Position.BottomLeft;
@@ -29,8 +30,6 @@ builder.Services.AddMudBlazorSnackbar(options =>
 	options.MaximumOpacity = 100;
 	options.PreventDuplicates = false;
 });
-
-builder.Services.AddScoped<JSExtensionsService>();
 builder.Services.AddCors(options => options.AddPolicy("Allow All CORS", p => p.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()));
 
 
@@ -53,6 +52,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.MapHub<ChatHub>(ChatHub.HubUrl);
+app.MapHub<ChatHub>(ChatHub.Path);
 
 app.Run();

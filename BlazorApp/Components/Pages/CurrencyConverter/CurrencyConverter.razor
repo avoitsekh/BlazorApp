@@ -6,12 +6,12 @@
 
 <MudGrid Style="height:90vh;">
 	<MudItem Class="d-flex align-center justify-center mud-width-full" xs="12">
-		<MudPaper Class="pa-6 ma-2" Elevation="9" Width="360px">
+		<MudPaper Class="pa-6 ma-2" Elevation="1" Width="360px">
 			<EditForm Model="@State" OnValidSubmit="OnValidSubmit">
 				<DataAnnotationsValidator />
 				<MudStack Spacing="5">
 					<MudStack Row Spacing="2">
-						<MudText Typo="Typo.h5" Align="Align.Left">Currency Conversion</MudText>
+						<MudText Typo="Typo.h5" Align="Align.Left">Currency Converter</MudText>
 						<MudIcon Icon="@Icons.Material.Outlined.Info" Color="Color.Primary" @onclick="OnInformationClicked" Class="cursor-pointer" Style="position:relative; top:2px" />
 					</MudStack>
 					<MudAutocomplete T="CurrencyType" Label="From Currency" @bind-Value="State.FromCurrency" For="(() => State.FromCurrency)"

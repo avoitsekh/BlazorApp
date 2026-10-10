@@ -16,6 +16,7 @@ public partial class About
 				greetings = "Hello..." + (timeOfDay != "night" ? $" and good {timeOfDay}!" : string.Empty);
 				StateHasChanged();
 			}
+			AppBar.Title = "About";
 		}
 	}
 

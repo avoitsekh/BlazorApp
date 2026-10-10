@@ -1,5 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
+@inject AppBarOptions AppBar
+
 <MudThemeProvider @ref="_mudThemeProvider" Theme="@_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
@@ -9,16 +11,12 @@
 
 <MudLayout>
 
-	<MudAppBar Dense Elevation="2">
+	<MudAppBar Dense Elevation="0" Class="border-0">
 		@if (_showMenuButton)
 		{
 			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
 		}
-		@* else
-		{
-			<MudIcon Icon="@blazorIcon" Size="Size.Medium" Class="me-3" />
-		} *@
-		<MudText Typo="Typo.h5" Class="ml-1">Blazor Portfolio App</MudText>
+		<h1 class="ml-1 titlebar-text">@AppBar.Title</h1>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
 		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" Color="Color.Default" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
@@ -27,10 +25,10 @@
 			<MudFabMenuItem EndIcon="@Icons.Material.Outlined.Email" Color="Color.Warning" Href="mailto:voitsekh@hotmail.com" Size="Size.Small" />
 		</MudFabMenu>
 	</MudAppBar>
-	<MudDrawer id="nav-drawer" @bind-Open="@_drawerOpen" ClipMode="@_drawerClipMode" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm">
+	<MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm" Style="margin-right: 8px">
 		<NavMenu MenuColor="@_navMenuColor" />
 	</MudDrawer>
-	<MudMainContent Class="pt-12 pa-4">
+	<MudMainContent Class="pt-13 pa-4">
 		<CascadingValue Value="@_isDarkMode" Name="&IsDarkMode">
 			@Body
 		</CascadingValue>
@@ -56,13 +54,20 @@
 
 	.mud-appbar {
 		background: rgba(255, 255, 255, 0);
-		background-image: linear-gradient( 109.6deg, #7575751a 11%, #ffffff08 91% );
+		/* background-image: linear-gradient( 109.6deg, #7575751a 11%, #ffffff08 91% ); */
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
+	}
 
-		/* background: rgba(255, 255, 255, 0);
-		background-image: linear-gradient( 109.6deg, rgba(0,182,255,.1) 11.2%, rgba(102,51,153,.1) 91.1% );
-		backdrop-filter: blur(8px); */
+	.mud-appbar.mud-appbar-fixed-top {
+		left: 2px;
+	}
+
+	.titlebar-text {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		min-width: 40px;
+		overflow: hidden;
 	}
 </style>
 
@@ -76,7 +81,7 @@
 	MudTheme? _theme = null;
 	MudThemeProvider? _mudThemeProvider = null;
 
-	DrawerClipMode _drawerClipMode = DrawerClipMode.Docked;
+	DrawerClipMode _drawerClipMode = DrawerClipMode.Never;
 	Color _navMenuColor => _isDarkMode ? Color.Tertiary : Color.Info;
 
 
@@ -96,6 +101,7 @@
 	{
 		if (firstRender)
 		{
+			AppBar.ValueChanged += (o, e) => StateHasChanged();
 			_isDarkMode = _isDarkModeSystemPreference = await _mudThemeProvider.GetSystemDarkModeAsync();
 			StateHasChanged();
 		}

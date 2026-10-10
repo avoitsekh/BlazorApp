@@ -4,7 +4,7 @@ namespace BlazorApp.Components.Pages.ChatRoom;
 
 class ChatHub : Hub
 {
-	public const string HubUrl = "/chathub";
+	public const string Path = "/chathub";
 
 	public async Task Broadcast(string username, string message)
 	{

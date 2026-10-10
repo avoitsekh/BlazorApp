@@ -2,61 +2,64 @@
 
 @inject ISnackbar Snackbar
 @inject JSExtensionsService JS
+@inject AppBarOptions AppBar
 
 <PageTitle>GUID Generator</PageTitle>
-<MudText Typo="Typo.h4" GutterBottom="true">GUID Generator</MudText>
-<MudText Typo="Typo.body1" Class="mb-8">This component demonstrates generating unique GUIDs with user specified parameters.</MudText>
 
-<MudStack Spacing="2">
+<MudContainer Gutters="false" Class="d-flex justify-center mud-width-full">
 
-	<MudText>Number of GUIDs to generate:</MudText>
-	<MudNumericField T="int" HideSpinButtons="true" @bind-value="factory.GuidsToGenerate" Variant="Variant.Text" Min="1" Max="500" HelperText="1 - 500" Style="width: 80px" />
+	<MudStack Spacing="2">
+
+		<MudText Class="mb-8">Generate <MudLink Href="https://en.wikipedia.org/wiki/Universally_unique_identifier" Target="_blank">Globally Unique IDentifiers (GUIDs)</MudLink> with user specified parameters.</MudText>
+
+		<MudText>Number of GUIDs to generate:</MudText>
+		<MudNumericField T="int" HideSpinButtons="true" @bind-value="factory.GuidsToGenerate" Variant="Variant.Text" Min="1" Max="500" HelperText="1 - 500" Style="width: 80px" />
 	
-	<MudElement Style="height: 20px" />
+		<MudElement Style="height: 20px" />
 
-	<MudText>Format:</MudText>
-	<MudStack Row Class="flex-wrap">
-		<MudSwitch T="bool" @bind-Value="format.Hyphens" Color="Color.Primary" Disabled="format.Base64">Hyphens</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.CurlyBraces" Color="Color.Primary" Disabled="format.Base64">Curly Braces</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.Uppercase" Color="Color.Primary" Disabled="format.Base64">Uppercase</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.Quotes" Color="Color.Primary">Quotes</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.DoubleQuotes" Color="Color.Primary">Double Quotes</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.Commas" Color="Color.Primary">Commas</MudSwitch>
-	</MudStack>
+		<MudText>Format:</MudText>
+		<MudStack Row Class="flex-wrap">
+			<MudSwitch T="bool" @bind-Value="format.Hyphens" Color="Color.Primary" Disabled="format.Base64">Hyphens</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.CurlyBraces" Color="Color.Primary" Disabled="format.Base64">Curly Braces</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.Uppercase" Color="Color.Primary" Disabled="format.Base64">Uppercase</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.Quotes" Color="Color.Primary">Quotes</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.DoubleQuotes" Color="Color.Primary">Double Quotes</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.Commas" Color="Color.Primary">Commas</MudSwitch>
+		</MudStack>
 
-	<MudElement Style="height: 20px" />
+		<MudElement Style="height: 20px" />
 
-	<MudText>Encoding:</MudText>
-	<MudStack Row Class="flex-wrap">
-		<MudSwitch T="bool" @bind-Value="format.Base64" Color="Color.Primary">Base64</MudSwitch>
-		<MudSwitch T="bool" @bind-Value="format.UrlEncode" Color="Color.Primary" Disabled="!format.Base64">URL Encode</MudSwitch>
-	</MudStack>
+		<MudText>Encoding:</MudText>
+		<MudStack Row Class="flex-wrap">
+			<MudSwitch T="bool" @bind-Value="format.Base64" Color="Color.Primary">Base64</MudSwitch>
+			<MudSwitch T="bool" @bind-Value="format.UrlEncode" Color="Color.Primary" Disabled="!format.Base64">URL Encode</MudSwitch>
+		</MudStack>
 
-	<MudElement Style="height: 20px" />
+		<MudElement Style="height: 20px" />
 
-	<MudStack Row Class="flex-wrap">
-		<MudButton Variant="Variant.Filled" OnClick="GenerateButtonClick" Size="Size.Large" Color="Color.Primary">Generate</MudButton>
-		@if (CopyToClipboardButtonEnabled)
+		<MudStack Row Class="flex-wrap">
+			<MudButton Variant="Variant.Filled" OnClick="GenerateButtonClick" Size="Size.Large" Color="Color.Primary">Generate</MudButton>
+			@if (CopyToClipboardButtonEnabled)
+			{
+				<MudButton Variant="Variant.Filled" OnClick="CopyToClipboardButtonClick" Size="Size.Large" Color="Color.Secondary">Copy To Clipboard</MudButton>
+			}
+		</MudStack>
+
+		<MudElement Style="height: 20px" />
+
+		@if (!string.IsNullOrEmpty(GeneratedGuids))
 		{
-			<MudButton Variant="Variant.Filled" OnClick="CopyToClipboardButtonClick" Size="Size.Large" Color="Color.Secondary">Copy To Clipboard</MudButton>
+			<MudTextField T="string"
+				@bind-Value="GeneratedGuids"
+				Label="GUIDs"
+				Variant="Variant.Outlined"
+				Lines="5"
+				MaxLines="2000"
+				Sizing="InputSizing.Auto"
+				spellcheck="false"
+				ReadOnly
+				Style="font-family: 'Lucida Console', 'Courier New', monospace; width: 400px" />
 		}
+
 	</MudStack>
-
-	<MudElement Style="height: 20px" />
-
-	@if (!string.IsNullOrEmpty(GeneratedGuids))
-	{
-		<MudTextField T="string"
-			@bind-Value="GeneratedGuids"
-			Label="GUIDs"
-			Variant="Variant.Outlined"
-			Lines="5"
-			MaxLines="2000"
-			Sizing="InputSizing.Auto"
-			spellcheck="false"
-			ReadOnly
-			Style="font-family: 'Lucida Console', 'Courier New', monospace; width: 400px" />
-	}
-
-</MudStack>
-
+</MudContainer>

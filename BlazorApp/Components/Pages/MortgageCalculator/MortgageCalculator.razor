@@ -6,11 +6,12 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject JSExtensionsService JS
+@inject AppBarOptions AppBar
 
 <PageTitle>Mortgage Calculator</PageTitle>
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
-<MudContainer Gutters="false" Class="d-flex justify-center mud-width-full pt-4">
+<MudContainer Gutters="false" Class="d-flex justify-center mud-width-full">
 	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
 		<MudStack id="main-stack">
 
@@ -389,6 +390,7 @@
 	{
 		if (firstRender)
 		{
+			AppBar.Title = "Mortgage Calculator";
 			await Calculate();
 		}
 	}

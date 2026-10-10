@@ -1,14 +1,17 @@
+using BlazorApp.Components.Pages.CurrencyConverter.DTOs;
+using BlazorApp.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using MudBlazor;
-using BlazorApp.Components.Pages.CurrencyConverter.DTOs;
-using BlazorApp.Services;
 using System.Globalization;
 
 namespace BlazorApp.Components.Pages.CurrencyConverter;
 
 public partial class CurrencyConverter
 {
+	[Inject]
+	AppBarOptions AppBar { get; set; } = default!;
+
 	[Inject]
 	CurrencyConverterDataService DataService { get; set; } = default!;
 
@@ -19,7 +22,7 @@ public partial class CurrencyConverter
 	JSExtensionsService JS { get; set; } = default!;
 
 	[Inject]
-	NavigationManager NavigationManager { get; set; } = default!;
+	NavigationManager NavManager { get; set; } = default!;
 
 	[Inject]
 	ISnackbar Snackbar { get; set; } = default!;
@@ -42,10 +45,13 @@ public partial class CurrencyConverter
 	bool isProcessing = false;
 	string? exampleUri;
 
+
 	protected async override Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
+			AppBar.Title = "Currency Converter";
+
 			var uriQueryString = new Dictionary<string, object?>
 			{
 				{ "from", "CAD" },
@@ -53,7 +59,7 @@ public partial class CurrencyConverter
 				{ "date", DateTime.Today.ToString("yyyy-MM-dd") },
 				{ "amount", 123.45 },
 			};
-			exampleUri = NavigationManager.GetUriWithQueryParameters(uriQueryString);
+			exampleUri = NavManager.GetUriWithQueryParameters(uriQueryString);
 
 			var hasQueryString = !string.IsNullOrWhiteSpace(FromCurrency) ||
 				!string.IsNullOrWhiteSpace(ToCurrency) ||

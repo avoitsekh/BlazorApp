@@ -6,15 +6,17 @@
 
 @inject ISnackbar Snackbar
 @inject JSExtensionsService JS
+@inject AppBarOptions AppBar
+
 
 <PageTitle>QR Code Generator</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Gutters="false">
 
-	<MudGrid Spacing="4" Class="pa-6">
+	<MudGrid Spacing="4">
 
 		<MudItem xs="12" md="6" Class="order-1 order-md-2" >
-			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 72px;">
+			<MudPaper MinHeight="200px" Width="100%" Class="pa-5" Style="position: sticky; top: 52px;">
 				<MudStack Spacing="1">
 					<div class="d-flex pa-n5">
 						<MudIcon Icon="@Icons.Material.Filled.RemoveRedEye" Class="mr-2"></MudIcon>
@@ -184,8 +186,8 @@
 	</MudGrid>
 </MudContainer>
 
-@code
-{
+@code {
+
 	string? errorMessage;
 	QrCodeImage? qrCodeImage;
 	Action? debounceRegenerate;
@@ -211,6 +213,7 @@
 		if (firstRender)
 		{
 			debounceRegenerate = new Action(() => this.InvokeAsync(Regenerate)).Debounce(debounceInterval);
+			AppBar.Title = "QR Code Generator";
 		}
 	}
 

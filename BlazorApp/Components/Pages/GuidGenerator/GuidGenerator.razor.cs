@@ -10,6 +10,14 @@ public partial class GuidGenerator
 	public string GeneratedGuids { get; set; } = string.Empty;
 	public bool CopyToClipboardButtonEnabled => !string.IsNullOrWhiteSpace(GeneratedGuids);
 
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			AppBar.Title = "GUID Generator";
+		}
+	}
+
 	public GuidGenerator()
 	{
 		format = new GuidFormat();
