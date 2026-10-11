@@ -11,22 +11,59 @@
 			}
 			@HeaderContent
 		</MudStack>
-		@MainContent
+		<div style="position: relative;">
+			<MudOverlay Visible="@showOverlay" Absolute="true" Style="background-color: var(--mud-palette-surface); transition: none;">
+				@OverlayContent
+			</MudOverlay>
+			@MainContent
+		</div>
 	</MudStack>
 </MudPaper>
 
 @code {
 
 	[Parameter]
-	public string? Title { get; set; }
+	public RenderFragment? HeaderContent { get; set; }
 
 	[Parameter]
-	public RenderFragment? HeaderContent { get; set; }
+	public RenderFragment? TitleContent { get; set; }
 
 	[Parameter]
 	public RenderFragment? MainContent { get; set; }
 
 	[Parameter]
-	public RenderFragment? TitleContent { get; set; }
+	public RenderFragment? OverlayContent { get; set; }
+
+	[Parameter]
+	public string? Title { get; set; }
+
+	[Parameter]
+	public int OverlayTimeout { get; set; } = 0;
+
+	bool showOverlay = false;
+	Action? debounceHideOverlay = null;
+
+	protected override void OnInitialized()
+	{
+		if (OverlayTimeout > 0)
+		{
+			showOverlay = true;
+			debounceHideOverlay = new Action(HideOverlay).Debounce(OverlayTimeout);
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			debounceHideOverlay?.Invoke();
+		}
+	}
+
+	void HideOverlay()
+	{
+		showOverlay = false;
+		InvokeAsync(StateHasChanged);
+	}
 
 }

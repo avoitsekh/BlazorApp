@@ -166,7 +166,7 @@
 				</MudItem>
 
 				<MudItem xs="12" md="8">
-					<Panel>
+					<Panel OverlayTimeout="800">
 						<TitleContent>
 							<InfoLabel Title="@(currentPage == 0 ? "Summary" : "Statistics")">
 								<MessageContent>
@@ -204,6 +204,9 @@
 								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(currentPage == 1)" OnClick="@(() => currentPage++)" />
 							</MudStack>
 						</HeaderContent>
+						<OverlayContent>
+							<MudText>Loading...</MudText>
+						</OverlayContent>
 						<MainContent>
 							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="currentPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" TData="object">
 								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
@@ -269,7 +272,7 @@
 				</MudItem>
 			</MudGrid>
 
-			<Panel>
+			<Panel OverlayTimeout="300">
 				<TitleContent>
 					<InfoLabel Title="Amortization Schedule">
 						<MessageContent>

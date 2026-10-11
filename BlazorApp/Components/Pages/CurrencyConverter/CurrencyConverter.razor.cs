@@ -177,4 +177,14 @@ public partial class CurrencyConverter
 	{
 		return currency != null ? $"ISO code: {currency.iso_code}, symbol: {currency.symbol}" : null;
 	}
+
+	void OnSwapCurrenciesClicked()
+	{
+		if (State.FromCurrency != null || State.ToCurrency != null)
+		{
+			(CurrencyType FromCurrency, CurrencyType ToCurrency) swap = new(State.FromCurrency, State.ToCurrency);
+			State.FromCurrency = swap.ToCurrency;
+			State.ToCurrency = swap.FromCurrency;
+		}
+	}
 }

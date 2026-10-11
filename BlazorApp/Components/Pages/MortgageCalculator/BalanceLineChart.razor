@@ -36,7 +36,7 @@
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
 	string adaptivePadding = "padding: 10px 20px 0px 20px;";
-	Action? DebounceDraw = null;
+	Action? debounceDraw = null;
 
 	PaymentCollection? _payments = null;
 	PaymentCollection? _paymentsNoExtras = null;
@@ -46,14 +46,14 @@
 	{
 		if (_debounceInterval != DebounceInterval)
 		{
-			DebounceDraw = DebounceInterval > 0 ? new Action(Draw).Debounce(DebounceInterval) : new Action(Draw);
+			debounceDraw = DebounceInterval > 0 ? new Action(Draw).Debounce(DebounceInterval) : new Action(Draw);
 			_debounceInterval = DebounceInterval;
 		}
 
 		var hasChanges = _payments != Payments || _paymentsNoExtras != PaymentsNoExtras;
 		if (hasChanges && Payments.HasData())
 		{
-			DebounceDraw?.Invoke();
+			debounceDraw?.Invoke();
 			_payments = Payments;
 			_paymentsNoExtras = PaymentsNoExtras;
 		}

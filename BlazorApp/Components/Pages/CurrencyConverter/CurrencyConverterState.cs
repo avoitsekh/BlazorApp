@@ -26,9 +26,10 @@ public class CurrencyConverterState
 	}
 
 	[Required(ErrorMessage = "'From Amount' cannot be empty")]
+	[Range(0.01D, double.MaxValue, ErrorMessage = "'From Amount' should be greater than 0")]
 	public decimal? FromAmount
 	{
-		get; set { field = value; ResetToAmount(); }
+		get; set { field = Math.Round(value ?? 0m, 2); ResetToAmount(); }
 	}
 
 	public decimal? ToAmount { get; private set; }

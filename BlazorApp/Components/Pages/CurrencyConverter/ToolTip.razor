@@ -1,0 +1,13 @@
+﻿<MudTooltip Text="@Text" Color="Color.Success" Arrow Placement="Placement.Top" Style="font-style: italic; font-weight: normal !important;">
+	@ChildContent
+</MudTooltip>
+
+@code {
+
+	[Parameter]
+	public RenderFragment? ChildContent { get; set; }
+
+	[Parameter]
+	public string? Text { get; set; } = default;
+
+}
