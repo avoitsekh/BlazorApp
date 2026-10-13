@@ -3,13 +3,55 @@
 @inject NavigationManager NavManager
 @inject AppBarOptions AppBar
 
+@implements IAsyncDisposable
+
 @using Microsoft.AspNetCore.SignalR.Client
 
 
 
+
+@* <MudExitPrompt /> *@
+
+<MudContainer Gutters="false" Class="d-flex justify-center mud-width-full" Style="left: 0; top:0; bottom: auto; width: 100%; height: auto">
+
+	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="2" Style="@($"background:{Colors.Shades.Transparent};")">
+		@if (!_isChatting)
+		{
+			<MudStack>
+				<MudTextField T="string" Label="Enter your name to start chatting" @bind-Value="_username"></MudTextField>
+				<MudButton OnClick="@EnterChatAsync">Join</MudButton>
+			</MudStack>
+		}
+		else
+		{
+			foreach (var message in _messages)
+			{
+				<MudText>@message.Username: @message.Body</MudText>
+			}
+
+			<MudStack>
+				<MudTextField T="string" Label="Type your message here" Immediate @bind-Value="_newMessage"></MudTextField>
+				<MudButton OnClick="@(() => SendMessageAsync(_newMessage))">Send</MudButton>
+			</MudStack>
+		}
+
+
+@* 	<br />
+	<br />
+
+	<div class="mud-theme-info py-4 px-6 ml-20 rounded-l-xl mud-elevation-2">
+		<MudText Align="Align.Center">This is a test message...<br />ddddddddddddddddd</MudText>
+	</div> *@
+
+	</MudPaper>
+
+</MudContainer>
+
+
+
+@* 
 <h1>Blazor SignalR Chat Sample</h1>
 <hr />
-
 @if (!_isChatting)
 {
 	<p>
@@ -28,13 +70,13 @@
 }
 else
 {
-	// banner to show current user
+	
 	<div class="alert alert-secondary mt-4" role="alert">
 		<span class="oi oi-person mr-2" aria-hidden="true"></span>
 		<span>You are connected as <b>@_username</b></span>
 		<button class="btn btn-sm btn-warning ml-md-auto" @onclick="@ExitChatAsync">Disconnect</button>
 	</div>
-	// display messages
+	
 	<div id="scrollbox">
 		@foreach (var item in _messages)
 		{
@@ -52,13 +94,12 @@ else
 		}
 		<hr />
 		<textarea class="input-lg" placeholder="enter your comment" @bind="@_newMessage"></textarea>
-		<button class="btn btn-default" @onclick="@(() => SendAsync(_newMessage))">Send</button>
+		<button class="btn btn-default" @onclick="@(() => SendMessageAsync(_newMessage))">Send</button>
 	</div>
 }
 
-
+ 
 <style>
-	/* improved for chat text box */
 	textarea {
 		border: 1px dashed #888;
 		border-radius: 5px;
@@ -67,7 +108,6 @@ else
 		background: #f7f7f7
 	}
 
-	/* improved for speech bubbles */
 	.received, .sent {
 		position: relative;
 		font-family: arial;
@@ -111,17 +151,13 @@ else
 		left: -20px;
 	}
 
-	/* div within bubble for name */
 	.user {
 		font-size: 0.8em;
 		font-weight: bold;
 		color: #000;
 	}
 
-	.msg {
-		/*display: inline;*/
-	}
-</style>
+</style> *@
 
 
 @code {
@@ -130,19 +166,19 @@ else
 	bool _isChatting = false;
 
 	// name of the user who will be chatting
-	string _username;
+	string? _username;
 
 	// on-screen message
-	string _message;
+	string? _message;
 
 	// new message input
-	string _newMessage;
+	string? _newMessage;
 
 	// list of messages in chat
 	List<ChatMessage> _messages = new();
 
-	string _hubUrl;
-	HubConnection _hubConnection;
+	string? _hubUrl;
+	HubConnection? _hubConnection;
 
 
 	protected override void OnAfterRender(bool firstRender)
@@ -153,39 +189,37 @@ else
 		}
 	}
 
-	public async Task EnterChatAsync()
+	public async ValueTask DisposeAsync()
 	{
-		// check username is valid
+		await ExitChatAsync();
+	}
+
+	async Task EnterChatAsync()
+	{
 		if (string.IsNullOrWhiteSpace(_username))
 		{
 			_message = "Please enter a name";
 			return;
 		}
-		;
 
 		try
 		{
-			// Start chatting and force refresh UI.
 			_isChatting = true;
-			await Task.Delay(1);
 
-			// remove old messages if any
 			_messages.Clear();
 
-			// Create the chat client
 			string baseUrl = NavManager.BaseUri;
-
 			_hubUrl = baseUrl.TrimEnd('/') + ChatHub.Path;
 
 			_hubConnection = new HubConnectionBuilder()
 				.WithUrl(_hubUrl)
 				.Build();
 
-			_hubConnection.On<string, string>("Broadcast", BroadcastMessage);
+			_hubConnection.On<string, string>(nameof(ChatHub.Broadcast), OnIncomingMessage);
 
 			await _hubConnection.StartAsync();
 
-			await SendAsync($"[Notice] {_username} joined chat room.");
+			await SendMessageAsync($"[Notice] {_username} joined chat room.");
 		}
 		catch (Exception e)
 		{
@@ -198,7 +232,7 @@ else
 	{
 		if (_isChatting)
 		{
-			await SendAsync($"[Notice] {_username} left chat room.");
+			await SendMessageAsync($"[Notice] {_username} left chat room.");
 
 			await _hubConnection.StopAsync();
 			await _hubConnection.DisposeAsync();
@@ -208,26 +242,21 @@ else
 		}
 	}
 
-	void BroadcastMessage(string name, string message)
-	{
-		bool isMine = name.Equals(_username, StringComparison.OrdinalIgnoreCase);
-
-		_messages.Add(new ChatMessage(name, message, isMine));
-
-		// Inform blazor the UI needs updating
-		InvokeAsync(StateHasChanged);
-	}
-
-
-
-	async Task SendAsync(string message)
+	async Task SendMessageAsync(string message)
 	{
 		if (_isChatting && !string.IsNullOrWhiteSpace(message))
 		{
-			await _hubConnection.SendAsync("Broadcast", _username, message);
-
+			await _hubConnection.SendAsync(nameof(ChatHub.Broadcast), _username, message);
 			_newMessage = string.Empty;
 		}
 	}
+
+	void OnIncomingMessage(string name, string message)
+	{
+		bool isMine = name.Equals(_username, StringComparison.OrdinalIgnoreCase);
+		_messages.Add(new ChatMessage(name, message, isMine));
+		InvokeAsync(StateHasChanged);
+	}
+
 
 }

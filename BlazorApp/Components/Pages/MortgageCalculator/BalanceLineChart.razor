@@ -3,9 +3,9 @@
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
 <div style="position: relative;">
-	<MudOverlay Visible="true" Absolute="true" />
+	<MudOverlay Visible="true" Absolute="true" Style="@overlayStyle" />
 	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="apply-to-this-line-chart-only pointer-events-none"
-		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@adaptivePadding" />
+		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@chartStyle" />
 </div>
 
 @code {
@@ -35,12 +35,32 @@
 
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
-	string adaptivePadding = "padding: 10px 20px 0px 20px;";
+	string chartStyle = "padding: 10px 20px 0px 20px;";
+	string overlayStyle = "background-color: var(--mud-palette-surface); transition: none; height: 120%;";
 	Action? debounceDraw = null;
 
 	PaymentCollection? _payments = null;
 	PaymentCollection? _paymentsNoExtras = null;
 	int _debounceInterval = -1;
+
+
+	protected override void OnAfterRender(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var debounceOverlay = new Action(ResetOverlayColor).Debounce(800);
+			debounceOverlay();
+		}
+	}
+
+	void ResetOverlayColor()
+	{
+		InvokeAsync(() =>
+		{
+			overlayStyle = string.Empty;
+			StateHasChanged();
+		});
+	}
 
 	protected override void OnParametersSet()
 	{
@@ -125,6 +145,6 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		adaptivePadding = breakpoint == Breakpoint.Xs ? "padding: 40px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
+		chartStyle = breakpoint == Breakpoint.Xs ? "padding: 40px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
 	}
 }

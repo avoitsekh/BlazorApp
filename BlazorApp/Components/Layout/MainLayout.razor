@@ -14,9 +14,9 @@
 	<MudAppBar Dense Elevation="0">
 		@if (_showMenuButton)
 		{
-			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+			<MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" Class="mr-2" />
 		}
-		<h2 class="ml-1 appbar-title">@AppBar.Title</h2>
+		<h2 class="appbar-title">@AppBar.Title</h2>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
 		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" Color="Color.Default" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
@@ -25,7 +25,7 @@
 			<MudFabMenuItem EndIcon="@Icons.Material.Outlined.Email" Color="Color.Warning" Href="mailto:voitsekh@hotmail.com" Size="Size.Small" />
 		</MudFabMenu>
 	</MudAppBar>
-	<MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm" Width="200px">
+	<MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" Elevation="1" Variant="DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.Sm" Width="230px">
 		<NavMenu MenuColor="@_navMenuColor" />
 	</MudDrawer>
 	<MudMainContent Class="pt-13 pa-4">

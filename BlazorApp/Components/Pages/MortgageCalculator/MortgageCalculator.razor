@@ -26,9 +26,10 @@
 							<InfoLabel Title="Mortgage Details">
 								<MessageContent>
 									<MudStack Spacing="4">
-										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten your mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule.</MudText>
+										<MudText>This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten your mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule. 
+											Click on the <MudIcon Icon="@Icons.Material.Filled.MoreVert" Class="text-icon" /> button and try sample presets to get a feel on what can be done.</MudText>
 										<MudText><b>@Constants.LoanAmount:</b><br />The amount that is borrowed, not the sale price of the home.</MudText>
-										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages (ARM and VRM) click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> icon to add variable interest rates.</MudText>
+										<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages (ARM and VRM) click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> button to add variable interest rates.</MudText>
 										<MudText><b>@Constants.AmortizationPeriod:</b><br />The total number of years it will take to pay off the mortgage. Typical values: 30, 25, 20, 15.</MudText>
 										<MudText><b>@Constants.AdvanceDate:</b><br />The date mortgage funds are released by the lender. In other words, mortgage start date.</MudText>
 										<MudText><b>@Constants.CompoundPeriod:</b><br />The number of times per year that the quoted annual interest rate is compounded.
@@ -58,7 +59,7 @@
 													the prime rate fluctuations. If the prime rate has risen significantly, it might be required to make extra payments or refinance to avoid negative amortization.</li>
 											</ul>
 										</MudText>
-										<MudText><b>@Constants.ExtraPayments:</b><br />Option to add additional payments to the mortgage principal balance in a form of lump sum or recurring payments. Click on the <MudIcon Icon="@Icons.Material.Outlined.AttachMoney" Class="text-icon" /> icon to add extra payments.</MudText>
+										<MudText><b>@Constants.ExtraPayments:</b><br />Option to add additional payments to the mortgage principal balance in a form of lump sum or recurring payments. Click on the <MudIcon Icon="@Icons.Material.Outlined.AttachMoney" Class="text-icon" /> button to add extra payments.</MudText>
 									</MudStack>
 								</MessageContent>
 							</InfoLabel>
@@ -166,13 +167,13 @@
 				</MudItem>
 
 				<MudItem xs="12" md="8">
-					<Panel OverlayTimeout="800">
+					<Panel OverlayTimeout="150">
 						<TitleContent>
-							<InfoLabel Title="@(currentPage == 0 ? "Summary" : "Statistics")">
+							<InfoLabel Title="@(currentSummaryPage == 0 ? "Summary" : "Statistics")">
 								<MessageContent>
 									<MudStack Spacing="4">
 										<MudText>1<sup>st</sup> page displays an overall summary about the mortgage, 2<sup>nd</sup> page displays various statistics for a given year.</MudText>
-										@if (currentPage == 0)
+										@if (currentSummaryPage == 0)
 										{
 											<MudText><b>@Constants.PaymentAmount:</b><br />Initial payment to be made when mortgage starts.</MudText>
 											<MudText><b>@Constants.InterestAmount:</b><br />Interest portion of the initial payment amount.</MudText>
@@ -199,17 +200,17 @@
 						</TitleContent>
 						<HeaderContent>
 							<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(currentPage == 0)" OnClick="@(() => currentPage--)" />
-								<MudText Typo="Typo.body2">@(currentPage + 1) / 2</MudText>
-								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(currentPage == 1)" OnClick="@(() => currentPage++)" />
+								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(currentSummaryPage == 0)" OnClick="@(() => OnPageChanged(-1))" />
+								<MudText Typo="Typo.body2">@(currentSummaryPage + 1) / 2</MudText>
+								<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(currentSummaryPage == 1)" OnClick="@(() => OnPageChanged(1))" />
 							</MudStack>
 						</HeaderContent>
-						<OverlayContent>
+@* 						<OverlayContent>
 							<MudText>Loading...</MudText>
-						</OverlayContent>
+						</OverlayContent> *@
 						<MainContent>
-							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="currentPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" TData="object">
-								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
+							<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="currentSummaryPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" EnableSwipeGesture="false" TData="object">
+								<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
 									<MudGrid Spacing="0">
 										<MudItem xs="6" sm="4" Class="order-1 order-sm-1">
 											<DataField T="double" Label="@Constants.PaymentAmount" Value="@stats.PaymentAmount" Format="N2" />
@@ -232,7 +233,7 @@
 									</MudGrid>
 									<BalanceLineChart DebounceInterval="60" />
 								</MudCarouselItem>
-								<MudCarouselItem Transition="Transition.Slide" Class="animation-duration">
+								<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
 									<MudStack Spacing="8">
 										<MudGrid Spacing="0">
 											<MudItem xs="6" sm="4" md="3">
@@ -272,7 +273,7 @@
 				</MudItem>
 			</MudGrid>
 
-			<Panel OverlayTimeout="300">
+			<Panel OverlayTimeout="150">
 				<TitleContent>
 					<InfoLabel Title="Amortization Schedule">
 						<MessageContent>
@@ -351,9 +352,10 @@
 	PaymentCollection? payments;
 	PaymentCollection? paymentsNoExtras;
 
-	int currentPage = 0;
 	bool paymentsTableExpanded = false;
+	int currentSummaryPage = 0;
 	string summaryPageHeight = summaryPageHeightForSmAndUp;
+	Transition summaryPageTransition = Transition.None;
 
 	const string summaryPageHeightForXs = "580px";
 	const string summaryPageHeightForSmAndUp = "400px";
@@ -579,6 +581,15 @@
 		summaryPageHeight = breakpoint == Breakpoint.Xs ? summaryPageHeightForXs : summaryPageHeightForSmAndUp;
 	}
 
+	void OnPageChanged(int increment)
+	{
+		if (summaryPageTransition != Transition.Slide)
+		{
+			summaryPageTransition = Transition.Slide;
+		}
+		currentSummaryPage += increment;
+	}
+
 	#endregion
 
 	#region Validations
@@ -605,4 +616,5 @@
 		!date.HasValue || date == DateTime.MinValue ? "Value cannot be empty" : string.Empty;
 
 	#endregion
+
 }
