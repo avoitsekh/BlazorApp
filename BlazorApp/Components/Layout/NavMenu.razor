@@ -20,26 +20,15 @@
 		<MudText>GUID Generator</MudText>
 	</MudNavLink>
 
-	@if (isDebug)
-	{
-		<MudNavLink Href="chat" Icon="@chat" IconColor="Color.Surface">
-			<MudText>Chat Room</MudText>
-		</MudNavLink>
-	}
+	<MudNavLink Href="chat" Icon="@chat" IconColor="Color.Surface">
+		<MudText>Chat Room</MudText>
+	</MudNavLink>
 
 </MudNavMenu>
 
 
 
 @code {
-
-	bool isDebug =
-#if DEBUG
-		true;
-#else
-		false;
-#endif
-
 
 	[Parameter]
 	public Color MenuColor { get; set; } = Color.Tertiary;
