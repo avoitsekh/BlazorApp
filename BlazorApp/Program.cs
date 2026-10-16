@@ -32,6 +32,13 @@ builder.Services.AddMudBlazorSnackbar(options =>
 });
 builder.Services.AddCors(options => options.AddPolicy("Allow All CORS", p => p.AllowAnyMethod().AllowAnyHeader().AllowAnyOrigin()));
 
+//builder.Services.AddSignalR()
+//	.AddHubOptions<ChatHub>(options =>
+//	{
+//		options.ClientTimeoutInterval = TimeSpan.FromSeconds(20);
+//		options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+//	});
+
 
 
 var app = builder.Build();

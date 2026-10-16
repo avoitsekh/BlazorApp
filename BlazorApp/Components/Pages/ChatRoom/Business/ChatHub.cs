@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System.Collections.Concurrent;
 
 namespace BlazorApp.Components.Pages.ChatRoom;
 
@@ -7,9 +6,9 @@ class ChatHub : Hub
 {
 	public const string Path = "/chathub";
 
-	static readonly ConcurrentDictionary<string, string> chatMembers = new();
+	static readonly Members members = new();
 
-	public async Task Broadcast(ChatMessage message)
+	public async Task Broadcast(Message message)
 	{
 		if (!message.IsEmpty)
 		{
@@ -17,23 +16,34 @@ class ChatHub : Hub
 		}
 	}
 
-	public bool Register(string username)
+	public async Task<bool> Register(string username)
 	{
-		username = username.Trim();
-		if (chatMembers.Any(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase)))
+		var result = members.Add(Context.ConnectionId, username);
+		if (result)
 		{
-			return false;
+			await Broadcast(new()
+			{
+				Body = $"{username} joined chat room.",
+				IsNotification = true
+			});
 		}
-
-		chatMembers[Context.ConnectionId] = username;
-		return true;
+		return result;
 	}
 
-	//public void Remove(string username)
-	//{
-	//	username = username.Trim();
-	//	chatMembers.TryRemove(chatMembers.First(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase)));
-	//}
+	public async Task<bool> UnRegister(string connectionId)
+	{
+		var username = members.GetMember(connectionId);
+		var result = members.Remove(Context.ConnectionId);
+		if (result)
+		{
+			await Broadcast(new()
+			{
+				Body = $"{username} left chat room.",
+				IsNotification = true
+			});
+		}
+		return result;
+	}
 
 	public override async Task OnConnectedAsync()
 	{
@@ -43,7 +53,7 @@ class ChatHub : Hub
 
 	public override async Task OnDisconnectedAsync(Exception? e)
 	{
-		chatMembers.Remove(Context.ConnectionId, out _);
+		await UnRegister(Context.ConnectionId);
 
 		Console.WriteLine($"Disconnected: {Context.ConnectionId} {e?.Message}");
 		await base.OnDisconnectedAsync(e);

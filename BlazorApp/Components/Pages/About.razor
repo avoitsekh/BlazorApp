@@ -12,17 +12,18 @@
 
 		<MudText Typo="Typo.h4">@greetings</MudText>
 
-		<MudText>Welcome to my Blazor portfolio app. I've been learning Blazor recently and this web app demonstrates my skillset coding 
-			in .NET and Blazor. Feel free to navigate to the side menu located on the left to see various tools. In particular, make sure 
-			to try the 
+		<MudText>
+			This portfolio web app is built with ASP.NET Core and Blazor Server, demonstrating my experience with .NET development, 
+			real-time features, and modern web application design. Use the navigation menu on the left to explore various projects and tools — the 
 			<MudTooltip Arrow Color="Color.Transparent" Delay="60">
 				<ChildContent>
-					<MudLink OnClick="@(() => NavManager.NavigateTo("/mortgage"))">Mortgage Calculator</MudLink>
+					<MudLink Href="/mortgage">Mortgage Calculator</MudLink>
 				</ChildContent>
 				<TooltipContent>
 					<MudImage Src="images/mortgage.png" Class="rounded-lg" />
 				</TooltipContent>
-			</MudTooltip> ;)
+			</MudTooltip>
+			is a great place to start.
 		</MudText>
 
 		<MudText>
@@ -37,7 +38,7 @@
 		</MudText>
 
 		<MudText>
-			Source code is available on GitHub and can be accessed via the links menu on the top.
+			Source code is available on GitHub and can be accessed via the links menu at the top.
 		</MudText>
 		<MudDivider Class="mt-2" />
 		<MudText>

@@ -2,8 +2,12 @@
 
 @inject NavigationManager NavManager
 @inject AppBarOptions AppBar
+@inject IJSRuntime JSR
+
 
 @implements IAsyncDisposable
+
+
 
 @if (!isDebug)
 {
@@ -22,6 +26,27 @@
 else
 {
 
+	<script>
+		window.registerTabCloseHandler = function(dotNetHelper) {
+			window.addEventListener("beforeunload", tabClosing);
+			_dotNetHelper = dotNetHelper;
+		}
+
+		window.unRegisterTabCloseHandler = function(dotNetHelper) {
+			window.removeEventListener("beforeunload", tabClosing);
+			_dotNetHelper = null;
+		}
+
+		var _dotNetHelper;
+
+		window.tabClosing = function(event) {
+			_dotNetHelper.invokeMethodAsync("OnBrowserTabClosing");
+		}
+	</script>
+
+
+	@* event.preventDefault(); *@
+
 
 
 	@* <MudExitPrompt /> *@
@@ -33,8 +58,8 @@ else
 			@if (!(client?.IsConnected ?? false))
 			{
 				<MudStack>
-					<MudTextField T="string" Label="Enter your name to start chatting" @bind-Value="newMessage.Username"></MudTextField>
-					<MudButton OnClick="@EnterChat">Join</MudButton>
+					<MudTextField T="string" Label="Enter your name to start chatting" @bind-Value="newMessage.Owner"></MudTextField>
+					<MudButton OnClick="@JoinChat">Join</MudButton>
 				</MudStack>
 			}
 			else
@@ -47,13 +72,13 @@ else
 					}
 					else
 					{
-						<MudText>@message.Username: @message.Body</MudText>
+						<MudText>@message.Owner: @message.Body</MudText>
 					}
 				}
 
 				<MudStack Style="position: absolute; bottom: 0;">
 					<MudTextField T="string" Label="Type your message here" Immediate @bind-Value="newMessage.Body"></MudTextField>
-					<MudButton OnClick="OnMessageSend">Send</MudButton>
+					<MudButton OnClick="OnSendMessageClicked">Send</MudButton>
 					@* <MudButton OnClick="@(() => SendMessageAsync(_newMessage))">Send</MudButton> *@
 				</MudStack>
 			}
@@ -88,12 +113,20 @@ else
 		false;
 #endif
 
-	List<ChatMessage> messages = new(30);
-	ChatMessage newMessage = new();
+	List<Message> messages = new(30);
+	Message newMessage = new();
+
 	ChatClient? client;
 	string? errorMessage;
+	DotNetObjectReference<ChatRoom> dotNetRef;
 
-	protected override void OnAfterRender(bool firstRender)
+
+	public ChatRoom()
+	{
+		dotNetRef = DotNetObjectReference.Create(this);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
 	{
 		if (firstRender)
 		{
@@ -103,30 +136,40 @@ else
 
 	public async ValueTask DisposeAsync()
 	{
+		await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
 		await ExitChat();
 	}
 
-	async Task EnterChat()
+	[JSInvokable]
+	public async Task OnBrowserTabClosing()
+	{
+		Console.WriteLine("Browser tab closed.");
+		await ExitChat();
+	}
+
+	async Task JoinChat()
 	{
 		errorMessage = null;
+		messages.Clear();
 
 		var url = NavManager.ToAbsoluteUri(ChatHub.Path);
 		client = new(url.AbsoluteUri);
 		client.Error = OnError;
 		client.MessageReceived = OnMessageReceived;
-		await client.Join(newMessage.Username);
+		await client.Join(newMessage.Owner);
+		await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
 	}
 
 	async Task ExitChat()
 	{
 		if (client != null)
 		{
-			await client.Exit();
+			client.Dispose();
 			client = null;
 		}
 	}
 
-	async Task OnMessageSend()
+	async Task OnSendMessageClicked()
 	{
 		if (client != null)
 		{
@@ -135,7 +178,7 @@ else
 		}
 	}
 
-	void OnMessageReceived(ChatMessage message)
+	void OnMessageReceived(Message message)
 	{
 		messages.Add(message);
 		InvokeAsync(StateHasChanged);
@@ -145,5 +188,7 @@ else
 	{
 		errorMessage = message;
 	}
+
+
 
 }

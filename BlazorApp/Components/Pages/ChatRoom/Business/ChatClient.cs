@@ -5,7 +5,7 @@ namespace BlazorApp.Components.Pages.ChatRoom;
 public sealed class ChatClient : IDisposable
 {
 	public readonly string HubUrl;
-	public Action<ChatMessage>? MessageReceived;
+	public Action<Message>? MessageReceived;
 	public Action<string>? Error;
 
 	HubConnection? hubConnection;
@@ -25,9 +25,9 @@ public sealed class ChatClient : IDisposable
 
 		try
 		{
-			if (string.IsNullOrWhiteSpace(username))
+			Username = username?.Trim();
+			if ((errorMessage = ValidateUsername(Username)) != null)
 			{
-				errorMessage = "Invalid username.";
 				return;
 			}
 
@@ -35,17 +35,13 @@ public sealed class ChatClient : IDisposable
 				.WithUrl(HubUrl)
 				.Build();
 
-			hubConnection.On<ChatMessage>(nameof(ChatHub.Broadcast), OnReceiveMessage);
+			hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
 			await hubConnection.StartAsync();
 
-			Username = username.Trim();
 			if (!await hubConnection.InvokeAsync<bool>(nameof(ChatHub.Register), Username))
 			{
 				errorMessage = $"{Username} has already joined this chat room. Please use another name.";
-				return;
 			}
-
-			await SendMessage(new($"{Username} joined chat room.") { IsNotification = true });
 		}
 		catch (Exception e)
 		{
@@ -56,19 +52,14 @@ public sealed class ChatClient : IDisposable
 			if (errorMessage != null)
 			{
 				OnError(errorMessage);
-				await Exit(notify: false);
+				await Exit();
 			}
 		}
 	}
 
-	public async Task Exit(bool notify = true)
+	public async Task Exit()
 	{
-		if (IsConnected && notify)
-		{
-			await SendMessage(new($"{Username} left chat room.") { IsNotification = true });
-			Username = null;
-		}
-
+		Username = null;
 		if (hubConnection != null)
 		{
 			await hubConnection.DisposeAsync();
@@ -76,18 +67,18 @@ public sealed class ChatClient : IDisposable
 		}
 	}
 
-	public async Task SendMessage(ChatMessage message)
+	public async Task SendMessage(Message message)
 	{
 		if (IsConnected && !message.IsEmpty)
 		{
-			message.Username = Username!;
+			message.Owner = Username!;
 			await hubConnection!.SendAsync(nameof(ChatHub.Broadcast), message);
 		}
 	}
 
-	void OnReceiveMessage(ChatMessage message)
+	void OnReceiveMessage(Message message)
 	{
-		message.IsMine = message.Username?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
+		message.IsMine = message.Owner?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
 		MessageReceived?.Invoke(message);
 	}
 
@@ -99,5 +90,29 @@ public sealed class ChatClient : IDisposable
 	public void Dispose()
 	{
 		_ = Exit();
+	}
+
+	string? ValidateUsername(string username)
+	{
+		string? errorMessage = null;
+
+		if (string.IsNullOrEmpty(username))
+		{
+			errorMessage = "Username cannot be empty.";
+		}
+		else if (username.Length < 2)
+		{
+			errorMessage = "Username is too short. Consider having username with at least 2 characters.";
+		}
+		else if (username.Length > 50)
+		{
+			errorMessage = "Username is too long. Consider having username with 50 characters or less.";
+		}
+		else if (username.Split(' ').Length > 3)
+		{
+			errorMessage = @"Invalid username. Consider having username with only firstname, firstname + lastname, or firstname + middlename + lastname.";
+		}
+
+		return errorMessage;
 	}
 }
