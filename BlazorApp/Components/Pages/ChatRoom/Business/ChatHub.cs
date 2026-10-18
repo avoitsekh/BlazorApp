@@ -30,7 +30,7 @@ class ChatHub : Hub
 		return result;
 	}
 
-	public async Task<bool> UnRegister(string connectionId)
+	async Task<bool> UnRegister(string connectionId)
 	{
 		var username = members.GetMember(connectionId);
 		var result = members.Remove(Context.ConnectionId);

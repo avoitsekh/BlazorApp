@@ -51,52 +51,156 @@ else
 
 	@* <MudExitPrompt /> *@
 
-	@* <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full" Style="height: 90vh;"> *@
-	<div class="d-flex justify-center mud-width-full" style="height: 40vh; position: relative;">
 
-		<MudPaper id="main-container" MaxWidth="800px" Width="800px" Class="pa-0" Elevation="2" Style="@($"background: {Colors.Shades.Transparent};")">
-			@if (!(client?.IsConnected ?? false))
-			{
-				<MudStack>
-					<MudTextField T="string" Label="Enter your name to start chatting" @bind-Value="newMessage.Owner"></MudTextField>
-					<MudButton OnClick="@JoinChat">Join</MudButton>
-				</MudStack>
+	@if (!(client?.IsConnected ?? false))
+	{
+		@* <MudContainer Gutters="false" Class="d-flex justify-center align-center mud-width-full" Style="height: 90vh"> *@
+
+
+		<MudForm  OnEnterPressed="@JoinChat" Class="d-flex justify-center align-center " Style="height: 90vh; ">
+			<MudPaper MaxWidth="280px" MinWidth="150px" Width="100%" Height="50px" Class="d-flex align-center  gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+				<MudTextField T="string"  Immediate Placeholder="Enter your name to start chatting" Underline="false" Class="d-flex" @bind-Value="newMessage.Owner"></MudTextField>
+				<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="@JoinChat"></MudIconButton>
+			</MudPaper>
+		</MudForm>
+
+
+		@*
+
+		Style="background-color: greenyellow;"
+
+		Style="background-color: lightyellow;"
+		
+		*@
+
+
+		@* </MudContainer> *@
+
+<style>
+
+			.parent111 {
+				display: flex;
+				justify-content: center; /* horizontal */
+				align-items: center; /* vertical */
+				@* min-width: 10px; *@
+				height: 90vh;
 			}
-			else
-			{
-				foreach (var message in messages)
-				{
-					if (message.IsNotification)
-					{
-						<MudText>@message.Body</MudText>
-					}
-					else
-					{
-						<MudText>@message.Owner: @message.Body</MudText>
-					}
+
+
+</style>
+
+
+	}
+	else
+	{
+
+
+
+		<div class="chat-container">
+
+			<!-- HEADER -->
+			<div class="chat-header">
+				<h3>Chat Room</h3>
+				<span>5 users online</span>
+			</div>
+
+			<!-- MESSAGES (takes all remaining space) -->
+			<div class="chat-messages" id="messageContainer">
+				<div class="message">Alex: Hello everyone!</div>
+				<div class="message">John: Hey Alex!</div>
+				<!-- messages go here -->
+			</div>
+
+			<!-- FOOTER / INPUT -->
+			<div class="chat-footer">
+				<input type="text" placeholder="Type a message..." />
+				<button>Send</button>
+			</div>
+
+		</div>
+
+
+		<style>
+
+
+			/* Makes the container fill the full viewport height */
+			.chat-container {
+				display: flex;
+				flex-direction: column;
+				height: 90vh;
+				max-width: 800px;
+				margin: 0 auto;
+			}
+
+			/* Fixed height header — stays at top */
+			.chat-header {
+				flex: 0 0 auto; /* does NOT grow or shrink */
+				padding: 16px;
+				background-color: #1F3864;
+				color: white;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			/* Middle section — takes ALL remaining space */
+			.chat-messages {
+				flex: 1; /* grows to fill all available space */
+				overflow-y: auto; /* scrollable when messages overflow */
+				padding: 16px;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+				background-color: #f5f5f5;
+			}
+
+			/* Fixed height footer — stays at bottom */
+			.chat-footer {
+				flex: 0 0 auto; /* does NOT grow or shrink */
+				padding: 16px;
+				background-color: #ffffff;
+				border-top: 1px solid #ddd;
+				display: flex;
+				gap: 8px;
+			}
+
+				.chat-footer input {
+					flex: 1; /* input takes all available width */
+					padding: 8px 12px;
+					border: 1px solid #ddd;
+					border-radius: 4px;
+					font-size: 14px;
 				}
 
-				<MudStack Style="position: absolute; bottom: 0;">
-					<MudTextField T="string" Label="Type your message here" Immediate @bind-Value="newMessage.Body"></MudTextField>
-					<MudButton OnClick="OnSendMessageClicked">Send</MudButton>
-					@* <MudButton OnClick="@(() => SendMessageAsync(_newMessage))">Send</MudButton> *@
-				</MudStack>
+				.chat-footer button {
+					padding: 8px 20px;
+					background-color: #1F3864;
+					color: white;
+					border: none;
+					border-radius: 4px;
+					cursor: pointer;
+				}
+
+			.message {
+				padding: 8px 12px;
+				background-color: white;
+				border-radius: 8px;
+				box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 			}
 
-			<MudText Color="Color.Error">@errorMessage</MudText>
+		</style>
 
-			@* 	<br />
-	<br />
 
-	<div class="mud-theme-info py-4 px-6 ml-20 rounded-l-xl mud-elevation-2">
-		<MudText Align="Align.Center">This is a test message...<br />ddddddddddddddddd</MudText>
-	</div> *@
 
-		</MudPaper>
 
-	</div>
 
-	@* </MudContainer> *@
+
+}
+
+<MudText Color="Color.Error">@errorMessage</MudText>
+
+
+
 
 
 
@@ -136,7 +240,10 @@ else
 
 	public async ValueTask DisposeAsync()
 	{
-		await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
+		if (isDebug)
+		{
+			await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
+		}
 		await ExitChat();
 	}
 
@@ -157,7 +264,10 @@ else
 		client.Error = OnError;
 		client.MessageReceived = OnMessageReceived;
 		await client.Join(newMessage.Owner);
-		await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+		if (isDebug)
+		{
+			await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+		}
 	}
 
 	async Task ExitChat()
@@ -171,7 +281,7 @@ else
 
 	async Task OnSendMessageClicked()
 	{
-		if (client != null)
+		if (client != null && !newMessage.IsEmpty)
 		{
 			await client.SendMessage(newMessage);
 			newMessage.Clear();

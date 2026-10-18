@@ -69,7 +69,7 @@ public sealed class ChatClient : IDisposable
 
 	public async Task SendMessage(Message message)
 	{
-		if (IsConnected && !message.IsEmpty)
+		if (IsConnected)
 		{
 			message.Owner = Username!;
 			await hubConnection!.SendAsync(nameof(ChatHub.Broadcast), message);

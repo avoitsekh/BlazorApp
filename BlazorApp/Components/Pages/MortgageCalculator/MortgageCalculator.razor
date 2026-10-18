@@ -12,7 +12,7 @@
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
 
 <MudContainer Gutters="false" Class="d-flex justify-center mud-width-full">
-	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="@($"background:{Colors.Shades.Transparent};")">
+	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="background: var(--mud-palette-background);">
 		<MudStack id="main-stack">
 
 			<CascadingValue Value="@payments" Name="&Payments">
