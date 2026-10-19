@@ -23,7 +23,7 @@ class ChatHub : Hub
 		{
 			await Broadcast(new()
 			{
-				Body = $"{username} joined chat room.",
+				Body = $"{username} joined chat room",
 				IsNotification = true
 			});
 		}
@@ -38,7 +38,7 @@ class ChatHub : Hub
 		{
 			await Broadcast(new()
 			{
-				Body = $"{username} left chat room.",
+				Body = $"{username} left chat room",
 				IsNotification = true
 			});
 		}
