@@ -52,10 +52,6 @@ else
 	</script>
 
 
-	@* event.preventDefault(); *@
-
-
-
 	@* <MudExitPrompt /> *@
 
 
@@ -63,12 +59,13 @@ else
 	{
 
 		<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: 90vh;">
-			<MudPaper MaxWidth="280px" MinWidth="150px" Width="100%" Height="50px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+			<MudPaper MaxWidth="280px" MinWidth="150px" Width="100%" Height="48px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
 				<MudTextField T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" Class="d-flex" @bind-Value="newMessage.Owner"></MudTextField>
-				<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="JoinChat"></MudIconButton>
+				<MudIconButton Icon="@personCheck" Size="Size.Medium" OnClick="JoinChat"></MudIconButton>
+				@* <MudFab StartIcon="@personCheck" Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" /> *@
 			</MudPaper>
+			<MudText Color="Color.Error" Align="Align.Center">@errorMessage</MudText>
 		</MudForm>
-
 
 		@*
 
@@ -97,18 +94,7 @@ else
 			<!-- MESSAGES (takes all remaining space) -->
 			<div class="chat-messages" id="messageContainer">
 
-				<MudStack Spacing="1">
-
-					@* @{
-						Message msg1 = new Message() { IsMine = true, Owner = "Alex", Body = "This message was written by me..." };
-						Message msg2 = new Message() { IsMine = true, Owner = "Alex", Body = "This message was written by me... Second msg..." };
-						Message msg3 = new Message() { IsMine = false, Owner = "Someone", Body = "This message was written by someone else..." };
-					
-						<ChatBubble Message="msg1" />
-						<ChatBubble Message="msg2" PreviousMessage="msg1" />
-						<ChatBubble Message="msg3" PreviousMessage="msg1" />
-					} *@
-
+				<MudStack Spacing="1" Class="pa-1">
 
 					@{
 						Message? previousMessage = null;
@@ -129,7 +115,7 @@ else
 			<div class="chat-footer">
 				<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 					<MudPaper Width="100%" Height="50px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-						<MudTextField T="string" Immediate Placeholder="Type a message..." Underline="false" Class="d-flex" @bind-Value="newMessage.Body"></MudTextField>
+						<MudTextField T="string" Immediate Placeholder="Type your message..." Underline="false" Class="d-flex" @bind-Value="newMessage.Body"></MudTextField>
 						<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
 						@* <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="rounded-circle pa-2" OnClick="OnSendMessageClicked"></MudIconButton> *@
 					</MudPaper>
@@ -147,7 +133,7 @@ else
 				display: flex;
 				flex-direction: column;
 				height: 90vh;
-				max-width: 560px;
+				max-width: 400px;
 				margin: 0 auto;
 			}
 
@@ -187,18 +173,7 @@ else
 		</style>
 
 
-
-
-
-
-}
-
-<MudText Color="Color.Error">@errorMessage</MudText>
-
-
-
-
-
+	}
 
 
 }
@@ -223,7 +198,12 @@ else
 
 
 
-
+	const string personCheck =
+@"<svg xmlns=""http://www.w3.org/2000/svg"" width=""24"" height=""24"" fill=""currentColor"" class=""bi bi-person-check-fill"" viewBox=""0 0 16 16"">
+  <path fill-rule=""evenodd"" d=""M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0""/>
+  <path d=""M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6""/>
+</svg>
+";
 
 
 

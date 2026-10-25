@@ -35,8 +35,7 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		var isExtraSmallScreen = breakpoint == Breakpoint.Xs;
-		legendPosition = isExtraSmallScreen ? Position.Bottom : Position.Right;
+		legendPosition = breakpoint == Breakpoint.Xs ? Position.Bottom : Position.Right;
 	}
 
 }

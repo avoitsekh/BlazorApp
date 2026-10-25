@@ -236,28 +236,28 @@
 								<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
 									<MudStack Spacing="8">
 										<MudGrid Spacing="0">
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-1 order-sm-1">
 												<DataField T="DateTime" Label="@Constants.LastPaymentDate" Value="@stats.LastPaymentDate" Format="yyyy-MM-dd" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-3 order-sm-2">
 												<DataField T="double" Label="@Constants.PrincipalPaid" Value="@stats.PrincipalPaid" Format="N2" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-4 order-sm-3">
 												<DataField T="double" Label="@Constants.InterestPaid" Value="@stats.InterestPaid" Format="N2" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-7 order-sm-4">
 												<DataField T="double" Label="@Constants.InterestSavings" Value="@stats.InterestSavings" Format="N2" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-2 order-sm-5">
 												<DataField T="double" Label="@Constants.NumberOfPayments" Value="@stats.NumberOfPayments" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-5 order-sm-6">
 												<DataField T="double" Label="@Constants.ExtraPaid" Value="@stats.ExtraPaid" Format="N2" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-6 order-sm-7">
 												<DataField T="double" Label="@Constants.TotalPaid" Value="@stats.TotalPaid" Format="N2" />
 											</MudItem>
-											<MudItem xs="6" sm="4" md="3">
+											<MudItem xs="6" sm="3" Class="order-8 order-sm-8">
 												<DataField T="double" Label="@Constants.RemainingBalance" Value="@stats.RemainingBalance" Format="N2" />
 											</MudItem>
 										</MudGrid>

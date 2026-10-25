@@ -27,6 +27,13 @@
 		}
 		<div style="@BubbleJustification">
 			<div class="@BubbleStyle" style="@BubbleColor">
+				@* @if (!IsSequentialMessage && Message.Owner != null)
+				{
+					<MudText Class="mb-2" Style="@BubbleJustification">
+						<MudText Inline Typo="Typo.body2">@(Message.IsMine ? string.Empty : Message.Owner + " at")&nbsp;</MudText>
+						<MudText Inline Typo="Typo.body2">@string.Format("{0:HH:mm}", Message.Received)</MudText>
+					</MudText>
+				} *@
 				<MudText Style="word-wrap: anywhere;">@Message.Body</MudText>
 			</div>
 		</div>

@@ -19,7 +19,7 @@
 		<h2 class="appbar-title">@AppBar.Title</h2>
 		<MudSpacer />
 		<MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" Color="Color.Default" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
+		<MudFabMenu StartIcon="@Icons.Material.Outlined.Link" DropShadow="false" Direction="Direction.Bottom" DampenItemsBackgroundColor="false" Size="Size.Small" OpenOnMouseHover="true" ButtonClass="fab-button-links">
 			<MudFabMenuItem EndIcon="@Icons.Custom.Brands.LinkedIn" Color="Color.Info" Href="https://www.linkedin.com/in/voitsekh" Target="_blank" Size="Size.Small" />
 			<MudFabMenuItem EndIcon="@Icons.Custom.Brands.GitHub" Color="Color.Success" Href="https://github.com/avoitsekh/BlazorApp" Target="_blank" Size="Size.Small" />
 			<MudFabMenuItem EndIcon="@Icons.Material.Outlined.Email" Color="Color.Warning" Href="mailto:voitsekh@hotmail.com" Size="Size.Small" />
@@ -46,10 +46,15 @@
 <style>
 	.fab-button-links {
 		background-color: transparent;
+		color: unset;
 	}
 
 	.fab-button-links:hover {
 		background-color: var(--mud-palette-action-default-hover);
+	}
+
+	.mud-fab-menu-item {
+		color: white;
 	}
 
 	.mud-appbar {
@@ -176,11 +181,11 @@
 		{
 			if (_isDarkModeSystemPreference)
 			{
-				return _isDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Rounded.AutoMode;
+				return _isDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Filled.AutoMode;
 			}
 			else
 			{
-				return _isDarkMode ? Icons.Material.Rounded.AutoMode : Icons.Material.Outlined.DarkMode;
+				return _isDarkMode ? Icons.Material.Filled.AutoMode : Icons.Material.Outlined.DarkMode;
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 
 class AppBarOptions
 {
-	public EventHandler? ValueChanged;
+	public event EventHandler? ValueChanged;
 
 	public string? Title
 	{

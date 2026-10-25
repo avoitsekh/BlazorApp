@@ -1,5 +1,4 @@
-﻿using SkiaSharp;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
 namespace BlazorApp.Components.Pages.ChatRoom;
 
@@ -40,4 +39,8 @@ public class Members
 		return members.TryRemove(members.First(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase)));
 	}
 
+	public List<string> ToList()
+	{
+		return members.Select(x => x.Value).ToList();
+	}
 }
