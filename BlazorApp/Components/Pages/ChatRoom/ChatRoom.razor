@@ -1,4 +1,5 @@
 ﻿@page "/chat"
+@using BlazorApp.Components.Pages.ChatRoom.Business
 
 @inject NavigationManager NavManager
 @inject AppBarOptions AppBar
@@ -9,184 +10,128 @@
 
 
 
-@if (!isDebug)
+
+
+
+@if (!IsChatting)
 {
-	<div style="position: relative; height: 90vh;">
-		<MudOverlay Visible="true" Absolute="true" Style="background-color: var(--mud-palette-surface); transition: none;" >
-			<MudStack AlignItems="AlignItems.Center">
-				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-wrench-adjustable" viewBox="0 0 16 16">
-					<path d="M16 4.5a4.5 4.5 0 0 1-1.703 3.526L13 5l2.959-1.11q.04.3.041.61" />
-					<path d="M11.5 9c.653 0 1.273-.139 1.833-.39L12 5.5 11 3l3.826-1.53A4.5 4.5 0 0 0 7.29 6.092l-6.116 5.096a2.583 2.583 0 1 0 3.638 3.638L9.908 8.71A4.5 4.5 0 0 0 11.5 9m-1.292-4.361-.596.893.809-.27a.25.25 0 0 1 .287.377l-.596.893.809-.27.158.475-1.5.5a.25.25 0 0 1-.287-.376l.596-.893-.809.27a.25.25 0 0 1-.287-.377l.596-.893-.809.27-.158-.475 1.5-.5a.25.25 0 0 1 .287.376M3 14a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
-				</svg>
-				<MudText Typo="Typo.h5">Work in progress...</MudText>
-			</MudStack>
-		</MudOverlay>
-	</div>
+	<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: 90vh;">
+		<MudPaper MaxWidth="280px" MinWidth="150px" Width="100%" Height="48px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+			<MudTextField T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" Class="d-flex" @bind-Value="newMessage.Owner"></MudTextField>
+			<MudIconButton Icon="@personCheck" Size="Size.Medium" OnClick="JoinChat"></MudIconButton>
+			@* <MudFab StartIcon="@personCheck" Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" /> *@
+		</MudPaper>
+		<MudText Color="Color.Error" Align="Align.Center" Class="mt-1">@errorMessage</MudText>
+	</MudForm>
 }
 else
 {
+	<div class="chat-container">
 
-	<script>
+		<div class="chat-header">
+			<MudPaper Width="100%" Height="48px" Class="rounded-pill pa-1 pr-4" Elevation="1">
 
-		window.registerTabCloseHandler = function(dotNetHelper) {
-			window.addEventListener("beforeunload", tabClosing);
-			_dotNetHelper = dotNetHelper;
-		}
-
-		window.unRegisterTabCloseHandler = function(dotNetHelper) {
-			window.removeEventListener("beforeunload", tabClosing);
-			_dotNetHelper = null;
-		}
-
-		var _dotNetHelper;
-
-		window.tabClosing = function(event) {
-			_dotNetHelper.invokeMethodAsync("OnBrowserTabClosing");
-		}
-
-		window.scrollToBottom = (elementId) => {
-			const el = document.getElementById(elementId);
-			if (el) el.scrollTop = el.scrollTop = el.scrollHeight;
-		}
-
-	</script>
-
-
-	@* <MudExitPrompt /> *@
-
-
-	@if (!(client?.IsConnected ?? false))
-	{
-
-		<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: 90vh;">
-			<MudPaper MaxWidth="280px" MinWidth="150px" Width="100%" Height="48px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-				<MudTextField T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" Class="d-flex" @bind-Value="newMessage.Owner"></MudTextField>
-				<MudIconButton Icon="@personCheck" Size="Size.Medium" OnClick="JoinChat"></MudIconButton>
-				@* <MudFab StartIcon="@personCheck" Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" /> *@
-			</MudPaper>
-			<MudText Color="Color.Error" Align="Align.Center">@errorMessage</MudText>
-		</MudForm>
-
-		@*
-
-		Style="background-color: greenyellow;"
-
-		Style="background-color: lightyellow;"
-		
-		*@
-
-
-
-	}
-	else
-	{
-
-
-
-		<div class="chat-container">
-
-			<!-- HEADER -->
-			<div class="chat-header">
-				<h3>Chat Room</h3>
-				<span>5 users online</span>
-			</div>
-
-			<!-- MESSAGES (takes all remaining space) -->
-			<div class="chat-messages" id="messageContainer">
-
-				<MudStack Spacing="1" Class="pa-1">
-
-					@{
-						Message? previousMessage = null;
-
-						foreach (var message in messages)
-						{
-							<ChatBubble Message="message" PreviousMessage="previousMessage" />
-							previousMessage = message;
-						}
-					}
-
+				<MudStack Row Wrap="Wrap.NoWrap" AlignItems="AlignItems.Center">
+					<Avatar Username="@client?.CurrentUsername" />
+					<MudText Typo="Typo.h6" Class="member-name">@client?.CurrentUsername</MudText>
+					<MudSpacer />
+					<MudText Align="Align.Center" Style="min-width: 46px;">@($"{chatMemberCount} {(chatMemberCount == 1 ? "user" : "users")} online")</MudText>
 				</MudStack>
 
-
-			</div>
-
-			<!-- FOOTER / INPUT -->
-			<div class="chat-footer">
-				<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
-					<MudPaper Width="100%" Height="50px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-						<MudTextField T="string" Immediate Placeholder="Type your message..." Underline="false" Class="d-flex" @bind-Value="newMessage.Body"></MudTextField>
-						<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
-						@* <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="rounded-circle pa-2" OnClick="OnSendMessageClicked"></MudIconButton> *@
-					</MudPaper>
-				</MudForm>
-			</div>
-
+			</MudPaper>
 		</div>
 
+		<div class="chat-messages" id="messageContainer">
+			<MudStack Spacing="1" Class="pa-1">
+				@{
+					Message? previousMessage = null;
+					foreach (var message in messages)
+					{
+						<ChatBubble Message="message" PreviousMessage="previousMessage" />
+						previousMessage = message;
+					}
+				}
+			</MudStack>
+		</div>
 
-		<style>
+		<div class="chat-footer">
+			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
+				<MudPaper Width="100%" Height="48px" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+					<MudTextField T="string" Immediate Placeholder="Type your message..." Underline="false" Class="d-flex" @bind-Value="newMessage.Body"></MudTextField>
+					<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
+					@* <MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Large" Color="Color.Primary" Variant="Variant.Filled" DropShadow="false" Class="rounded-circle pa-2" OnClick="OnSendMessageClicked"></MudIconButton> *@
+				</MudPaper>
+			</MudForm>
+		</div>
 
-
-			/* Makes the container fill the full viewport height */
-			.chat-container {
-				display: flex;
-				flex-direction: column;
-				height: 90vh;
-				max-width: 400px;
-				margin: 0 auto;
-			}
-
-			/* Fixed height header — stays at top */
-			.chat-header {
-				flex: 0 0 auto; /* does NOT grow or shrink */
-				padding: 16px;
-				background-color: #1F3864;
-				color: white;
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-			}
-
-			/* Middle section — takes ALL remaining space */
-			.chat-messages {
-				flex: 1; /* grows to fill all available space */
-				overflow-y: auto; /* scrollable when messages overflow */
-				/* padding: 10px; */
-				display: flex;
-				flex-direction: column;
-				/* gap: 8px; */
-				/* background-color: #f5f5f5; */
-			}
-
-			/* Fixed height footer — stays at bottom */
-			.chat-footer {
-				flex: 0 0 auto; /* does NOT grow or shrink */
-				padding: 10px;
-				/* background-color: #ffffff; */
-				/* border-top: 1px solid #ddd; */
-				display: flex;
-				gap: 8px;
-			}
-
-
-		</style>
-
-
-	}
-
-
+	</div>
 }
 
 
-@code {
+<script>
 
-	bool isDebug =
-#if DEBUG
-		true;
-#else
-		false;
-#endif
+	window.registerTabCloseHandler = function(dotNetHelper) {
+		window.addEventListener("beforeunload", tabClosing);
+		_dotNetHelper = dotNetHelper;
+	}
+
+	window.unRegisterTabCloseHandler = function(dotNetHelper) {
+		window.removeEventListener("beforeunload", tabClosing);
+		_dotNetHelper = null;
+	}
+
+	var _dotNetHelper;
+
+	window.tabClosing = function(event) {
+		_dotNetHelper.invokeMethodAsync("OnBrowserTabClosing");
+	}
+
+	window.scrollToBottom = (elementId) => {
+		const el = document.getElementById(elementId);
+		if (el) el.scrollTop = el.scrollTop = el.scrollHeight;
+	}
+
+</script>
+
+
+<style>
+
+	.chat-container {
+		display: flex;
+		flex-direction: column;
+		height: 90vh;
+		max-width: 400px;
+		margin: 0 auto;
+	}
+
+	.chat-header {
+		flex: 0 0 auto; /* does NOT grow or shrink */
+	}
+
+	.chat-messages {
+		flex: 1; /* grows to fill all available space */
+		overflow-y: auto; /* scrollable when messages overflow */
+		display: flex;
+		flex-direction: column;
+	}
+
+	.chat-footer {
+		flex: 0 0 auto; /* does NOT grow or shrink */
+		display: flex;
+	}
+
+	.member-name {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		min-width: 40px;
+		overflow: hidden;
+	}
+
+</style>
+
+
+
+@code {
 
 	List<Message> messages = new(30);
 	Message newMessage = new();
@@ -195,7 +140,9 @@ else
 	string? errorMessage;
 	DotNetObjectReference<ChatRoom> dotNetRef;
 	bool hasRendered = false;
+	int chatMemberCount = 0;
 
+	bool IsChatting => client?.IsConnected ?? false;
 
 
 	const string personCheck =
@@ -224,7 +171,7 @@ else
 
 	public async ValueTask DisposeAsync()
 	{
-		if (isDebug && hasRendered)
+		if (hasRendered)
 		{
 			await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
 		}
@@ -247,11 +194,9 @@ else
 		client = new(url.AbsoluteUri);
 		client.Error = OnError;
 		client.MessageReceived = OnMessageReceived;
+		client.MembersChanged = OnMembersChanged;
 		await client.Join(newMessage.Owner);
-		if (isDebug)
-		{
-			await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
-		}
+		await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
 	}
 
 	async Task ExitChat()
@@ -280,12 +225,15 @@ else
 		{
 			StateHasChanged();
 
-			if (isDebug)
-			{
-				// Scroll to bottom every time messages update
-				await JSR.InvokeVoidAsync("scrollToBottom", "messageContainer");
-			}
+			// Scroll to bottom every time messages update
+			await JSR.InvokeVoidAsync("scrollToBottom", "messageContainer");
 		});
+	}
+
+	void OnMembersChanged(List<string> list)
+	{
+		chatMemberCount = list.Count;
+		InvokeAsync(StateHasChanged);
 	}
 
 	void OnError(string message)

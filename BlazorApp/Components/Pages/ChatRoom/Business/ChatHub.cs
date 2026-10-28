@@ -16,6 +16,11 @@ class ChatHub : Hub
 		}
 	}
 
+	public async Task MembersChange(List<string> members)
+	{
+		await Clients.All.SendAsync(nameof(MembersChange), members);
+	}
+
 	public async Task<bool> Register(string username)
 	{
 		var result = members.Add(Context.ConnectionId, username);
@@ -27,6 +32,7 @@ class ChatHub : Hub
 				IsNotification = true
 			});
 		}
+		await MembersChange(members.ToList());
 		return result;
 	}
 
@@ -42,6 +48,7 @@ class ChatHub : Hub
 				IsNotification = true
 			});
 		}
+		await MembersChange(members.ToList());
 		return result;
 	}
 

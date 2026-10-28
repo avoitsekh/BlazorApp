@@ -1,17 +1,4 @@
-﻿@* <li style="display: flex; justify-content: flex-start; ">
-	<div class="rounded-r-xl rounded-bl-xl rounded-tl-sm mr-20 py-2 px-6 mud-elevation-1" style="background-color: var(--mud-palette-surface);">
-		<MudText Style="word-wrap: anywhere;">This is a test message from someone in the chat... zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz<br />Second line.......<br />Third line ..... 123</MudText>
-	</div>
-</li> *@
-
-
-@* <li style="@ListStyle">
-	<div class="@DivClass" style="@DivStyle">
-		<MudText Style="word-wrap: anywhere;">This is a test message from someone in the chat... zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz<br />Second line.......<br />Third line ..... 123</MudText>
-	</div>
-</li> *@
-
-<div>
+﻿<div>
 	@if (Message.IsNotification)
 	{
 		<MudText Class="@(IsSequentialMessage ? "" : "mt-3")" Align="Align.Center" Typo="Typo.body2">@Message.Body</MudText>
@@ -21,19 +8,11 @@
 		if (!IsSequentialMessage && Message.Owner != null)
 		{
 			<MudText Class="mt-2" Style="@BubbleJustification">
-				<MudText Inline Typo="Typo.body2">@(Message.IsMine ? string.Empty : Message.Owner + " at")&nbsp;</MudText>
-				<MudText Inline Typo="Typo.body2">@string.Format("{0:HH:mm}", Message.Received)</MudText>
+				<MudText Typo="Typo.body2">@(Message.IsMine ? "You" : Message.Owner) • @string.Format(" {0:HH:mm}", Message.Received)</MudText>
 			</MudText>
 		}
 		<div style="@BubbleJustification">
 			<div class="@BubbleStyle" style="@BubbleColor">
-				@* @if (!IsSequentialMessage && Message.Owner != null)
-				{
-					<MudText Class="mb-2" Style="@BubbleJustification">
-						<MudText Inline Typo="Typo.body2">@(Message.IsMine ? string.Empty : Message.Owner + " at")&nbsp;</MudText>
-						<MudText Inline Typo="Typo.body2">@string.Format("{0:HH:mm}", Message.Received)</MudText>
-					</MudText>
-				} *@
 				<MudText Style="word-wrap: anywhere;">@Message.Body</MudText>
 			</div>
 		</div>
@@ -56,10 +35,6 @@
 		? "display: flex; justify-content: flex-end;"
 		: "display: flex; justify-content: flex-start;";
 
-	// string BubbleStyle => Message.IsMine
-	// 	? "px-6 py-2 mud-elevation-1 rounded-l-xl rounded-br-xl rounded-tr-sm ml-20"
-	// 	: "px-6 py-2 mud-elevation-1 rounded-r-xl rounded-bl-xl rounded-tl-sm mr-20";
-
 	string BubbleStyle
 	{
 		get
@@ -67,12 +42,10 @@
 			var result = "px-4 py-2 mud-elevation-1";
 			if (Message.IsMine)
 			{
-				// result += " ml-20";
 				result += IsSequentialMessage ? " rounded-xl" : " rounded-l-xl rounded-br-xl rounded-tr-sm";
 			}
 			else
 			{
-				// result += " mr-20";
 				result += IsSequentialMessage ? " rounded-xl" : " rounded-r-xl rounded-bl-xl rounded-tl-sm";
 			}
 			return result;
@@ -85,20 +58,5 @@
 
 	bool IsSequentialMessage => PreviousMessage != null && PreviousMessage.Owner == Message.Owner;
 
-	// string GetReceiveTimeFormatted(DateTime? date)
-	// {
-	// 	if (date.HasValue)
-	// 	{
-	// 		return string.Format("HH:mm", date);
-	// 	}
-	// }
-
-	protected override void OnAfterRender(bool firstRender)
-	{
-		if (firstRender)
-		{
-			
-		}
-	}
 
 }

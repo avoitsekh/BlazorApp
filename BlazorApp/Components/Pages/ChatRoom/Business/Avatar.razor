@@ -1,0 +1,91 @@
+﻿<MudAvatar Style="@($"color: white; background: {color};")">@chars</MudAvatar>
+
+@code {
+
+	[Parameter, EditorRequired]
+	public string? Username { get; set; }
+
+	string chars = "?";
+	string color = availableColors[0];
+
+	readonly static string[] availableColors =
+	[
+		Colors.Red.Default,
+		Colors.Red.Darken3,
+		Colors.Red.Accent3,
+
+		Colors.Pink.Default,
+		Colors.Pink.Darken3,
+		Colors.Pink.Accent3,
+
+		Colors.Purple.Default,
+		Colors.Purple.Darken3,
+		Colors.Purple.Accent3,
+
+		Colors.DeepPurple.Default,
+		Colors.DeepPurple.Darken3,
+		Colors.DeepPurple.Accent3,
+
+		Colors.Indigo.Default,
+		Colors.Indigo.Darken3,
+		Colors.Indigo.Accent3,
+
+		Colors.LightBlue.Default,
+		Colors.LightBlue.Darken3,
+		Colors.LightBlue.Accent3,
+
+		Colors.Cyan.Default,
+		Colors.Cyan.Darken3,
+		Colors.Cyan.Accent3,
+
+		Colors.Teal.Default,
+		Colors.Teal.Darken3,
+		Colors.Teal.Accent3,
+
+		Colors.Green.Default,
+		Colors.Green.Darken3,
+		Colors.Green.Accent3,
+
+		Colors.LightGreen.Default,
+		Colors.LightGreen.Darken3,
+		Colors.LightGreen.Accent3,
+
+		Colors.Amber.Default,
+		Colors.Amber.Darken3,
+		Colors.Amber.Accent3,
+
+		Colors.Orange.Default,
+		Colors.Orange.Darken3,
+		Colors.Orange.Accent3,
+
+		Colors.DeepOrange.Default,
+		Colors.DeepOrange.Darken3,
+		Colors.DeepOrange.Accent3,
+	];
+
+	protected override void OnInitialized()
+	{
+		var idx = new Random().Next(0, availableColors.Length - 1);
+		color = availableColors[idx];
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (!string.IsNullOrWhiteSpace(Username))
+		{
+			var names = Username.ToUpperInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+			chars = string.Empty;
+			chars += names[0][0];
+
+			if (names.Length == 3)
+			{
+				chars += names[2][0];
+			}
+			else if (names.Length == 2)
+			{
+				chars += names[1][0];
+			}
+		}
+	}
+}

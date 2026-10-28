@@ -7,12 +7,14 @@ public sealed class ChatClient : IDisposable
 	public readonly string HubUrl;
 	public Action<Message>? MessageReceived;
 	public Action<string>? Error;
+	public Action<List<string>>? MembersChanged;
 
 	HubConnection? hubConnection;
 
 	public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
 
-	public string? Username { get; private set; }
+	public string? CurrentUsername { get; private set; }
+
 
 	public ChatClient(string hubUrl)
 	{
@@ -25,8 +27,8 @@ public sealed class ChatClient : IDisposable
 
 		try
 		{
-			Username = username?.Trim();
-			if ((errorMessage = ValidateUsername(Username)) != null)
+			CurrentUsername = username?.Trim();
+			if ((errorMessage = ValidateUsername(CurrentUsername)) != null)
 			{
 				return;
 			}
@@ -36,11 +38,12 @@ public sealed class ChatClient : IDisposable
 				.Build();
 
 			hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
+			hubConnection.On<List<string>>(nameof(ChatHub.MembersChange), OnMembersChanged);
 			await hubConnection.StartAsync();
 
-			if (!await hubConnection.InvokeAsync<bool>(nameof(ChatHub.Register), Username))
+			if (!await hubConnection.InvokeAsync<bool>(nameof(ChatHub.Register), CurrentUsername))
 			{
-				errorMessage = $"{Username} has already joined this chat room. Please use another name.";
+				errorMessage = $"{CurrentUsername} has already joined this chat room. Please use another name.";
 			}
 		}
 		catch (Exception e)
@@ -59,7 +62,7 @@ public sealed class ChatClient : IDisposable
 
 	public async Task Exit()
 	{
-		Username = null;
+		CurrentUsername = null;
 		if (hubConnection != null)
 		{
 			await hubConnection.DisposeAsync();
@@ -71,15 +74,20 @@ public sealed class ChatClient : IDisposable
 	{
 		if (IsConnected)
 		{
-			message.Owner = Username!;
+			message.Owner = CurrentUsername!;
 			await hubConnection!.SendAsync(nameof(ChatHub.Broadcast), message);
 		}
 	}
 
 	void OnReceiveMessage(Message message)
 	{
-		message.IsMine = message.Owner?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
+		message.IsMine = message.Owner?.Equals(CurrentUsername, StringComparison.OrdinalIgnoreCase) ?? false;
 		MessageReceived?.Invoke(message);
+	}
+
+	private void OnMembersChanged(List<string> list)
+	{
+		MembersChanged?.Invoke(list);
 	}
 
 	void OnError(string errorMessage)
