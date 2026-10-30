@@ -98,7 +98,7 @@ else
 	.chat-container {
 		display: flex;
 		flex-direction: column;
-		height: calc(100dvh - 70px);
+		height: calc(100svh - 70px);
 		max-width: 406px;
 		margin: 0 auto;
 	}
@@ -194,17 +194,20 @@ else
 		errorMessage = null;
 		messages.Clear();
 
-		var url = NavManager.ToAbsoluteUri(ChatHub.Path);
-		client = new(url.AbsoluteUri);
+		if (!isJoining && !isJoined)
+		{
+			var url = NavManager.ToAbsoluteUri(ChatHub.Path);
+			client = new(url.AbsoluteUri);
 
-		client.Error += OnError;
-		client.Joining += OnJoining;
-		client.Joined += OnJoined;
-		client.MessageReceived += OnMessageReceived;
-		client.MembersChanged += OnMembersChanged;
+			client.Error += OnError;
+			client.Joining += OnJoining;
+			client.Joined += OnJoined;
+			client.MessageReceived += OnMessageReceived;
+			client.MembersChanged += OnMembersChanged;
 
-		await client.Join(newMessage.Owner!);
-		await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+			await client.Join(newMessage.Owner!);
+			await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+		}
 	}
 
 	async Task ExitChat()
@@ -220,7 +223,7 @@ else
 
 	async Task OnSendMessageClicked()
 	{
-		if (client != null && !newMessage.IsEmpty)
+		if (client != null && isJoined && !newMessage.IsEmpty)
 		{
 			await client.SendMessage(newMessage);
 			newMessage.Clear();
