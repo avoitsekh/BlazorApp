@@ -1,15 +1,18 @@
 ﻿<MudStack Row Spacing="0" Wrap="Wrap.NoWrap">
 	<MudIconButton Icon="@Icons.Material.Filled.ArrowLeft" Color="Color.Inherit" OnClick="@(() => OnArrowClicked(-1))" />
-	<MudNumericField FullWidth="false" T="int?" @bind-Value="Value" @bind-Value:after="OnYearChanged" Immediate Label="@Constants.Year" Variant="Variant.Text" Min="1" Max="@MaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center" />
+	<MudNumericField FullWidth="false" T="int?" @bind-Value="Value" @bind-Value:after="OnYearChanged" Immediate Label="@Constants.Year" Variant="Variant.Text" Min="1" Max="@MaxYear" ShrinkLabel HideSpinButtons Class="year-max-width align-center apply-to-this-field-only" />
 	<MudIconButton Icon="@Icons.Material.Filled.ArrowRight" Color="Color.Inherit" OnClick="@(() => OnArrowClicked(1))" />
 </MudStack>
 
 <style>
 	.year-max-width {
-		max-width: 26px;
+		max-width: 28px;
 	}
 	.align-center input {
 		text-align: center;
+	}
+	.apply-to-this-field-only .mud-input-label-inputcontrol {
+		transform-origin: top center !important;
 	}
 </style>
 

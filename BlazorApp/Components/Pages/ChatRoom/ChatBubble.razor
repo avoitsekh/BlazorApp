@@ -8,7 +8,7 @@
 		if (!IsSequentialMessage && Message.Owner != null)
 		{
 			<MudText Class="mt-2" Style="@BubbleJustification">
-				<MudText Typo="Typo.body2">@(Message.IsMine ? "You" : Message.Owner) • @string.Format(" {0:HH:mm}", Message.Received)</MudText>
+				<MudText Typo="Typo.body2"><strong>@(Message.IsMine ? "You" : Message.Owner)</strong> • @string.Format(" {0:HH:mm}", Message.Received)</MudText>
 			</MudText>
 		}
 		<div style="@BubbleJustification">
@@ -53,7 +53,7 @@
 	}
 
 	string BubbleColor => Message.IsMine
-		? $"background-color: var(--mud-palette-info); color: var(--mud-palette-info-text); margin-left: 15%;"
+		? $"background-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text); margin-left: 15%;"
 		: $"background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); margin-right: 15%;";
 
 	bool IsSequentialMessage => PreviousMessage != null && PreviousMessage.Owner == Message.Owner;

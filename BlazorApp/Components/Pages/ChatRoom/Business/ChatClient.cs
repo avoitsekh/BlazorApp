@@ -2,24 +2,21 @@
 
 namespace BlazorApp.Components.Pages.ChatRoom;
 
-public sealed class ChatClient : IDisposable
+public sealed class ChatClient(string hubUrl) : IDisposable
 {
-	public readonly string HubUrl;
-	public Action<Message>? MessageReceived;
-	public Action<string>? Error;
-	public Action<List<string>>? MembersChanged;
+	public readonly string HubUrl = hubUrl;
+
+	public event EventHandler? Joining;
+	public event EventHandler? Joined;
+	public event EventHandler<Message>? MessageReceived;
+	public event EventHandler<List<string>>? MembersChanged;
+	public event EventHandler<string>? Error;
 
 	HubConnection? hubConnection;
 
 	public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
 
 	public string? CurrentUsername { get; private set; }
-
-
-	public ChatClient(string hubUrl)
-	{
-		HubUrl = hubUrl;
-	}
 
 	public async Task Join(string username)
 	{
@@ -28,13 +25,18 @@ public sealed class ChatClient : IDisposable
 		try
 		{
 			CurrentUsername = username?.Trim();
-			if ((errorMessage = ValidateUsername(CurrentUsername)) != null)
+			if ((errorMessage = ValidateUsername(CurrentUsername!)) != null)
 			{
 				return;
 			}
 
+			OnJoining();
+
+			await Task.Delay(60);
+
 			hubConnection = new HubConnectionBuilder()
 				.WithUrl(HubUrl)
+				.WithAutomaticReconnect()
 				.Build();
 
 			hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
@@ -44,7 +46,10 @@ public sealed class ChatClient : IDisposable
 			if (!await hubConnection.InvokeAsync<bool>(nameof(ChatHub.Register), CurrentUsername))
 			{
 				errorMessage = $"{CurrentUsername} has already joined this chat room. Please use another name.";
+				return;
 			}
+
+			OnJoined();
 		}
 		catch (Exception e)
 		{
@@ -82,17 +87,27 @@ public sealed class ChatClient : IDisposable
 	void OnReceiveMessage(Message message)
 	{
 		message.IsMine = message.Owner?.Equals(CurrentUsername, StringComparison.OrdinalIgnoreCase) ?? false;
-		MessageReceived?.Invoke(message);
+		MessageReceived?.Invoke(this, message);
 	}
 
 	private void OnMembersChanged(List<string> list)
 	{
-		MembersChanged?.Invoke(list);
+		MembersChanged?.Invoke(this, list);
+	}
+
+	void OnJoining()
+	{
+		Joining?.Invoke(this, EventArgs.Empty);
+	}
+
+	void OnJoined()
+	{
+		Joined?.Invoke(this, EventArgs.Empty);
 	}
 
 	void OnError(string errorMessage)
 	{
-		Error?.Invoke(errorMessage);
+		Error?.Invoke(this, errorMessage);
 	}
 
 	public void Dispose()
