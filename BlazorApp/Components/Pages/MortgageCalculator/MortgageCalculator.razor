@@ -15,10 +15,6 @@
 	<MudPaper id="main-container" MaxWidth="1000px" Width="1000px" Class="pa-0" Elevation="0" Style="background: var(--mud-palette-background);">
 		<MudStack id="main-stack">
 
-			<CascadingValue Value="@payments" Name="&Payments">
-			<CascadingValue Value="@paymentsNoExtras" Name="&PaymentsNoExtras">
-			<CascadingValue Value="@stats">
-
 			<MudGrid Spacing="3"> <!-- Grid for Mortgage Details and Summary panels -->
 				<MudItem xs="12" md="4">
 					<Panel>
@@ -231,7 +227,7 @@
 											<DataField T="double" Label="@Constants.YearsToPayoff" Value="@stats.YearsToPayOff" />
 										</MudItem>
 									</MudGrid>
-									<BalanceLineChart DebounceInterval="60" />
+									<BalanceLineChart DebounceInterval="60" Payments="payments" />
 								</MudCarouselItem>
 								<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
 									<MudStack Spacing="8">
@@ -263,7 +259,7 @@
 										</MudGrid>
 										<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Breakpoint="Breakpoint.Xs">
 											<YearField @ref="yearField" MaxYear="BalanceMaxYear" YearChanged="OnYearChanged" />
-											<BalanceDonutChart />
+											<BalanceDonutChart Statistics="stats" />
 										</MudStack>
 									</MudStack>
 								</MudCarouselItem>
@@ -305,13 +301,9 @@
 					</MudStack>
 				</HeaderContent>
 				<MainContent>
-					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded" />
+					<PaymentsTable @ref="paymentsTable" Expanded="paymentsTableExpanded" Payments="payments" />
 				</MainContent>
 			</Panel>
-
-			</CascadingValue>
-			</CascadingValue>
-			</CascadingValue>
 
 		</MudStack>
 	</MudPaper>
@@ -342,15 +334,14 @@
 
 @code {
 
-	MudForm? form = null;
-	YearField? yearField = null;
-	PaymentsTable? paymentsTable = null;
+	MudForm? form;
+	YearField? yearField;
+	PaymentsTable? paymentsTable;
 
 	MortgageDetails details = new();
 	PresetCollection presets = new();
 	PaymentStatistics stats = new();
 	PaymentCollection? payments;
-	PaymentCollection? paymentsNoExtras;
 
 	bool paymentsTableExpanded = false;
 	int currentSummaryPage = 0;
@@ -409,9 +400,8 @@
 			paymentsTableExpanded = false;
 
 			payments = PaymentCollection.Create(details);
-			paymentsNoExtras = payments.HasExtraPayments ? PaymentCollection.Create(details, countExtraPayments: false) : null;
 
-			stats = new(payments, paymentsNoExtras);
+			stats = new(payments);
 			stats.CalculateSummary();
 			stats.CalculateForYear(yearField?.Value ?? 0);
 		}

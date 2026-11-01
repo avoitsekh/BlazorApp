@@ -1,10 +1,10 @@
 ﻿
 namespace BlazorApp.Components.Pages.MortgageCalculator;
 
-public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollection? paymentsNoExtras)
+public sealed class PaymentStatistics(PaymentCollection? payments)
 {
 	public PaymentStatistics()
-		: this(null, null)
+		: this(null)
 	{
 	}
 
@@ -63,6 +63,7 @@ public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollec
 					TotalPaid = Math.Round(paymentsForPeriod.Sum(x => x.PaymentAmount), 2);
 					NumberOfPayments = paymentsForPeriod.Count;
 
+					var paymentsNoExtras = payments.WithNoExtraPayments;
 					if (paymentsNoExtras.HasData())
 					{
 						var lastPaymentNoExtras = paymentsNoExtras!.GetLastPaymentForYear(year);

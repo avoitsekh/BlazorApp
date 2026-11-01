@@ -10,11 +10,10 @@
 
 @code {
 
-	[CascadingParameter(Name = "&Payments")]
-	PaymentCollection? Payments { get; set; }
+	[Parameter, EditorRequired]
+	public PaymentCollection? Payments { get; set; }
 
-	[CascadingParameter(Name = "&PaymentsNoExtras")]
-	PaymentCollection? PaymentsNoExtras { get; set; }
+	PaymentCollection? PaymentsNoExtras => Payments?.WithNoExtraPayments;
 
 	/// <summary>
 	/// The number of milliseconds to wait before rendering the chart.
@@ -40,7 +39,6 @@
 	Action? debounceDraw = null;
 
 	PaymentCollection? _payments = null;
-	PaymentCollection? _paymentsNoExtras = null;
 	int _debounceInterval = -1;
 
 
@@ -70,12 +68,11 @@
 			_debounceInterval = DebounceInterval;
 		}
 
-		var hasChanges = _payments != Payments || _paymentsNoExtras != PaymentsNoExtras;
+		var hasChanges = _payments != Payments;
 		if (hasChanges && Payments.HasData())
 		{
 			debounceDraw?.Invoke();
 			_payments = Payments;
-			_paymentsNoExtras = PaymentsNoExtras;
 		}
 	}
 
@@ -99,7 +96,7 @@
 			series.Add(new()
 			{
 				Name = "Without extra payments",
-				Data = PaymentsNoExtras!.Select(x => x.Balance).ToArray(),
+				Data = PaymentsNoExtras.Select(x => x.Balance).ToArray(),
 			});
 		}
 

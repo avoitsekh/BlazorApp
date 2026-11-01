@@ -16,6 +16,7 @@ public sealed class MortgageDetails
 	public bool IsFixed => InterestRateType == InterestRateTypes.Fixed;
 	public bool IsARM => InterestRateType == InterestRateTypes.ARM;
 	public bool IsVRM => InterestRateType == InterestRateTypes.VRM;
+	public bool HasExtraPayments => ExtraPayments.Count > 0;
 	public int PaymentCount => PaymentFrequency * AmortizationPeriod;				// nper
 
 	public enum InterestRateTypes { Fixed, ARM, VRM }

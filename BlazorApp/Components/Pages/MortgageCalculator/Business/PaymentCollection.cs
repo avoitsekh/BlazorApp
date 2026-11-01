@@ -8,16 +8,27 @@ public sealed class PaymentCollection : List<Payment>
 
 	public bool HasExtraPayments => this.Any(x => x.ExtraAmount > 0D);
 
+	public PaymentCollection? WithNoExtraPayments { get; private set; }
+
 	PaymentCollection(MortgageDetails settings)
 		: base(settings.PaymentCount)
 	{
 		Details = settings;
 	}
 
-	public static PaymentCollection Create(MortgageDetails settings, bool countExtraPayments = true)
+	public static PaymentCollection Create(MortgageDetails details)
 	{
-		var result = new PaymentCollection(settings);
-		result.CalculateAmortizationSchedule(countExtraPayments);
+		var result = new PaymentCollection(details);
+		if (details.HasExtraPayments)
+		{
+			result.WithNoExtraPayments = new PaymentCollection(details);
+			result.WithNoExtraPayments.CalculateAmortizationSchedule(false);
+			result.CalculateAmortizationSchedule(true);
+		}
+		else
+		{
+			result.CalculateAmortizationSchedule(false);
+		}
 		return result;
 	}
 
@@ -26,7 +37,6 @@ public sealed class PaymentCollection : List<Payment>
 		int paymentCount = Details.PaymentCount;
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
-		double balanceOriginal = Details.LoanAmount;
 		double paymentAmount = CalculatePaymentAmount(currentRate, paymentCount, balance);
 		DateTime paymentDate = Details.AdvanceDate;
 		bool isLastPayment = false;
@@ -41,7 +51,6 @@ public sealed class PaymentCollection : List<Payment>
 			double principalAmount = paymentAmount - interestAmount;
 			double extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
 			balance = balance - principalAmount - extraAmount;
-			balanceOriginal = balanceOriginal - principalAmount;
 
 			if (balance <= 0)
 			{
@@ -92,7 +101,7 @@ public sealed class PaymentCollection : List<Payment>
 			currentRate = Details.InterestRates.GetRate(paymentDate);
 			if (Details.IsARM && currentRate != previousRate)
 			{
-				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balanceOriginal);
+				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
 			}
 		}
 	}

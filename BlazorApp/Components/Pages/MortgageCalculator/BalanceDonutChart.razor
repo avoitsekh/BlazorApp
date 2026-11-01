@@ -7,10 +7,10 @@
 
 @code {
 
-	[CascadingParameter]
-	PaymentStatistics? Statistics { get; set; }
+	[Parameter, EditorRequired]
+	public PaymentStatistics? Statistics { get; set; }
 
-	[CascadingParameter(Name = "&IsDarkMode")]
+	[CascadingParameter(Name = "*IsDarkMode*")]
 	bool IsDarkMode { get; set; }
 
 	string[] labels = [Constants.PrincipalPaid, Constants.ExtraPaid, Constants.InterestPaid, Constants.RemainingBalance];
