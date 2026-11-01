@@ -50,7 +50,7 @@
 											</ul>
 										</MudText>
 										<MudText><b>@Constants.InterestAccrualMethod:</b><br />Determines whether interest rate is calculated on a daily basis or per payment. If per payment option is chosen, the @Constants.AnnualPercent is divided by the number of payments per year (@Constants.PaymentFrequency).</MudText>
-										<MudText><b>@Constants.FinancialYear:</b><br />Determines how many days in a given year there is to calculate daily interest. Some lenders do not bother with normal and leap years and calculate interest based on 360 days.</MudText>
+										<MudText><b>@Constants.FiscalYear:</b><br />Determines how many days in a given year there is to calculate daily interest. Some lenders do not bother with normal and leap years and calculate interest based on 360 days.</MudText>
 										<MudText><b>@Constants.RateType:</b><br />Determines whether mortgage interest changes during the mortgage term or not.
 											<ul>
 												<li>Fixed: Interest rate does not change throughout the mortgage term.</li>
@@ -94,7 +94,7 @@
 
 										<MudItem xs="6" sm="3" md="6">
 											<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
-												Adornment="@(details.IsVariableRateMortgage ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
+												Adornment="@(!details.IsFixed ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
 												Validation="ValidateInterestRate" />
 										</MudItem>
 
@@ -135,11 +135,11 @@
 										</MudItem>
 
 										<MudItem xs="6" sm="3" md="6">
-											<MudSelect T="MortgageDetails.FinancialYears" Label="@Constants.FinancialYear" @bind-Value="details.FinancialYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
+											<MudSelect T="MortgageDetails.FiscalYears" Label="@Constants.FiscalYear" @bind-Value="details.FiscalYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
 												Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
-												@foreach (var keyValuePair in Constants.FinancialYearValues)
+												@foreach (var keyValuePair in Constants.FiscalYearValues)
 												{
-													<MudSelectItem T="MortgageDetails.FinancialYears" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+													<MudSelectItem T="MortgageDetails.FiscalYears" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
 												}
 											</MudSelect>
 										</MudItem>
@@ -421,7 +421,7 @@
 
 	async Task OnInterestRateTypeChanged()
 	{
-		if (details.InterestRateType == MortgageDetails.InterestRateTypes.Fixed)
+		if (details.IsFixed)
 		{
 			details.InterestRates.Clear();
 			StateHasChanged();
@@ -444,7 +444,7 @@
 
 				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
 				string jsonText = await reader.ReadToEndAsync();
-				details = JsonSerializer.Deserialize<MortgageDetails>(jsonText, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+				details = JsonSerializer.Deserialize<MortgageDetails>(jsonText, new JsonSerializerOptions { IgnoreReadOnlyProperties = true });
 
 				await Calculate();
 			}
@@ -476,7 +476,7 @@
 
 		try
 		{
-			var jsonText = JsonSerializer.Serialize(details, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+			var jsonText = JsonSerializer.Serialize(details, new JsonSerializerOptions { WriteIndented = true, IgnoreReadOnlyProperties = true });
 			await JS.DownloadFileAsync(filename, "text/json", Encoding.UTF8.GetBytes(jsonText));
 		}
 		catch (Exception ex)

@@ -10,8 +10,8 @@
 @if (!isJoined)
 {
 	<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: calc(100dvh - 70px);">
-		<MudPaper MaxWidth="330px" MinWidth="150px" Width="100%" Class="d-flex align-center gap-1 rounded-pill pr-1 pl-5" Elevation="1">
-			<MudTextField @ref="usernameTextBox" T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" Class="d-flex" @bind-Value="newMessage.Owner" Style="height: 49px;" />
+		<MudPaper MaxWidth="330px" MinWidth="150px" Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+			<MudTextField @ref="usernameTextBox" T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" @bind-Value="newMessage.Owner" />
 			@if (isJoining)
 			{
 				<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="mr-2" />
@@ -47,7 +47,7 @@ else
 					Message? previousMessage = null;
 					foreach (var message in messages)
 					{
-						<ChatBubble Message="message" PreviousMessage="previousMessage" />
+						<MessageBubble Message="message" PreviousMessage="previousMessage" />
 						previousMessage = message;
 					}
 				}
@@ -56,8 +56,8 @@ else
 
 		<div class="chat-footer">
 			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
-				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pr-1 pl-5" Elevation="1">
-					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message..." Underline="false" Class="d-flex" @bind-Value="newMessage.Body" Style="height: 49px;" />
+				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
+					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message..." Underline="false" @bind-Value="newMessage.Body" MaxLength="2000" />
 					<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
 				</MudPaper>
 			</MudForm>
@@ -98,29 +98,30 @@ else
 	.chat-container {
 		display: flex;
 		flex-direction: column;
-		height: calc(100svh - 70px);
+		height: calc(100dvh - 70px);
 		max-width: 406px;
 		margin: 0 auto;
 	}
 
 	.chat-header {
 		flex: 0 0 auto;		/* does NOT grow or shrink */
-		padding: 8px;
+		padding: 0px 8px 0px 8px;
+		margin: -2px -10px 0px -10px;
 	}
 
 	.chat-messages {
 		flex: 1;			/* grows to fill all available space */
 		overflow-y: auto;	/* scrollable when messages overflow */
-		display: flex;
 		flex-direction: column;
-		padding: 8px;
 		min-height: 100px;
+		padding: 4px 8px 4px 8px;
+		margin: 0px -10px 0px -10px;
 	}
 
 	.chat-footer {
 		flex: 0 0 auto;		/* does NOT grow or shrink */
-		display: flex;
-		padding: 8px;
+		padding: 0px 8px 0px 8px;
+		margin: 0px -10px 0px -10px;
 	}
 
 	.chat-username {
@@ -252,11 +253,14 @@ else
 	void OnJoining(object? sender, EventArgs e)
 	{
 		isJoining = true;
+		isJoined = false;
 	}
 
 	void OnJoined(object? sender, EventArgs e)
 	{
+		isJoining = false;
 		isJoined = true;
+
 		InvokeAsync(StateHasChanged);
 		messageTextBox!.FocusAsync();
 	}

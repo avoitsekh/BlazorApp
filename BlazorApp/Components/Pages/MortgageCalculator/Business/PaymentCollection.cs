@@ -26,6 +26,7 @@ public sealed class PaymentCollection : List<Payment>
 		int paymentCount = Details.PaymentCount;
 		double currentRate = Details.InterestRates.InitialRate;
 		double balance = Details.LoanAmount;
+		double balanceOriginal = Details.LoanAmount;
 		double paymentAmount = CalculatePaymentAmount(currentRate, paymentCount, balance);
 		DateTime paymentDate = Details.AdvanceDate;
 		bool isLastPayment = false;
@@ -40,6 +41,7 @@ public sealed class PaymentCollection : List<Payment>
 			double principalAmount = paymentAmount - interestAmount;
 			double extraAmount = countExtraPayments ? Details.ExtraPayments.GetExtraPaymentAmounts(i) : 0D;
 			balance = balance - principalAmount - extraAmount;
+			balanceOriginal = balanceOriginal - principalAmount;
 
 			if (balance <= 0)
 			{
@@ -53,7 +55,7 @@ public sealed class PaymentCollection : List<Payment>
 				balance = 0;
 				isLastPayment = true;
 			}
-			else if (i == paymentCount && balance > 0 && Details.InterestRateType != InterestRateTypes.VRM)
+			else if (i == paymentCount && balance > 0 && !Details.IsVRM)
 			{
 				principalAmount += balance;
 				paymentAmount = interestAmount + principalAmount;
@@ -88,9 +90,9 @@ public sealed class PaymentCollection : List<Payment>
 
 			double previousRate = currentRate;
 			currentRate = Details.InterestRates.GetRate(paymentDate);
-			if (Details.InterestRateType == InterestRateTypes.ARM && currentRate != previousRate)
+			if (Details.IsARM && currentRate != previousRate)
 			{
-				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
+				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balanceOriginal);
 			}
 		}
 	}
@@ -109,12 +111,12 @@ public sealed class PaymentCollection : List<Payment>
 	{
 		var daysInYear = 365;
 
-		if (Details.FinancialYear == FinancialYears._365or366)
+		if (Details.FiscalYear == FiscalYears._365or366)
 		{
 			var isLeapYear = DateTime.IsLeapYear(date.Year);
 			daysInYear = isLeapYear ? 366 : 365;
 		}
-		else if (Details.FinancialYear == FinancialYears._360)
+		else if (Details.FiscalYear == FiscalYears._360)
 		{
 			daysInYear = 360;
 		}

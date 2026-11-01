@@ -1,7 +1,7 @@
 ﻿
 namespace BlazorApp.Components.Pages.MortgageCalculator;
 
-public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollection? paymentsNoExtras) : IRoundable
+public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollection? paymentsNoExtras)
 {
 	public PaymentStatistics()
 		: this(null, null)
@@ -38,7 +38,7 @@ public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollec
 			PrincipalAmount = payments.First().PrincipalAmount;
 
 			var totalDays = (payments.Last().PaymentDate - details.AdvanceDate).TotalDays;
-			YearsToPayOff = this.Round(totalDays / yearAverageDays, 1);
+			YearsToPayOff = Math.Round(totalDays / yearAverageDays, 1);
 			AmortizationOffset = (((double)payments.Count / details.PaymentCount) - 1) * 100;
 		}
 	}
@@ -57,17 +57,17 @@ public sealed class PaymentStatistics(PaymentCollection? payments, PaymentCollec
 					RemainingBalance = lastPayment.Balance;
 
 					var paymentsForPeriod = payments.GetAllPaymentsForPeriod(1, lastPaymentNumber);
-					InterestPaid = this.Round(paymentsForPeriod.Sum(x => x.InterestAmount));
-					PrincipalPaid = this.Round(paymentsForPeriod.Sum(x => x.PrincipalAmount));
-					ExtraPaid = this.Round(paymentsForPeriod.Sum(x => x.ExtraAmount));
-					TotalPaid = this.Round(paymentsForPeriod.Sum(x => x.PaymentAmount));
+					InterestPaid = Math.Round(paymentsForPeriod.Sum(x => x.InterestAmount), 2);
+					PrincipalPaid = Math.Round(paymentsForPeriod.Sum(x => x.PrincipalAmount), 2);
+					ExtraPaid = Math.Round(paymentsForPeriod.Sum(x => x.ExtraAmount), 2);
+					TotalPaid = Math.Round(paymentsForPeriod.Sum(x => x.PaymentAmount), 2);
 					NumberOfPayments = paymentsForPeriod.Count;
 
 					if (paymentsNoExtras.HasData())
 					{
 						var lastPaymentNoExtras = paymentsNoExtras!.GetLastPaymentForYear(year);
 						var paymentsForPeriodNoExtras = paymentsNoExtras.GetAllPaymentsForPeriod(1, lastPaymentNumber);
-						var interestPaidNoExtras = this.Round(paymentsForPeriodNoExtras.Sum(x => x.InterestAmount));
+						var interestPaidNoExtras = Math.Round(paymentsForPeriodNoExtras.Sum(x => x.InterestAmount), 2);
 						InterestSavings = interestPaidNoExtras - InterestPaid;
 					}
 					else

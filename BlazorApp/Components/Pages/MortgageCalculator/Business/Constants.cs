@@ -26,11 +26,11 @@ public static class Constants
 		{ "Per Payment", InterestAccrualMethods.PerPayment },
 	};
 
-	public static Dictionary<string, FinancialYears> FinancialYearValues = new()
+	public static Dictionary<string, FiscalYears> FiscalYearValues = new()
 	{
-		{ "365 or 366 days", FinancialYears._365or366 },
-		{ "365 days", FinancialYears._365 },
-		{ "360 days", FinancialYears._360 },
+		{ "365 or 366 days", FiscalYears._365or366 },
+		{ "365 days", FiscalYears._365 },
+		{ "360 days", FiscalYears._360 },
 	};
 
 	public static Dictionary<string, int> CompoundPeriodValues = new()
@@ -59,7 +59,7 @@ public static class Constants
 	public const string CompoundPeriod = "Compound Period";
 	public const string PaymentFrequency = "Payment Frequency";
 	public const string InterestAccrualMethod = "Interest Accrual Method";
-	public const string FinancialYear = "Financial Year";
+	public const string FiscalYear = "Fiscal Year";
 	public const string RateType = "Rate Type";
 	public const string ExtraPayments = "Extra Payments";
 	public const string EffectiveDate = "Effective Date";

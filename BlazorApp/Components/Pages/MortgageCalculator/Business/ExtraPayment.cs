@@ -2,7 +2,7 @@
 
 namespace BlazorApp.Components.Pages.MortgageCalculator;
 
-public sealed class ExtraPayment : IRoundable
+public sealed class ExtraPayment
 {
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? FromPayment { get; set; }
@@ -10,7 +10,7 @@ public sealed class ExtraPayment : IRoundable
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public int? ToPayment { get; set; }
 
-	public double Amount { get; set => field = this.Round(value); }
+	public double Amount { get; set => field = Math.Round(value, 2); }
 
 	[JsonIgnore]
 	public bool IsLumpSum => FromPayment.HasValue && ToPayment.HasValue && FromPayment == ToPayment;

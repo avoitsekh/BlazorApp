@@ -133,7 +133,7 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 		}
 		else if (username.Split(' ').Length > 3)
 		{
-			errorMessage = @"Invalid username. Consider having username with only firstname, firstname + lastname, or firstname + middlename + lastname.";
+			errorMessage = "Invalid username. Consider having username with only 'Firstname', 'Firstname Lastname', or 'Firstname Middlename Lastname'.";
 		}
 
 		return errorMessage;
