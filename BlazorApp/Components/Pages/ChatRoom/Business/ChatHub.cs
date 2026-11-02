@@ -10,7 +10,7 @@ class ChatHub : Hub
 
 	public async Task Broadcast(Message message)
 	{
-		if (!message.IsEmpty)
+		if (!message.IsEmpty && (members.HasMember(message.Owner) || message.IsNotification))
 		{
 			await Clients.All.SendAsync(nameof(Broadcast), message);
 		}
@@ -36,7 +36,7 @@ class ChatHub : Hub
 		return result;
 	}
 
-	async Task<bool> UnRegister(string connectionId)
+	async Task<bool> UnRegister(string connectionId, Exception? e = default)
 	{
 		var username = members.GetMember(connectionId);
 		var result = members.Remove(Context.ConnectionId);
@@ -44,7 +44,7 @@ class ChatHub : Hub
 		{
 			await Broadcast(new()
 			{
-				Body = $"{username} left chat room",
+				Body = $"{username} left chat room" + (e != null ? $" -- {e.GetBaseException().Message}" : ""),
 				IsNotification = true
 			});
 		}
@@ -60,7 +60,7 @@ class ChatHub : Hub
 
 	public override async Task OnDisconnectedAsync(Exception? e)
 	{
-		await UnRegister(Context.ConnectionId);
+		await UnRegister(Context.ConnectionId, e);
 
 		Console.WriteLine($"Disconnected: {Context.ConnectionId} {e?.Message}");
 		await base.OnDisconnectedAsync(e);

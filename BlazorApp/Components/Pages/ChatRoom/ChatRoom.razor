@@ -7,6 +7,8 @@
 @implements IAsyncDisposable
 
 
+<PageTitle>Chat Room</PageTitle>
+
 @if (!isJoined)
 {
 	<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: calc(100dvh - 70px);">
@@ -14,7 +16,7 @@
 			<MudTextField @ref="usernameTextBox" T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" @bind-Value="newMessage.Owner" />
 			@if (isJoining)
 			{
-				<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="mr-2" />
+				<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="ma-2" />
 			}
 			else
 			{
@@ -35,7 +37,16 @@ else
 					<Avatar Username="@client?.CurrentUsername" />
 					<MudText Typo="Typo.h6" Class="chat-username">@client?.CurrentUsername</MudText>
 					<MudSpacer />
-					<MudText Align="Align.Center" Style="min-width: 46px;">@($"{chatMemberCount} {(chatMemberCount == 1 ? "user" : "users")} online")</MudText>
+					<MudTooltip Arrow Color="Color.Transparent" ShowOnFocus="true" ShowOnHover="false" ShowOnClick="false" Style="font-style: italic; font-weight: normal !important;">
+						<ChildContent>
+							<MudText tabindex="0" Class="cursor-pointer" Align="Align.Center" Style="min-width: 46px;">@($"{chatMembers.Length} {(chatMembers.Length == 1 ? "user" : "users")} online")</MudText>
+						</ChildContent>
+						<TooltipContent>
+							<MudPaper Class="pa-2" Style="background-color: var(--mud-palette-text-primary); color: var(--mud-palette-background);">
+								<MudText>@string.Join(", ", chatMembers)</MudText>
+							</MudPaper>
+						</TooltipContent>
+					</MudTooltip>
 				</MudStack>
 
 			</MudPaper>
@@ -57,8 +68,8 @@ else
 		<div class="chat-footer">
 			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message..." Underline="false" @bind-Value="newMessage.Body" MaxLength="2000" />
-					<MudIconButton Icon="@Icons.Material.Filled.Send" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
+					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="newMessage.Body" MaxLength="2000" />
+					<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
 				</MudPaper>
 			</MudForm>
 		</div>
@@ -141,7 +152,7 @@ else
 	Message newMessage = new();
 
 	string? errorMessage;
-	int chatMemberCount;
+	string[] chatMembers = [];
 	bool hasRendered = false;
 	bool isJoined = false;
 	bool isJoining = false;
@@ -155,6 +166,17 @@ else
 @"<svg xmlns=""http://www.w3.org/2000/svg"" width=""24"" height=""24"" fill=""currentColor"" class=""bi bi-person-check-fill"" viewBox=""0 0 16 16"">
   <path fill-rule=""evenodd"" d=""M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0""/>
   <path d=""M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6""/>
+</svg>
+";
+
+	const string sendMessage =
+@"<svg version=""1.1"" fill=""currentColor"" xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"" 
+	 width=""26"" height=""26"" viewBox=""3 -1 32 32"" xml:space=""preserve"">
+<path class=""puchipuchi_een"" d=""M30.291,2.87l-9.581,25.26c-0.39,1.029-1.346,1.234-2.123,0.456c0,0-6.036-6.036-6.586-6.586
+	s-0.359-1.631,0.425-2.403l13.316-13.11c0.784-0.772,0.711-0.856-0.163-0.187L10.588,17.784c-0.873,0.669-2.224,0.58-3.002-0.198
+	l-4.172-4.172c-0.778-0.778-0.573-1.733,0.456-2.124l25.26-9.581C30.159,1.319,30.681,1.841,30.291,2.87z M8.707,20.121
+	C8.318,19.732,8,19.864,8,20.414V25c0,0.55,0.386,0.768,0.857,0.485l2.401-1.441c0.472-0.283,0.539-0.833,0.15-1.222L8.707,20.121z""
+	/>
 </svg>
 ";
 
@@ -246,7 +268,7 @@ else
 
 	void OnMembersChanged(object? sender, List<string> list)
 	{
-		chatMemberCount = list.Count;
+		chatMembers = list.ToArray();
 		InvokeAsync(StateHasChanged);
 	}
 
@@ -267,7 +289,7 @@ else
 
 	void OnError(object? sender, string message)
 	{
-		ExitChat();
+		_ = ExitChat();
 		errorMessage = message;
 		InvokeAsync(StateHasChanged);
 	}

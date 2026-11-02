@@ -101,7 +101,15 @@ public sealed class PaymentCollection : List<Payment>
 			currentRate = Details.InterestRates.GetRate(paymentDate);
 			if (Details.IsARM && currentRate != previousRate)
 			{
-				paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
+				if (countExtraPayments && WithNoExtraPayments.HasData())
+				{
+					paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, WithNoExtraPayments[i - 1].Balance);
+
+				}
+				else
+				{
+					paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
+				}
 			}
 		}
 	}

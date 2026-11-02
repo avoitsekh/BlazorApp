@@ -36,14 +36,18 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 
 			hubConnection = new HubConnectionBuilder()
 				.WithUrl(HubUrl)
+				//.WithKeepAliveInterval(TimeSpan.FromSeconds(1000))
 				.WithAutomaticReconnect()
 				.Build();
 
 			hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
 			hubConnection.On<List<string>>(nameof(ChatHub.MembersChange), OnMembersChanged);
+
+			hubConnection.Reconnected += s => RegisterNewMember(CurrentUsername!);
+
 			await hubConnection.StartAsync();
 
-			if (!await hubConnection.InvokeAsync<bool>(nameof(ChatHub.Register), CurrentUsername))
+			if (!await RegisterNewMember(CurrentUsername!))
 			{
 				errorMessage = $"{CurrentUsername} has already joined this chat room. Please use another name.";
 				return;
@@ -84,13 +88,18 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 		}
 	}
 
+	async Task<bool> RegisterNewMember(string username)
+	{
+		return await hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), CurrentUsername);
+	}
+
 	void OnReceiveMessage(Message message)
 	{
 		message.IsMine = message.Owner?.Equals(CurrentUsername, StringComparison.OrdinalIgnoreCase) ?? false;
 		MessageReceived?.Invoke(this, message);
 	}
 
-	private void OnMembersChanged(List<string> list)
+	void OnMembersChanged(List<string> list)
 	{
 		MembersChanged?.Invoke(this, list);
 	}
