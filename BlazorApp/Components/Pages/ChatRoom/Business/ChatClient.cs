@@ -2,30 +2,38 @@
 
 namespace BlazorApp.Components.Pages.ChatRoom;
 
-public sealed class ChatClient(string hubUrl) : IDisposable
+public sealed class ChatClient : IDisposable
 {
-	public readonly string HubUrl = hubUrl;
-
 	public event EventHandler? Joining;
 	public event EventHandler? Joined;
 	public event EventHandler<Message>? MessageReceived;
 	public event EventHandler<List<string>>? MembersChanged;
 	public event EventHandler<string>? Error;
 
-	HubConnection? hubConnection;
+	HubConnection? _hubConnection;
+	TimeZoneInfo? _timeZone;
 
-	public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+	public string? Username { get; private set; }
 
-	public string? CurrentUsername { get; private set; }
+	public bool IsJoined { get; private set; }
 
-	public async Task Join(string username)
+	public bool IsJoining { get; private set; }
+
+	public IReadOnlyList<string> Members => _members;
+	List<string> _members = new List<string>(10);
+
+	public IReadOnlyList<Message> Messages => _messages;
+	List<Message> _messages = new List<Message>(40);
+
+	public async Task Join(string username, string hubUrl, TimeZoneInfo? timeZone = default)
 	{
+		_timeZone = timeZone;
 		string? errorMessage = null;
 
 		try
 		{
-			CurrentUsername = username?.Trim();
-			if ((errorMessage = ValidateUsername(CurrentUsername!)) != null)
+			Username = username?.Trim();
+			if ((errorMessage = ValidateUsername(Username!)) != null)
 			{
 				return;
 			}
@@ -34,22 +42,23 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 
 			await Task.Delay(60);
 
-			hubConnection = new HubConnectionBuilder()
-				.WithUrl(HubUrl)
+			_hubConnection = new HubConnectionBuilder()
+				.WithUrl(hubUrl)
 				//.WithKeepAliveInterval(TimeSpan.FromSeconds(1000))
-				.WithAutomaticReconnect()
+				.WithAutomaticReconnect([TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(30)])
 				.Build();
 
-			hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
-			hubConnection.On<List<string>>(nameof(ChatHub.MembersChange), OnMembersChanged);
+			_hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
+			_hubConnection.On<List<string>>(nameof(ChatHub.MembersChange), OnMembersChanged);
 
-			hubConnection.Reconnected += s => RegisterNewMember(CurrentUsername!);
+			_hubConnection.Reconnected += s => RegisterNewMember(Username!);
+			//hubConnection.Closed += e => OnError(e?.Message);
 
-			await hubConnection.StartAsync();
+			await _hubConnection.StartAsync();
 
-			if (!await RegisterNewMember(CurrentUsername!))
+			if (!await RegisterNewMember(Username!))
 			{
-				errorMessage = $"{CurrentUsername} has already joined this chat room. Please use another name.";
+				errorMessage = $"{Username} has already joined this chat room. Please use another name.";
 				return;
 			}
 
@@ -71,46 +80,65 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 
 	public async Task Exit()
 	{
-		CurrentUsername = null;
-		if (hubConnection != null)
+		IsJoining = IsJoined = false;
+		Username = null;
+		_members.Clear();
+		_messages.Clear();
+
+		if (_hubConnection != null)
 		{
-			await hubConnection.DisposeAsync();
-			hubConnection = null;
+			await _hubConnection.DisposeAsync();
+			_hubConnection = null;
 		}
 	}
 
 	public async Task SendMessage(Message message)
 	{
-		if (IsConnected)
+		if (_hubConnection?.State == HubConnectionState.Connected)
 		{
-			message.Owner = CurrentUsername!;
-			await hubConnection!.SendAsync(nameof(ChatHub.Broadcast), message);
+			message.Owner = Username;
+			await _hubConnection.SendAsync(nameof(ChatHub.Broadcast), message);
 		}
 	}
 
 	async Task<bool> RegisterNewMember(string username)
 	{
-		return await hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), CurrentUsername);
+		return await _hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), Username);
 	}
 
 	void OnReceiveMessage(Message message)
 	{
-		message.IsMine = message.Owner?.Equals(CurrentUsername, StringComparison.OrdinalIgnoreCase) ?? false;
+		message.IsMine = message.Owner?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
+		message.Received = ConvertToLocalDateTime(DateTime.UtcNow);
+
+		_messages.Add(message);
 		MessageReceived?.Invoke(this, message);
 	}
 
 	void OnMembersChanged(List<string> list)
 	{
+		_members.Clear();
+		_members.AddRange(list);
+
 		MembersChanged?.Invoke(this, list);
 	}
 
 	void OnJoining()
 	{
+		_members.Clear();
+		_messages.Clear();
+
+		IsJoining = true;
+		IsJoined = false;
+
 		Joining?.Invoke(this, EventArgs.Empty);
 	}
 
 	void OnJoined()
 	{
+		IsJoining = false;
+		IsJoined = true;
+
 		Joined?.Invoke(this, EventArgs.Empty);
 	}
 
@@ -124,11 +152,16 @@ public sealed class ChatClient(string hubUrl) : IDisposable
 		_ = Exit();
 	}
 
+	DateTime ConvertToLocalDateTime(DateTime utcDate)
+	{
+		return _timeZone != null ? TimeZoneInfo.ConvertTimeFromUtc(utcDate, _timeZone) : utcDate;
+	}
+
 	string? ValidateUsername(string username)
 	{
 		string? errorMessage = null;
 
-		if (string.IsNullOrEmpty(username))
+		if (string.IsNullOrWhiteSpace(username))
 		{
 			errorMessage = "Username cannot be empty.";
 		}

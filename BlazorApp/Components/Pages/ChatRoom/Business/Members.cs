@@ -25,7 +25,7 @@ public class Members
 
 	public bool HasMember(string username)
 	{
-		return members.Any(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase));
+		return !string.IsNullOrWhiteSpace(username) ? members.Any(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase)) : false;
 	}
 
 	public string GetMember(string connectionId)

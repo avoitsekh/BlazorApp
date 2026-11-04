@@ -3,24 +3,26 @@
 @inject NavigationManager NavManager
 @inject AppBarOptions AppBar
 @inject IJSRuntime JSR
+@inject JSExtensionsService JS
+@inject ChatClient Client
 
 @implements IAsyncDisposable
 
 
 <PageTitle>Chat Room</PageTitle>
 
-@if (!isJoined)
+@if (!Client.IsJoined)
 {
 	<MudForm OnEnterPressed="JoinChat" Class="d-flex justify-center align-center" Style="height: calc(100dvh - 70px);">
 		<MudPaper MaxWidth="330px" MinWidth="150px" Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-			<MudTextField @ref="usernameTextBox" T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" @bind-Value="newMessage.Owner" />
-			@if (isJoining)
+			<MudTextField @ref="usernameTextBox" T="string" Immediate Placeholder="Enter your name to start chatting" Underline="false" @bind-Value="username" />
+			@if (Client.IsJoining)
 			{
-				<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="ma-2" />
+				<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Style="margin: 9px;" />
 			}
 			else
 			{
-				<MudIconButton Icon="@personCheck" Size="Size.Medium" OnClick="JoinChat"></MudIconButton>
+				<MudIconButton Icon="@personCheck" Size="Size.Medium" OnClick="JoinChat" />
 			}
 		</MudPaper>
 		<MudText Color="Color.Error" Align="Align.Center" Class="mt-1">@errorMessage</MudText>
@@ -30,33 +32,34 @@ else
 {
 	<div class="chat-container">
 
-		<div class="chat-header">
-			<MudPaper Width="100%" Class="rounded-pill pa-1 pr-4" Elevation="1">
+		<div class="chat-header mb-n6 z-100">
+			<MudPaper Width="100%" Class="rounded-pill pa-1" Elevation="1">
 
 				<MudStack Row Wrap="Wrap.NoWrap" AlignItems="AlignItems.Center">
-					<Avatar Username="@client?.CurrentUsername" />
-					<MudText Typo="Typo.h6" Class="chat-username">@client?.CurrentUsername</MudText>
+					<Avatar Username="@Client.Username" />
+					<MudText Typo="Typo.h6" Class="chat-username">@Client.Username</MudText>
 					<MudSpacer />
 					<MudTooltip Arrow Color="Color.Transparent" ShowOnFocus="true" ShowOnHover="false" ShowOnClick="false" Style="font-style: italic; font-weight: normal !important;">
 						<ChildContent>
-							<MudText tabindex="0" Class="cursor-pointer" Align="Align.Center" Style="min-width: 46px;">@($"{chatMembers.Length} {(chatMembers.Length == 1 ? "user" : "users")} online")</MudText>
+							<MudText tabindex="0" Class="cursor-pointer mr-n2" Align="Align.End" Style="min-width: 46px;">@($"{Client.Members.Count} {(Client.Members.Count == 1 ? "user" : "users")} online")</MudText>
 						</ChildContent>
 						<TooltipContent>
-							<MudPaper Class="pa-2" Style="background-color: var(--mud-palette-text-primary); color: var(--mud-palette-background);">
-								<MudText>@string.Join(", ", chatMembers)</MudText>
+							<MudPaper Class="pa-2" Elevation="0" Style="background-color: var(--mud-palette-text-primary); color: var(--mud-palette-background);">
+								<MudText>@string.Join(", ", Client.Members)</MudText>
 							</MudPaper>
 						</TooltipContent>
 					</MudTooltip>
+					<MudIconButton Icon="@Icons.Material.Filled.ExitToApp" OnClick="@(() => Client.Exit())" />
 				</MudStack>
 
 			</MudPaper>
 		</div>
 
-		<div class="chat-messages" id="messageContainer">
+		<div class="chat-messages pt-7 pb-7 z-1" id="messageContainer">
 			<MudStack Spacing="1">
 				@{
 					Message? previousMessage = null;
-					foreach (var message in messages)
+					foreach (var message in Client.Messages)
 					{
 						<MessageBubble Message="message" PreviousMessage="previousMessage" />
 						previousMessage = message;
@@ -65,10 +68,10 @@ else
 			</MudStack>
 		</div>
 
-		<div class="chat-footer">
+		<div class="chat-footer mt-n6 z-100">
 			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="newMessage.Body" MaxLength="2000" />
+					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
 					<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
 				</MudPaper>
 			</MudForm>
@@ -148,16 +151,13 @@ else
 
 @code {
 
-	List<Message> messages = new(30);
-	Message newMessage = new();
-
+	string? username;
+	string? messageText;
 	string? errorMessage;
-	string[] chatMembers = [];
-	bool hasRendered = false;
-	bool isJoined = false;
-	bool isJoining = false;
-	ChatClient? client;
+	bool hasRendered;
+
 	DotNetObjectReference<ChatRoom> dotNetRef;
+	TimeZoneInfo? timeZone;
 
 	MudTextField<string>? usernameTextBox;
 	MudTextField<string>? messageTextBox;
@@ -192,7 +192,17 @@ else
 		{
 			hasRendered = true;
 			AppBar.Title = "Chat Room";
-			await usernameTextBox!.FocusAsync();
+			timeZone = await JS.GetBrowserTimeZoneAsync();
+
+			Client.Error += OnError;
+			Client.Joined += OnJoined;
+			Client.MessageReceived += OnMessageReceived;
+			Client.MembersChanged += OnMembersChanged;
+
+			if (usernameTextBox != null)
+			{
+				await usernameTextBox.FocusAsync();
+			}
 		}
 	}
 
@@ -201,96 +211,68 @@ else
 		if (hasRendered)
 		{
 			await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
+
+			Client.Error -= OnError;
+			Client.Joined -= OnJoined;
+			Client.MessageReceived -= OnMessageReceived;
+			Client.MembersChanged -= OnMembersChanged;
 		}
-		await ExitChat();
 	}
 
 	[JSInvokable]
 	public async Task OnBrowserTabClosing()
 	{
 		Console.WriteLine("Browser tab closed.");
-		await ExitChat();
+		await Client.Exit();
 	}
 
 	async Task JoinChat()
 	{
 		errorMessage = null;
-		messages.Clear();
 
-		if (!isJoining && !isJoined)
+		if (Client != null && !Client.IsJoining && !Client.IsJoined)
 		{
 			var url = NavManager.ToAbsoluteUri(ChatHub.Path);
-			client = new(url.AbsoluteUri);
-
-			client.Error += OnError;
-			client.Joining += OnJoining;
-			client.Joined += OnJoined;
-			client.MessageReceived += OnMessageReceived;
-			client.MembersChanged += OnMembersChanged;
-
-			await client.Join(newMessage.Owner!);
+			await Client.Join(username, url.AbsoluteUri, timeZone);
 			await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
-		}
-	}
-
-	async Task ExitChat()
-	{
-		isJoining = isJoined = false;
-
-		if (client != null)
-		{
-			client.Dispose();
-			client = null;
 		}
 	}
 
 	async Task OnSendMessageClicked()
 	{
-		if (client != null && isJoined && !newMessage.IsEmpty)
+		if (!string.IsNullOrWhiteSpace(messageText) && (Client?.IsJoined ?? false))
 		{
-			await client.SendMessage(newMessage);
-			newMessage.Clear();
+			await Client.SendMessage(new() { Body = messageText });
+			messageText = null;
 		}
+		messageTextBox?.FocusAsync();
 	}
 
 	void OnMessageReceived(object? sender, Message message)
 	{
-		message.Received = DateTime.Now;
-		messages.Add(message);
+		InvokeAsync(StateHasChanged);
 		InvokeAsync(async () =>
 		{
-			StateHasChanged();
-
-			// Scroll to bottom every time messages update
 			await JSR.InvokeVoidAsync("scrollToBottom", "messageContainer");
 		});
 	}
 
 	void OnMembersChanged(object? sender, List<string> list)
 	{
-		chatMembers = list.ToArray();
 		InvokeAsync(StateHasChanged);
-	}
-
-	void OnJoining(object? sender, EventArgs e)
-	{
-		isJoining = true;
-		isJoined = false;
 	}
 
 	void OnJoined(object? sender, EventArgs e)
 	{
-		isJoining = false;
-		isJoined = true;
-
 		InvokeAsync(StateHasChanged);
-		messageTextBox!.FocusAsync();
+		messageTextBox?.FocusAsync();
 	}
 
-	void OnError(object? sender, string message)
+	void OnError(object? sender, string error)
 	{
-		_ = ExitChat();
-		errorMessage = message;
+		_ = Client.Exit();
+		errorMessage = error;
 		InvokeAsync(StateHasChanged);
 	}
+
 }

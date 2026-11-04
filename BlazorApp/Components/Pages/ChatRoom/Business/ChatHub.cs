@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR;
 
 namespace BlazorApp.Components.Pages.ChatRoom;
 
@@ -18,7 +20,7 @@ class ChatHub : Hub
 
 	public async Task MembersChange(List<string> members)
 	{
-		await Clients.All.SendAsync(nameof(MembersChange), members);
+		await Clients.All.SendAsync(nameof(MembersChange), members.Order());
 	}
 
 	public async Task<bool> Register(string username)
@@ -54,15 +56,18 @@ class ChatHub : Hub
 
 	public override async Task OnConnectedAsync()
 	{
-		Console.WriteLine($"Connected: {Context.ConnectionId}");
+		var transportType = Context.Features.Get<IHttpTransportFeature>()?.TransportType.ToString() ?? "(unknown)";
+		var ipAddress = Context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.MapToIPv4().ToString() ?? "(unknown)";
+		Console.WriteLine($"Connected: {Context.ConnectionId}, {transportType}, {ipAddress}");
+
 		await base.OnConnectedAsync();
 	}
 
 	public override async Task OnDisconnectedAsync(Exception? e)
 	{
 		await UnRegister(Context.ConnectionId, e);
-
 		Console.WriteLine($"Disconnected: {Context.ConnectionId} {e?.Message}");
+
 		await base.OnDisconnectedAsync(e);
 	}
 }
