@@ -6,6 +6,8 @@ public sealed class ChatClient : IDisposable
 {
 	public event EventHandler? Joining;
 	public event EventHandler? Joined;
+	public event EventHandler? Exited;
+	public event EventHandler? Reconnecting;
 	public event EventHandler<Message>? MessageReceived;
 	public event EventHandler<List<string>>? MembersChanged;
 	public event EventHandler<string>? Error;
@@ -18,6 +20,8 @@ public sealed class ChatClient : IDisposable
 	public bool IsJoined { get; private set; }
 
 	public bool IsJoining { get; private set; }
+	
+	public bool IsReconnecting { get; private set; }
 
 	public IReadOnlyList<string> Members => _members;
 	List<string> _members = new List<string>(10);
@@ -44,19 +48,19 @@ public sealed class ChatClient : IDisposable
 
 			_hubConnection = new HubConnectionBuilder()
 				.WithUrl(hubUrl)
-				//.WithKeepAliveInterval(TimeSpan.FromSeconds(1000))
-				.WithAutomaticReconnect([TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(30)])
+				.WithKeepAliveInterval(TimeSpan.FromSeconds(12))
+				.WithAutomaticReconnect([TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)])
 				.Build();
 
 			_hubConnection.On<Message>(nameof(ChatHub.Broadcast), OnReceiveMessage);
 			_hubConnection.On<List<string>>(nameof(ChatHub.MembersChange), OnMembersChanged);
 
-			_hubConnection.Reconnected += s => RegisterNewMember(Username!);
-			//hubConnection.Closed += e => OnError(e?.Message);
+			_hubConnection.Reconnecting += OnReconnecting;
+			_hubConnection.Reconnected += OnReconnected;
 
 			await _hubConnection.StartAsync();
 
-			if (!await RegisterNewMember(Username!))
+			if (!await RegisterNewMember())
 			{
 				errorMessage = $"{Username} has already joined this chat room. Please use another name.";
 				return;
@@ -80,10 +84,7 @@ public sealed class ChatClient : IDisposable
 
 	public async Task Exit()
 	{
-		IsJoining = IsJoined = false;
-		Username = null;
-		_members.Clear();
-		_messages.Clear();
+		OnExit();
 
 		if (_hubConnection != null)
 		{
@@ -101,9 +102,21 @@ public sealed class ChatClient : IDisposable
 		}
 	}
 
-	async Task<bool> RegisterNewMember(string username)
+	async Task<bool> RegisterNewMember()
 	{
 		return await _hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), Username);
+	}
+
+	async Task OnReconnected(string? s)
+	{
+		IsReconnecting = false;
+		await RegisterNewMember();
+	}
+
+	async Task OnReconnecting(Exception? e)
+	{
+		IsReconnecting = true;
+		Reconnecting?.Invoke(this, EventArgs.Empty);
 	}
 
 	void OnReceiveMessage(Message message)
@@ -128,6 +141,7 @@ public sealed class ChatClient : IDisposable
 		_members.Clear();
 		_messages.Clear();
 
+		IsReconnecting = false;
 		IsJoining = true;
 		IsJoined = false;
 
@@ -136,10 +150,21 @@ public sealed class ChatClient : IDisposable
 
 	void OnJoined()
 	{
+		IsReconnecting = false;
 		IsJoining = false;
 		IsJoined = true;
 
 		Joined?.Invoke(this, EventArgs.Empty);
+	}
+
+	void OnExit()
+	{
+		IsReconnecting = false;
+		IsJoining = false;
+		IsJoined = false;
+		Username = null;
+
+		Exited?.Invoke(this, EventArgs.Empty);
 	}
 
 	void OnError(string errorMessage)

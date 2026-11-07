@@ -71,7 +71,9 @@ public sealed class PaymentCollection : List<Payment>
 				balance = 0;
 			}
 
-			double[] ratesForPeriod = Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
+			double[] ratesForPeriod = Details.IsFixed 
+				? [Details.InterestRates.InitialRate] 
+				: Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 			string ratesForPeriodFormatted = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x)));
 
 			string accrualPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
@@ -97,18 +99,21 @@ public sealed class PaymentCollection : List<Payment>
 				break;
 			}
 
-			double previousRate = currentRate;
-			currentRate = Details.InterestRates.GetRate(paymentDate);
-			if (Details.IsARM && currentRate != previousRate)
+			if (!Details.IsFixed)
 			{
-				if (countExtraPayments && WithNoExtraPayments.HasData())
-				{
-					paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, WithNoExtraPayments[i - 1].Balance);
+				double previousRate = currentRate;
+				currentRate = Details.InterestRates.GetRate(paymentDate);
 
-				}
-				else
+				if (Details.IsARM && currentRate != previousRate)
 				{
-					paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
+					if (countExtraPayments && WithNoExtraPayments.HasData())
+					{
+						paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, WithNoExtraPayments[i - 1].Balance);
+					}
+					else
+					{
+						paymentAmount = CalculatePaymentAmount(currentRate, paymentCount - i, balance);
+					}
 				}
 			}
 		}

@@ -71,8 +71,16 @@ else
 		<div class="chat-footer mt-n6 z-100">
 			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
-					<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
-					<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
+					@if (Client.IsReconnecting)
+					{
+						<MudTextField T="string" Text="Connection lost. Reconnecting..." Underline="false" ReadOnly="true" />
+						<MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Style="margin: 9px;" />
+					}
+					else
+					{
+						<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
+						<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
+					}
 				</MudPaper>
 			</MudForm>
 		</div>
@@ -194,10 +202,7 @@ else
 			AppBar.Title = "Chat Room";
 			timeZone = await JS.GetBrowserTimeZoneAsync();
 
-			Client.Error += OnError;
-			Client.Joined += OnJoined;
-			Client.MessageReceived += OnMessageReceived;
-			Client.MembersChanged += OnMembersChanged;
+			HookEvents();
 
 			if (usernameTextBox != null)
 			{
@@ -210,13 +215,28 @@ else
 	{
 		if (hasRendered)
 		{
-			await JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
-
-			Client.Error -= OnError;
-			Client.Joined -= OnJoined;
-			Client.MessageReceived -= OnMessageReceived;
-			Client.MembersChanged -= OnMembersChanged;
+			UnHookEvents();
 		}
+	}
+
+	void HookEvents()
+	{
+		Client.Error += OnError;
+		Client.Joined += OnJoined;
+		Client.Exited += OnExited;
+		Client.MessageReceived += OnMessageReceived;
+		Client.MembersChanged += OnMembersChanged;
+		Client.Reconnecting += OnReconnecting;
+	}
+
+	void UnHookEvents()
+	{
+		Client.Error -= OnError;
+		Client.Joined -= OnJoined;
+		Client.Exited -= OnExited;
+		Client.MessageReceived -= OnMessageReceived;
+		Client.MembersChanged -= OnMembersChanged;
+		Client.Reconnecting -= OnReconnecting;
 	}
 
 	[JSInvokable]
@@ -230,22 +250,21 @@ else
 	{
 		errorMessage = null;
 
-		if (Client != null && !Client.IsJoining && !Client.IsJoined)
+		if (!Client.IsJoining && !Client.IsJoined)
 		{
 			var url = NavManager.ToAbsoluteUri(ChatHub.Path);
-			await Client.Join(username, url.AbsoluteUri, timeZone);
-			await JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+			await Client.Join(username!, url.AbsoluteUri, timeZone);
 		}
 	}
 
 	async Task OnSendMessageClicked()
 	{
-		if (!string.IsNullOrWhiteSpace(messageText) && (Client?.IsJoined ?? false))
+		if (!string.IsNullOrWhiteSpace(messageText) && Client.IsJoined)
 		{
 			await Client.SendMessage(new() { Body = messageText });
 			messageText = null;
+			messageTextBox?.FocusAsync();
 		}
-		messageTextBox?.FocusAsync();
 	}
 
 	void OnMessageReceived(object? sender, Message message)
@@ -264,8 +283,25 @@ else
 
 	void OnJoined(object? sender, EventArgs e)
 	{
+		if (hasRendered)
+		{
+			_ = JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
+		}
 		InvokeAsync(StateHasChanged);
 		messageTextBox?.FocusAsync();
+	}
+
+	void OnExited(object? sender, EventArgs e)
+	{
+		if (hasRendered)
+		{
+			_ = JSR.InvokeVoidAsync("unRegisterTabCloseHandler", dotNetRef);
+		}
+	}
+
+	void OnReconnecting(object? sender, EventArgs e)
+	{
+		InvokeAsync(StateHasChanged);
 	}
 
 	void OnError(object? sender, string error)

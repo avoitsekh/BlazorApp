@@ -30,8 +30,8 @@
 								SearchFunc="@SearchCurrencyDropDown" ToStringFunc="@(x => x?.name)" Variant="Variant.Text" Placeholder="Currency code or name" HelperText="@(GetHelperText(State.ToCurrency))" ResetValueOnEmptyText SelectValueOnTab ShrinkLabel AdornmentColor="Color.Primary" />
 						</MudItem>
 						<MudItem xs="12" sm="6">
-							<MudDatePicker Label="Exchange Rate Date" Editable="true" @bind-Date="State.ExchangeRateDate" For="(() => State.ExchangeRateDate)"
-								DateFormat="yyyy-MM-dd" Placeholder="Date in format yyyy-mm-dd" Variant="Variant.Text" Disabled="State.AreCurrenciesEqual" MaxDate="@DateTime.Today" AdornmentColor="Color.Primary" />
+							<MudDatePicker Label="Exchange Rate Date" Editable="true" @bind-Date="State.ExchangeRateDate" For="(() => State.ExchangeRateDate)" ShowToolbar="false"
+								DateFormat="yyyy-MM-dd" Placeholder="Date in format yyyy-mm-dd" Variant="Variant.Text" Disabled="State.AreCurrenciesEqual" MaxDate="@DateTime.UtcNow" AdornmentColor="Color.Primary" />
 						</MudItem>
 						<MudItem xs="12" sm="6">
 							<MudNumericField T="decimal?" HideSpinButtons="true" @bind-Value="State.FromAmount" @oninput="OnFromAmountInput" For="(() => State.FromAmount)"

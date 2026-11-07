@@ -46,7 +46,7 @@ class ChatHub : Hub
 		{
 			await Broadcast(new()
 			{
-				Body = $"{username} left chat room" + (e != null ? $" -- {e.GetBaseException().Message}" : ""),
+				Body = $"{username} left chat room",// + (e != null ? $" -- {e.GetBaseException().Message}" : ""),
 				IsNotification = true
 			});
 		}
