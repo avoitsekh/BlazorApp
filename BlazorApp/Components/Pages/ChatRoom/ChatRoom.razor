@@ -263,8 +263,8 @@ else
 		{
 			await Client.SendMessage(new() { Body = messageText });
 			messageText = null;
-			messageTextBox?.FocusAsync();
 		}
+		messageTextBox?.FocusAsync();
 	}
 
 	void OnMessageReceived(object? sender, Message message)

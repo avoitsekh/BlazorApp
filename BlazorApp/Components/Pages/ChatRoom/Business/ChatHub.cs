@@ -38,20 +38,22 @@ class ChatHub : Hub
 		return result;
 	}
 
-	async Task<bool> UnRegister(string connectionId, Exception? e = default)
+	async Task UnRegister(string connectionId, Exception? e = default)
 	{
 		var username = members.GetMember(connectionId);
-		var result = members.Remove(Context.ConnectionId);
-		if (result)
+		if (username != null)
 		{
-			await Broadcast(new()
+			var result = members.Remove(Context.ConnectionId);
+			if (result)
 			{
-				Body = $"{username} left chat room",// + (e != null ? $" -- {e.GetBaseException().Message}" : ""),
-				IsNotification = true
-			});
+				await Broadcast(new()
+				{
+					Body = $"{username} left chat room",// + (e != null ? $" -- {e.GetBaseException().Message}" : ""),
+					IsNotification = true
+				});
+			}
 		}
 		await MembersChange(members.ToList());
-		return result;
 	}
 
 	public override async Task OnConnectedAsync()

@@ -28,9 +28,9 @@ public class Members
 		return !string.IsNullOrWhiteSpace(username) ? members.Any(x => x.Value.Equals(username, StringComparison.OrdinalIgnoreCase)) : false;
 	}
 
-	public string GetMember(string connectionId)
+	public string? GetMember(string connectionId)
 	{
-		return members[connectionId];
+		return members.ContainsKey(connectionId) ? members[connectionId] : null;
 	}
 
 	public bool RemoveMember(string username)
