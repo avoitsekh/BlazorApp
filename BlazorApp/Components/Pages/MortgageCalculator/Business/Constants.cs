@@ -83,7 +83,7 @@ public static class Constants
 	public const string PaymentDate = "Payment Date";
 	public const string Year = "Year";
 	public const string Interest = "Interest";
-	public const string InterestAccrualPeriod = "Interest Accrual Period";
+	public const string PaymentPeriod = "Payment Period";
 	public const string ExtraAmount = "Extra Amount";
 	public const string RemainingBalance = "Remaining Balance";
 

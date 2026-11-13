@@ -71,14 +71,10 @@ public sealed class PaymentCollection : List<Payment>
 				balance = 0;
 			}
 
-			double[] ratesForPeriod = Details.IsFixed 
-				? [Details.InterestRates.InitialRate] 
-				: Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
+			double[] ratesForPeriod = Details.IsFixed ? [Details.InterestRates.InitialRate] : Details.InterestRates.GetRatesForPeriod(previousPaymentDate, paymentDate);
 			string ratesForPeriodFormatted = string.Join(" → ", ratesForPeriod.Select(x => string.Format("{0}%", x)));
 
-			string accrualPeriod = Details.InterestAccrualMethod == InterestAccrualMethods.PerDay
-				? string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1))
-				: $"({ratesForPeriodFormatted}) ÷ {Details.PaymentFrequency}";
+			string paymentPeriod = string.Format("{0:yyyy-MM-dd} → {1:yyyy-MM-dd}", previousPaymentDate, paymentDate.AddDays(-1));
 
 			Add(new()
 			{
@@ -86,7 +82,7 @@ public sealed class PaymentCollection : List<Payment>
 				PaymentDate = paymentDate,
 				Year = i % Details.PaymentFrequency == 0 || isLastPayment ? year++ : null,
 				Interest = ratesForPeriodFormatted,
-				InterestAccrualPeriod = accrualPeriod,
+				PaymentPeriod = paymentPeriod,
 				InterestAmount = interestAmount,
 				PrincipalAmount = principalAmount,
 				ExtraAmount = extraAmount,

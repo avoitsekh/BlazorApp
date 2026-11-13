@@ -18,6 +18,13 @@ public class Members
 		return true;
 	}
 
+	public bool Replace(string connectionId, string username)
+	{
+		username = username.Trim();
+		RemoveMember(username);
+		return Add(connectionId, username);
+	}
+
 	public bool Remove(string connectionId)
 	{
 		return members.Remove(connectionId, out _);

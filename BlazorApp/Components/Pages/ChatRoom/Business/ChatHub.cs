@@ -23,14 +23,14 @@ class ChatHub : Hub
 		await Clients.All.SendAsync(nameof(MembersChange), members.Order());
 	}
 
-	public async Task<bool> Register(string username)
+	public async Task<bool> Register(string username, bool isReconnect)
 	{
-		var result = members.Add(Context.ConnectionId, username);
+		var result = isReconnect ? members.Replace(Context.ConnectionId, username) : members.Add(Context.ConnectionId, username);
 		if (result)
 		{
 			await Broadcast(new()
 			{
-				Body = $"{username} joined chat room",
+				Body = $"{username} joined chat room" + (isReconnect ? " (reconnected)" : string.Empty),
 				IsNotification = true
 			});
 		}

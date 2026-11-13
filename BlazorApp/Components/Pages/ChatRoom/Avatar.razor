@@ -73,14 +73,16 @@
 
 	protected override void OnInitialized()
 	{
-		var idx = new Random().Next(0, availableColors.Length - 1);
-		color = availableColors[idx];
+
 	}
 
 	protected override void OnParametersSet()
 	{
 		if (!string.IsNullOrWhiteSpace(Username))
 		{
+			var idx = new Random(Username.GetHashCode()).Next(0, availableColors.Length - 1);
+			color = availableColors[idx];
+
 			var names = Username.ToUpperInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
 			chars = string.Empty;

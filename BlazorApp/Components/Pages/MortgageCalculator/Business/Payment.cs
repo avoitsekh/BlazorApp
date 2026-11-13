@@ -11,7 +11,7 @@ public sealed class Payment
 	
 	public string? Interest { get; set; }
 	
-	public string? InterestAccrualPeriod { get; set; }
+	public string? PaymentPeriod { get; set; }
 	
 	public double InterestAmount { get; set => field = Math.Round(value, 2); }
 	

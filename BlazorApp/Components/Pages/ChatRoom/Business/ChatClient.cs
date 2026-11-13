@@ -102,15 +102,15 @@ public sealed class ChatClient : IDisposable
 		}
 	}
 
-	async Task<bool> RegisterNewMember()
+	async Task<bool> RegisterNewMember(bool isReconnect = false)
 	{
-		return await _hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), Username);
+		return await _hubConnection!.InvokeAsync<bool>(nameof(ChatHub.Register), Username, isReconnect);
 	}
 
 	async Task OnReconnected(string? s)
 	{
 		IsReconnecting = false;
-		await RegisterNewMember();
+		await RegisterNewMember(isReconnect: true);
 	}
 
 	async Task OnReconnecting(Exception? e)
