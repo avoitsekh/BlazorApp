@@ -32,9 +32,8 @@ else
 {
 	<div class="chat-container">
 
-		<div class="chat-header mb-n6 z-100">
+		<div class="chat-header mb-n6 z-10">
 			<MudPaper Width="100%" Class="rounded-pill pa-1" Elevation="1">
-
 				<MudStack Row Wrap="Wrap.NoWrap" AlignItems="AlignItems.Center">
 					<Avatar Username="@Client.Username" />
 					<MudText Typo="Typo.h6" Class="chat-username">@Client.Username</MudText>
@@ -51,24 +50,16 @@ else
 					</MudTooltip>
 					<MudIconButton Icon="@Icons.Material.Filled.ExitToApp" OnClick="@(() => Client.Exit())" />
 				</MudStack>
-
 			</MudPaper>
 		</div>
 
-		<div class="chat-messages pt-7 pb-7 z-1" id="messageContainer">
-			<MudStack Spacing="1">
-				@{
-					Message? previousMessage = null;
-					foreach (var message in Client.Messages)
-					{
-						<MessageBubble Message="message" PreviousMessage="previousMessage" />
-						previousMessage = message;
-					}
-				}
-			</MudStack>
+		<div class="chat-messages py-7 z-1" id="messageContainer">
+			<CascadingValue Name="*AnimateNewMessages*" Value="animateNewMessages">
+				<MessagePane Messages="Client.Messages" />
+			</CascadingValue>
 		</div>
 
-		<div class="chat-footer mt-n6 z-100">
+		<div class="chat-footer mt-n6 z-10">
 			<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 				<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
 					@if (Client.IsReconnecting)
@@ -79,7 +70,7 @@ else
 					else
 					{
 						<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
-						<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked"></MudIconButton>
+						<MudIconButton Icon="@sendMessage" Size="Size.Medium" OnClick="OnSendMessageClicked" />
 					}
 				</MudPaper>
 			</MudForm>
@@ -163,6 +154,7 @@ else
 	string? messageText;
 	string? errorMessage;
 	bool hasRendered;
+	bool animateNewMessages;
 
 	DotNetObjectReference<ChatRoom> dotNetRef;
 	TimeZoneInfo? timeZone;
@@ -201,6 +193,7 @@ else
 			hasRendered = true;
 			AppBar.Title = "Chat Room";
 			timeZone = await JS.GetBrowserTimeZoneAsync();
+			await JSR.InvokeVoidAsync("scrollToBottom", "messageContainer");
 
 			HookEvents();
 
@@ -248,7 +241,7 @@ else
 
 	async Task JoinChat()
 	{
-		errorMessage = null;
+		errorMessage = messageText = null;
 
 		if (!Client.IsJoining && !Client.IsJoined)
 		{
@@ -269,6 +262,11 @@ else
 
 	void OnMessageReceived(object? sender, Message message)
 	{
+		if (!animateNewMessages)
+		{
+			animateNewMessages = true;
+		}
+
 		InvokeAsync(StateHasChanged);
 		InvokeAsync(async () =>
 		{

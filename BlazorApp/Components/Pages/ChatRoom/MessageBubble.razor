@@ -1,25 +1,24 @@
-﻿<div>
-	@if (Message.IsNotification)
-	{
-		<MudText Class="@(IsSequentialMessage ? "" : "mt-3")" Align="Align.Center" Typo="Typo.body2">@Message.Body</MudText>
-	}
-	else
-	{
-		if (!IsSequentialMessage && Message.Owner != null)
+﻿@if (Message.IsNotification)
+{
+	<MudText Class="mt-1" Align="Align.Center" Typo="Typo.body2">@Message.Body</MudText>
+}
+else
+{
+	<MudStack Spacing="0">
+		@if (ShowUsername)
 		{
-			<MudText Class="mt-2" Style="@BubbleJustification">
-				<MudText Typo="Typo.body2"><strong>@(Message.IsMine ? "You" : Message.Owner)</strong> • @string.Format(" {0:HH:mm}", Message.Received)</MudText>
+			<MudText Class="mt-2 mx-2" Typo="Typo.body2" Align="@HeaderAlign">
+				<strong>@Username</strong>
 			</MudText>
 		}
-		<div style="@BubbleJustification">
-			<div class="@BubbleStyle" style="@BubbleColor">
-				<MudText Style="word-wrap: anywhere;">@Message.Body</MudText>
+		<MudStack Row Wrap="Wrap.NoWrap" Spacing="1" Class="@JustifyClasses" AlignItems="AlignItems.Center">
+			<div class="@StylingClasses">
+				<MudText>@Message.Body</MudText>
 			</div>
-		</div>
-	}
-</div>
-
-
+			<MudText Typo="Typo.body2" Align="@HeaderAlign" Style="min-width: 32px;">@ReceivedTimeFormatted</MudText>
+		</MudStack>
+	</MudStack>
+}
 
 
 @code {
@@ -30,33 +29,60 @@
 	[Parameter]
 	public Message? PreviousMessage { get; set; }
 
+	[Parameter]
+	public Message? NextMessage { get; set; }
 
-	string BubbleJustification => Message.IsMine 
-		? "display: flex; justify-content: flex-end;"
-		: "display: flex; justify-content: flex-start;";
+	[CascadingParameter(Name = "*AnimateNewMessages*")]
+	bool ShouldAnimate { get; set; } = false;
 
-	string BubbleStyle
+
+	bool ShowUsername => PreviousMessage == null || Message.Owner != PreviousMessage.Owner;
+
+	bool ShowTail => NextMessage == null || Message.Owner != NextMessage.Owner;
+
+	string Username => Message.IsMine ? "You" : Message.Owner ?? "(unknown)";
+
+	string ReceivedTimeFormatted => string.Format("{0:HH:mm}", Message.ReceivedTime);
+
+	Align HeaderAlign => Message.IsMine ? Align.End : Align.Start;
+
+	bool IsAnimated => ShouldAnimate && NextMessage == null;
+
+	string JustifyClasses => Message.IsMine ? "justify-mine" : "justify-theirs";
+
+	string StylingClasses
 	{
 		get
 		{
-			var result = "px-4 py-2 mud-elevation-1";
+			var result = new List<string>(10);
+			result.AddRange("px-4", "py-2", "rounded-xl");
+
+			if (IsAnimated)
+			{
+				result.Add("bubble-animation");
+			}
+
 			if (Message.IsMine)
 			{
-				result += IsSequentialMessage ? " rounded-xl" : " rounded-l-xl rounded-br-xl rounded-tr-sm";
+				result.Add("order-2");
+				result.Add("color-mine");
+				if (ShowTail)
+				{
+					result.Add("bubble-tail-mine");
+				}
 			}
 			else
 			{
-				result += IsSequentialMessage ? " rounded-xl" : " rounded-r-xl rounded-bl-xl rounded-tl-sm";
+				result.Add("color-theirs");
+				if (ShowTail)
+				{
+					result.Add("bubble-tail-theirs");
+				}
 			}
-			return result;
+
+			return string.Join<string>(' ', result);
 		}
 	}
-
-	string BubbleColor => Message.IsMine
-		? $"background-color: var(--mud-palette-primary); color: var(--mud-palette-primary-text); margin-left: 15%;"
-		: $"background-color: var(--mud-palette-surface); color: var(--mud-palette-text-primary); margin-right: 15%;";
-
-	bool IsSequentialMessage => PreviousMessage != null && PreviousMessage.Owner == Message.Owner;
 
 
 }

@@ -48,7 +48,7 @@ public sealed class ChatClient : IDisposable
 
 			_hubConnection = new HubConnectionBuilder()
 				.WithUrl(hubUrl)
-				.WithKeepAliveInterval(TimeSpan.FromSeconds(12))
+				//.WithKeepAliveInterval(TimeSpan.FromSeconds(1000))
 				.WithAutomaticReconnect([TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10)])
 				.Build();
 
@@ -122,7 +122,7 @@ public sealed class ChatClient : IDisposable
 	void OnReceiveMessage(Message message)
 	{
 		message.IsMine = message.Owner?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
-		message.Received = ConvertToLocalDateTime(DateTime.UtcNow);
+		message.ReceivedTime = ConvertToLocalDateTime(DateTime.UtcNow);
 
 		_messages.Add(message);
 		MessageReceived?.Invoke(this, message);
@@ -198,7 +198,7 @@ public sealed class ChatClient : IDisposable
 		{
 			errorMessage = "Username is too long. Consider having username with 50 characters or less.";
 		}
-		else if (username.Split(' ').Length > 3)
+		else if (username.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 3)
 		{
 			errorMessage = "Invalid username. Consider having username with only 'Firstname', 'Firstname Lastname', or 'Firstname Middlename Lastname'.";
 		}

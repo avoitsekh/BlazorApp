@@ -71,11 +71,6 @@
 		Colors.DeepOrange.Accent3,
 	];
 
-	protected override void OnInitialized()
-	{
-
-	}
-
 	protected override void OnParametersSet()
 	{
 		if (!string.IsNullOrWhiteSpace(Username))
@@ -84,9 +79,7 @@
 			color = availableColors[idx];
 
 			var names = Username.ToUpperInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-			chars = string.Empty;
-			chars += names[0][0];
+			chars = names[0][0].ToString();
 
 			if (names.Length == 3)
 			{

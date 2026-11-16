@@ -29,7 +29,7 @@
 
 @code {
 
-	MudTable<Payment>? _table = null;
+	MudTable<Payment>? _table;
 
 	[Parameter, EditorRequired]
 	public PaymentCollection? Payments { get; set; }
@@ -50,12 +50,12 @@
 
 	async Task ScrollToRow(Payment payment)
 	{
-		await _table.ScrollToItemAsync(payment);
+		await _table!.ScrollToItemAsync(payment);
 	}
 
 	public async Task ScrollToTop()
 	{
-		var payment = Payments.FirstOrDefault();
+		var payment = Payments?.FirstOrDefault();
 		if (payment != null)
 		{
 			await ScrollToRow(payment);
@@ -64,7 +64,7 @@
 
 	public async Task ScrollToBottom()
 	{
-		var payment = Payments.LastOrDefault();
+		var payment = Payments?.LastOrDefault();
 		if (payment != null)
 		{
 			await ScrollToRow(payment);
