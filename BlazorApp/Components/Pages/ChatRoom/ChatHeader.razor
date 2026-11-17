@@ -1,0 +1,37 @@
+﻿<MudPaper Width="100%" Class="rounded-pill pa-1" Elevation="1">
+	<MudStack Row Wrap="Wrap.NoWrap" AlignItems="AlignItems.Center">
+		<Avatar Username="@Client.Username" />
+		<MudText Typo="Typo.h6" Class="chat-username">@Client.Username</MudText>
+		<MudSpacer />
+		<MudTooltip Arrow Color="Color.Transparent" ShowOnFocus="true" ShowOnHover="false" ShowOnClick="false" Style="font-style: italic; font-weight: normal !important;">
+			<ChildContent>
+				<MudText tabindex="0" Class="cursor-pointer mr-n2" Align="Align.End" Style="min-width: 46px;">@($"{Client.Members.Count} {(Client.Members.Count == 1 ? "user" : "users")} online")</MudText>
+			</ChildContent>
+			<TooltipContent>
+				<MudPaper Class="pa-2" Elevation="0" Style="background-color: var(--mud-palette-text-primary); color: var(--mud-palette-background);">
+					<MudText>@string.Join(", ", Client.Members)</MudText>
+				</MudPaper>
+			</TooltipContent>
+		</MudTooltip>
+		<MudIconButton Icon="@Icons.Material.Rounded.PowerSettingsNew" OnClick="@(() => Client.Exit())" />
+	</MudStack>
+</MudPaper>
+
+
+<style>
+
+	.chat-username {
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		min-width: 40px;
+		overflow: hidden;
+	}
+
+</style>
+
+@code {
+
+	[CascadingParameter]
+	ChatClient? Client { get; set; }
+
+}

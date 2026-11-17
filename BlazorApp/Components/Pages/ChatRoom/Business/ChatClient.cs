@@ -122,7 +122,7 @@ public sealed class ChatClient : IDisposable
 	void OnReceiveMessage(Message message)
 	{
 		message.IsMine = message.Owner?.Equals(Username, StringComparison.OrdinalIgnoreCase) ?? false;
-		message.ReceivedTime = ConvertToLocalDateTime(DateTime.UtcNow);
+		message.ReceiveTime = ConvertToLocalDateTime(DateTime.UtcNow);
 
 		_messages.Add(message);
 		MessageReceived?.Invoke(this, message);

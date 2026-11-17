@@ -1,48 +1,60 @@
-﻿<MudStack id="messagePane" Spacing="1" Style="word-wrap: anywhere;">
-	@{
-		var count = Messages.Count;
+﻿<MudStack id="messagePane" Spacing="1" Class="mt-1" Style="word-wrap: anywhere;">
+	@if (Client != null)
+	{
+		var count = Client.Messages.Count;
 		Message? previousMessage = null;
 
 		for (int i = 0; i < count; i++)
 		{
-			var currentMessage = Messages[i];
-			var nextMessage = count != 0 && i + 1 < count ? Messages[i + 1] : null;
-			<MessageBubble Message="currentMessage" NextMessage="nextMessage" PreviousMessage="previousMessage" />
+			var currentMessage = Client.Messages[i];
+			var nextMessage = count != 0 && i + 1 < count ? Client.Messages[i + 1] : null;
+			<MessageBubble Message="currentMessage" NextMessage="nextMessage" PreviousMessage="previousMessage" Animate="animateMessages" />
 			previousMessage = currentMessage;
 		}
 	}
 </MudStack>
 
-
 <style>
 
-	.justify-mine {
+	.helper-text-mine {
+		text-align: right;
+		padding-right: 6px;
+		white-space: nowrap;
+	}
+
+	.helper-text-theirs {
+		text-align: left;
+		padding-left: 6px;
+		white-space: nowrap;
+	}
+
+	.bubble-justify-mine {
 		display: flex;
 		justify-content: flex-end;
-		margin-left: 10%;
+		margin-left: 8%;
 	}
 
-	.justify-theirs {
+	.bubble-justify-theirs {
 		display: flex;
 		justify-content: flex-start;
-		margin-right: 10%;
+		margin-right: 8%;
 	}
 
-	.color-mine {
+	.bubble-color-mine {
 		background-color: var(--mud-palette-primary);
 		color: var(--mud-palette-primary-text);
 	}
 
-	.color-theirs {
-		background-color: var(--mud-palette-dark);
-		color: var(--mud-palette-dark-text);
+	.bubble-color-theirs {
+		background-color: var(--mud-palette-text-primary);
+		color: var(--mud-palette-background);
 	}
 
 	.bubble-tail-mine {
 		--b: 1em;		/* tail base */
 		--h: .5em;		/* tail height */
 		--p: 100%;		/* tail position (0%: left, 100%: right) */
-		--r: 3.1em;		/* border radius */
+		--r: 2.6em;		/* border radius */
 		--c: var(--mud-palette-primary);
 		clip-path: polygon(0 100%,0 0,100% 0,100% 100%, min(100%,var(--p) + var(--b)/2) 100%, var(--p) calc(100% + var(--h)), max(0%,var(--p) - var(--b)/2) 100%);
 		border-image: conic-gradient(var(--c) 0 0) fill 0/ var(--r) calc(100% - var(--p) - var(--b)/2) 0 calc(var(--p) - var(--b)/2)/ 0 0 var(--h) 0;
@@ -53,8 +65,8 @@
 		--b: 1em;		/* tail base */
 		--h: .5em;		/* tail height */
 		--p: 0%;		/* tail position (0%: left, 100%: right) */
-		--r: 3.1em;		/* border radius */
-		--c: var(--mud-palette-dark);
+		--r: 2.6em;		/* border radius */
+		--c: var(--mud-palette-text-primary);
 		clip-path: polygon(0 100%,0 0,100% 0,100% 100%, min(100%,var(--p) + var(--b)/2) 100%, var(--p) calc(100% + var(--h)), max(0%,var(--p) - var(--b)/2) 100%);
 		border-image: conic-gradient(var(--c) 0 0) fill 0/ var(--r) calc(100% - var(--p) - var(--b)/2) 0 calc(var(--p) - var(--b)/2)/ 0 0 var(--h) 0;
 		border-bottom-left-radius: 0 !important;
@@ -82,7 +94,28 @@
 
 @code {
 
-	[Parameter, EditorRequired]
-	public IReadOnlyList<Message> Messages { get; set; }
+	[CascadingParameter]
+	ChatClient? Client { get; set; }
+
+	bool animateMessages;
+
+	public override async Task SetParametersAsync(ParameterView parameters)
+	{
+		if (parameters.TryGetValue<ChatClient>(nameof(Client), out var _client))
+		{
+			if (Client != null && !animateMessages)
+			{   // When clicking away from chat module and coming back to it, this logic ensures 
+				// only new incoming message bubbles are animated and not all of them.
+				animateMessages = true;
+			}
+
+			if (Client == null || Client.Messages.Count != _client.Messages.Count)
+			{   // Some minor optimization
+				Client = _client;
+			}
+		}
+
+		await base.SetParametersAsync(ParameterView.Empty);
+	}
 
 }

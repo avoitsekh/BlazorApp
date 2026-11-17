@@ -1,21 +1,21 @@
 ﻿@if (Message.IsNotification)
 {
-	<MudText Class="mt-1" Align="Align.Center" Typo="Typo.body2">@Message.Body</MudText>
+	<MudText Typo="Typo.body2" Align="Align.Center">@Message.Body</MudText>
 }
 else
 {
 	<MudStack Spacing="0">
 		@if (ShowUsername)
 		{
-			<MudText Class="mt-2 mx-2" Typo="Typo.body2" Align="@HeaderAlign">
-				<strong>@Username</strong>
-			</MudText>
-		}
-		<MudStack Row Wrap="Wrap.NoWrap" Spacing="1" Class="@JustifyClasses" AlignItems="AlignItems.Center">
-			<div class="@StylingClasses">
-				<MudText>@Message.Body</MudText>
+			<div class="mt-1">
+				<MudText Typo="Typo.body2" Class="@HelperTextClasses"><strong>@Username</strong></MudText>
 			</div>
-			<MudText Typo="Typo.body2" Align="@HeaderAlign" Style="min-width: 32px;">@ReceivedTimeFormatted</MudText>
+		}
+		<MudStack Row Wrap="Wrap.NoWrap" Spacing="0" Class="@BubbleJustifyClasses" AlignItems="AlignItems.Center">
+			<div class="@BubbleStyleClasses">
+				<MudText Typo="Typo.body1">@Message.Body</MudText>
+			</div>
+			<MudText Typo="Typo.body2" Class="@HelperTextClasses">@MessageReceiveTimeFormatted</MudText>
 		</MudStack>
 	</MudStack>
 }
@@ -32,32 +32,32 @@ else
 	[Parameter]
 	public Message? NextMessage { get; set; }
 
-	[CascadingParameter(Name = "*AnimateNewMessages*")]
-	bool ShouldAnimate { get; set; } = false;
+	[Parameter]
+	public bool Animate { get; set; } = false;
 
+	
+	string Username => Message.IsMine ? "You" : Message.Owner ?? "(unknown)";
 
 	bool ShowUsername => PreviousMessage == null || Message.Owner != PreviousMessage.Owner;
 
-	bool ShowTail => NextMessage == null || Message.Owner != NextMessage.Owner;
+	bool ShowBubbleTail => NextMessage == null || Message.Owner != NextMessage.Owner;
 
-	string Username => Message.IsMine ? "You" : Message.Owner ?? "(unknown)";
+	string MessageReceiveTimeFormatted => string.Format("{0:HH:mm}", Message.ReceiveTime);
 
-	string ReceivedTimeFormatted => string.Format("{0:HH:mm}", Message.ReceivedTime);
+	bool ShouldAnimate => Animate && NextMessage == null;
 
-	Align HeaderAlign => Message.IsMine ? Align.End : Align.Start;
+	string HelperTextClasses => Message.IsMine ? "helper-text-mine" : "helper-text-theirs";
 
-	bool IsAnimated => ShouldAnimate && NextMessage == null;
+	string BubbleJustifyClasses => Message.IsMine ? "bubble-justify-mine" : "bubble-justify-theirs";
 
-	string JustifyClasses => Message.IsMine ? "justify-mine" : "justify-theirs";
-
-	string StylingClasses
+	string BubbleStyleClasses
 	{
 		get
 		{
 			var result = new List<string>(10);
 			result.AddRange("px-4", "py-2", "rounded-xl");
 
-			if (IsAnimated)
+			if (ShouldAnimate)
 			{
 				result.Add("bubble-animation");
 			}
@@ -65,16 +65,16 @@ else
 			if (Message.IsMine)
 			{
 				result.Add("order-2");
-				result.Add("color-mine");
-				if (ShowTail)
+				result.Add("bubble-color-mine");
+				if (ShowBubbleTail)
 				{
 					result.Add("bubble-tail-mine");
 				}
 			}
 			else
 			{
-				result.Add("color-theirs");
-				if (ShowTail)
+				result.Add("bubble-color-theirs");
+				if (ShowBubbleTail)
 				{
 					result.Add("bubble-tail-theirs");
 				}
@@ -83,6 +83,5 @@ else
 			return string.Join<string>(' ', result);
 		}
 	}
-
 
 }
