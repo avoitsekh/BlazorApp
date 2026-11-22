@@ -1,0 +1,174 @@
+﻿<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
+<Panel OverlayTimeout="150">
+	<TitleContent>
+		<InfoLabel Title="@(currentSummaryPage == 0 ? "Summary" : "Statistics")">
+			<MessageContent>
+				<MudStack Spacing="4">
+					<MudText>1<sup>st</sup> page displays an overall summary about the mortgage, 2<sup>nd</sup> page displays various statistics for a given year.</MudText>
+					@if (currentSummaryPage == 0)
+					{
+						<MudText><b>@Constants.PaymentAmount:</b><br />Initial payment to be made when mortgage starts.</MudText>
+						<MudText><b>@Constants.InterestAmount:</b><br />Interest portion of the initial payment amount.</MudText>
+						<MudText><b>@Constants.PrincipalAmount:</b><br />Principal portion of the initial payment amount.</MudText>
+						<MudText>
+							<b>@Constants.EffectiveAnnualRate:</b><br />Or EAR, is the interest rate that is adjusted for compounding over a given period. This is the real interest rate on the mortgage which differs from the nominal rate quoted by the lender.
+							Other names might be effective interest rate (EIR), effective annual interest rate (EAIR), annual equivalent rate (AER) or simply effective rate.
+						</MudText>
+						<MudText><b>@Constants.AmortizationReduction:</b><br />Displays reduction in percentage value on overall mortgage term implying on how much faster the mortgage can be paid off. Typically equals to 0% if no extra payments are made.</MudText>
+						<MudText><b>@Constants.YearsToPayoff:</b><br />Displays number of years until the mortgage is fully paid off. Typically equals to an amortization period if no extra payments are made.</MudText>
+					}
+					else
+					{
+						<MudText><b>@Constants.LastPaymentDate:</b><br />The date of the last payment of the given year.</MudText>
+						<MudText><b>@Constants.NumberOfPayments:</b><br />The number of payments made since the mortgage start date and the end of the given year.</MudText>
+						<MudText><b>@Constants.PrincipalPaid:</b><br />Total principal amount paid since the mortgage start date until the end of the given year.</MudText>
+						<MudText><b>@Constants.InterestPaid:</b><br />Total interest amount paid since the mortgage start date until the end of the given year.</MudText>
+						<MudText><b>@Constants.ExtraPaid:</b><br />Total amount of all extra payments made since the mortgage start date until the end of the given year.</MudText>
+						<MudText><b>@Constants.TotalPaid:</b><br />Total amount paid since the mortgage start date until the end of the given year. The amount includes interest amount, principal amount and all the extra payments made.</MudText>
+						<MudText><b>@Constants.InterestSavings:</b><br />Total amount saved in interest since the mortgage start date until the end of the given year. This amount will be 0 if there are no extra payments.</MudText>
+						<MudText><b>@Constants.RemainingBalance:</b><br />Remaining mortgage amount to be paid off since the given year.</MudText>
+					}
+				</MudStack>
+			</MessageContent>
+		</InfoLabel>
+	</TitleContent>
+	<HeaderContent>
+		<MudStack Row Wrap="Wrap.NoWrap" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+			<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowLeft" Disabled="@(currentSummaryPage == 0)" OnClick="@(() => OnPageChanged(-1))" />
+			<MudText Typo="Typo.body2">@(currentSummaryPage + 1) / 2</MudText>
+			<MudIconButton Icon="@Icons.Material.Filled.KeyboardArrowRight" Disabled="@(currentSummaryPage == 1)" OnClick="@(() => OnPageChanged(1))" />
+		</MudStack>
+	</HeaderContent>
+	@*<OverlayContent>
+		<MudText>Loading...</MudText>
+	</OverlayContent> *@
+	<MainContent>
+		<MudCarousel Style="@($"min-height: {summaryPageHeight};")" @bind-SelectedIndex="currentSummaryPage" ShowArrows="false" ShowBullets="false" AutoCycle="false" EnableSwipeGesture="false" TData="object">
+			<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
+				<MudGrid Spacing="0">
+					<MudItem xs="6" sm="4" Class="order-1 order-sm-1">
+						<DataField T="double?" Label="@Constants.PaymentAmount" Value="@statistics.PaymentAmount" Format="N2" />
+					</MudItem>
+					<MudItem xs="6" sm="4" Class="order-3 order-sm-2">
+						<DataField T="double?" Label="@Constants.InterestAmount" Value="@statistics.InterestAmount" Format="N2" />
+					</MudItem>
+					<MudItem xs="6" sm="4" Class="order-4 order-sm-3">
+						<DataField T="double?" Label="@Constants.AmortizationReduction" Value="@statistics.AmortizationOffset" Format="+#'%';-#'%';0'%'" />
+					</MudItem>
+					<MudItem xs="6" sm="4" Class="order-2 order-sm-4">
+						<DataField T="double?" Label="@Constants.EffectiveAnnualRate" Value="@statistics.EffectiveAnnualRate" Format="0.##'%'" />
+					</MudItem>
+					<MudItem xs="6" sm="4" Class="order-5 order-sm-5">
+						<DataField T="double?" Label="@Constants.PrincipalAmount" Value="@statistics.PrincipalAmount" Format="N2" />
+					</MudItem>
+					<MudItem xs="6" sm="4" Class="order-6 order-sm-6">
+						<DataField T="double?" Label="@Constants.YearsToPayoff" Value="@statistics.YearsToPayOff" />
+					</MudItem>
+				</MudGrid>
+				<BalanceLineChart Payments="Payments" />
+			</MudCarouselItem>
+			<MudCarouselItem Transition="@summaryPageTransition" Class="animation-duration">
+				<MudStack Spacing="8">
+					<MudGrid Spacing="0">
+						<MudItem xs="6" sm="3" Class="order-1 order-sm-1">
+							<DataField T="DateTime?" Label="@Constants.LastPaymentDate" Value="@statistics.LastPaymentDate" Format="yyyy-MM-dd" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-3 order-sm-2">
+							<DataField T="double?" Label="@Constants.PrincipalPaid" Value="@statistics.PrincipalPaid" Format="N2" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-4 order-sm-3">
+							<DataField T="double?" Label="@Constants.InterestPaid" Value="@statistics.InterestPaid" Format="N2" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-7 order-sm-4">
+							<DataField T="double?" Label="@Constants.InterestSavings" Value="@statistics.InterestSavings" Format="N2" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-2 order-sm-5">
+							<DataField T="double?" Label="@Constants.NumberOfPayments" Value="@statistics.NumberOfPayments" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-5 order-sm-6">
+							<DataField T="double?" Label="@Constants.ExtraPaid" Value="@statistics.ExtraPaid" Format="N2" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-6 order-sm-7">
+							<DataField T="double?" Label="@Constants.TotalPaid" Value="@statistics.TotalPaid" Format="N2" />
+						</MudItem>
+						<MudItem xs="6" sm="3" Class="order-8 order-sm-8">
+							<DataField T="double?" Label="@Constants.RemainingBalance" Value="@statistics.RemainingBalance" Format="N2" />
+						</MudItem>
+					</MudGrid>
+					<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Breakpoint="Breakpoint.Xs">
+						<YearField @ref="yearField" MaxYear="BalanceMaxYear" YearChanged="OnYearChanged" />
+						<BalanceDonutChart Statistics="statistics" />
+					</MudStack>
+				</MudStack>
+			</MudCarouselItem>
+		</MudCarousel>
+	</MainContent>
+</Panel>
+
+
+<style>
+
+	.animation-duration {
+		animation-duration: .3s;
+	}
+
+	.mud-swipearea {
+		touch-action: pan-y;
+	}
+
+</style>
+
+
+@code {
+
+	[Parameter, EditorRequired]
+	public PaymentCollection Payments { get; set; }
+
+	int BalanceMaxYear => Payments?.Max(x => x.Year) ?? 1;
+
+	YearField? yearField;
+	int currentSummaryPage = 0;
+	string summaryPageHeight = summaryPageHeightForSmAndUp;
+	const string summaryPageHeightForXs = "580px";
+	const string summaryPageHeightForSmAndUp = "400px";
+	Transition summaryPageTransition = Transition.None;
+	PaymentStatistics statistics = new();
+
+
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		if (parameters.TryGetValue<PaymentCollection>(nameof(Payments), out var _payments) && Payments != _payments)
+		{
+			Payments = _payments;
+
+			statistics = new(Payments);
+			statistics.CalculateSummary();
+			statistics.CalculateForYear(yearField?.Value ?? 0);
+		}
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	void OnYearChanged(int? year)
+	{
+		if (year.HasValue && Payments.HasData())
+		{
+			statistics.CalculateForYear(year.Value);
+		}
+	}
+
+	void OnPageChanged(int increment)
+	{
+		if (summaryPageTransition != Transition.Slide)
+		{
+			summaryPageTransition = Transition.Slide;
+		}
+		currentSummaryPage += increment;
+	}
+
+	void OnBreakpointChanged(Breakpoint breakpoint)
+	{
+		summaryPageHeight = breakpoint == Breakpoint.Xs ? summaryPageHeightForXs : summaryPageHeightForSmAndUp;
+	}
+
+}

@@ -1,5 +1,4 @@
-﻿@* <div contenteditable="true" onkeydown="if(event.target==this) return false"> *@
-<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
+﻿<MudForm OnEnterPressed="OnSendMessageClicked" Style="width: 100%;">
 	<MudPaper Width="100%" Class="d-flex align-center gap-1 rounded-pill pa-1 pl-5" Elevation="1">
 		@if (Client.IsReconnecting)
 		{
@@ -9,11 +8,12 @@
 		else
 		{
 			<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
-			<MudIconButton Icon="@send" Size="Size.Medium" OnClick="OnSendMessageClicked" />
+			@* <div contenteditable="true" onkeydown="if(event.target==this) return false" style="outline: none;"> *@
+				<MudIconButton Icon="@send" Size="Size.Medium" OnClick="OnSendMessageClicked" />
+			@* </div> *@
 		}
 	</MudPaper>
 </MudForm>
-@* </div> *@
 
 
 @code {

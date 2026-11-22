@@ -5,6 +5,7 @@
 	<MudChart T="double" ChartType="ChartType.Donut" ChartSeries="@([data])" ChartLabels="@labels" LegendPosition="@legendPosition" ChartOptions="@options" Width="100%" Height="180px" Class="apply-to-this-donut-chart-only pointer-events-none" />
 </div>
 
+
 @code {
 
 	[Parameter, EditorRequired]
@@ -13,21 +14,22 @@
 	[CascadingParameter(Name = "*IsDarkMode*")]
 	bool IsDarkMode { get; set; }
 
-	string[] labels = [Constants.PrincipalPaid, Constants.ExtraPaid, Constants.InterestPaid, Constants.RemainingBalance];
+	static readonly string[] labels = [Constants.PrincipalPaid, Constants.ExtraPaid, Constants.InterestPaid, Constants.RemainingBalance];
+	static readonly string[] palette = [Colors.Blue.Default, Colors.Cyan.Default, Colors.Red.Lighten1, Colors.Gray.Lighten2];
 	double[] data = [];
 	Position legendPosition = Position.Right;
 
 	DonutChartOptions options = new()
 	{
 		ShowToolTips = false,
-		ChartPalette = [Colors.Blue.Default, Colors.Cyan.Default, Colors.Red.Lighten1, Colors.Gray.Lighten2]
+		ChartPalette = palette
 	};
 
 	protected override void OnParametersSet()
 	{
 		if (Statistics != null)
 		{
-			data = [Statistics.PrincipalPaid, Statistics.ExtraPaid, Statistics.InterestPaid, Statistics.RemainingBalance];
+			data = [Statistics.PrincipalPaid ?? 0D, Statistics.ExtraPaid ?? 0D, Statistics.InterestPaid ?? 0D, Statistics.RemainingBalance ?? 0D];
 		}
 
 		options.ChartPalette[3] = IsDarkMode ? Colors.Gray.Darken3 : Colors.Gray.Lighten2;

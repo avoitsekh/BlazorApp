@@ -1,7 +1,6 @@
 ﻿@using MudBlazor.Charts
 
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged" />
-
 <div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" Style="@overlayStyle" />
 	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="apply-to-this-line-chart-only pointer-events-none"
@@ -14,12 +13,6 @@
 	public PaymentCollection? Payments { get; set; }
 
 	PaymentCollection? PaymentsNoExtras => Payments?.WithNoExtraPayments;
-
-	/// <summary>
-	/// The number of milliseconds to wait before rendering the chart.
-	/// </summary>
-	[Parameter]
-	public int DebounceInterval { get; set; } = 0;
 
 	LineChartOptions options = new()
 	{
@@ -38,42 +31,41 @@
 	string overlayStyle = "background-color: var(--mud-palette-surface); transition: none; height: 120%;";
 	Action? debounceDraw = null;
 
-	PaymentCollection? _payments = null;
-	int _debounceInterval = -1;
-
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			var debounceOverlay = new Action(ResetOverlayColor).Debounce(800);
-			debounceOverlay();
+			debounceDraw = new Action(Draw).Debounce(60);
+			new Action(HideOverlay).Debounce(800).Invoke();
 		}
 	}
 
-	void ResetOverlayColor()
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		if (parameters.TryGetValue<PaymentCollection>(nameof(Payments), out var _payments) && Payments != _payments)
+		{
+			Payments = _payments;
+		}
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (Payments.HasData())
+		{
+			debounceDraw?.Invoke();
+		}
+	}
+
+	void HideOverlay()
 	{
 		InvokeAsync(() =>
 		{
 			overlayStyle = string.Empty;
 			StateHasChanged();
 		});
-	}
-
-	protected override void OnParametersSet()
-	{
-		if (_debounceInterval != DebounceInterval)
-		{
-			debounceDraw = DebounceInterval > 0 ? new Action(Draw).Debounce(DebounceInterval) : new Action(Draw);
-			_debounceInterval = DebounceInterval;
-		}
-
-		var hasChanges = _payments != Payments;
-		if (hasChanges && Payments.HasData())
-		{
-			debounceDraw?.Invoke();
-			_payments = Payments;
-		}
 	}
 
 	void Draw()

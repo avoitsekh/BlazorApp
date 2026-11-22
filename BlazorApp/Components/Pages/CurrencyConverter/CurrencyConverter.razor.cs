@@ -37,8 +37,17 @@ public partial class CurrencyConverter
 	[SupplyParameterFromQuery()]
 	public string? Date { get; set; }
 
-	[SupplyParameterFromQuery()]
-	public string? Amount { get; set; }
+	[SupplyParameterFromQuery(Name = "amount")]
+	public string? FromAmount { get; set; }
+
+	public string? FromAmountAdornmentText
+	{
+		get
+		{
+			var symbol = @State?.FromCurrency?.symbol;
+			return symbol?.Length == 1 ? symbol : null;
+		}
+	}
 
 
 	MudMessageBox messageBox = default!;
@@ -57,14 +66,14 @@ public partial class CurrencyConverter
 				{ "from", "CAD" },
 				{ "to", "USD" },
 				{ "date", DateTime.Today.ToString("yyyy-MM-dd") },
-				{ "amount", 123.45 },
+				{ "amount", 100.00 },
 			};
 			exampleUri = NavManager.GetUriWithQueryParameters(uriQueryString);
 
 			var hasQueryString = !string.IsNullOrWhiteSpace(FromCurrency) ||
 				!string.IsNullOrWhiteSpace(ToCurrency) ||
 				!string.IsNullOrWhiteSpace(Date) ||
-				!string.IsNullOrWhiteSpace(Amount);
+				!string.IsNullOrWhiteSpace(FromAmount);
 
 			if (!hasQueryString)
 			{
@@ -87,7 +96,7 @@ public partial class CurrencyConverter
 				{
 					State.ExchangeRateDate = date;
 				}
-				if (!string.IsNullOrWhiteSpace(Amount) && decimal.TryParse(Amount, out var amount))
+				if (!string.IsNullOrWhiteSpace(FromAmount) && decimal.TryParse(FromAmount, out var amount))
 				{
 					State.FromAmount = amount;
 				}
@@ -119,8 +128,14 @@ public partial class CurrencyConverter
 
 	async Task<IEnumerable<CurrencyType>> SearchCurrencyDropDown(string text, CancellationToken token)
 	{
-		await Task.Delay(50, token);
-		return string.IsNullOrWhiteSpace(text) ? State.SupportedCurrencies : State.SupportedCurrencies.Where(x => x.iso_code.StartsWith(text, StringComparison.InvariantCultureIgnoreCase) || x.name.Contains(text, StringComparison.InvariantCultureIgnoreCase));
+		if (State.SupportedCurrencies != null)
+		{
+			await Task.Delay(50, token);
+			return string.IsNullOrWhiteSpace(text)
+				? State.SupportedCurrencies
+				: State.SupportedCurrencies.Where(x => x.iso_code.Equals(text, StringComparison.InvariantCultureIgnoreCase) || x.name.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(x => x.StartsWith(text, StringComparison.InvariantCultureIgnoreCase)));
+		}
+		return Enumerable.Empty<CurrencyType>();
 	}
 
 	async Task OnFromAmountInput(ChangeEventArgs args)
@@ -164,6 +179,10 @@ public partial class CurrencyConverter
 			if (State.SupportedCurrencies == null)
 			{
 				State.SupportedCurrencies = await DataService.GetSupportedCurrenciesAsync();
+				if (State.SupportedCurrencies != null)
+				{
+					State.SupportedCurrencies = State.SupportedCurrencies.OrderBy(x => x.name).ToArray();
+				}
 			}
 		}
 		catch

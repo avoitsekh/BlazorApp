@@ -7,9 +7,7 @@ else
 	<MudStack Spacing="0">
 		@if (ShowUsername)
 		{
-			<div class="mt-1">
-				<MudText Typo="Typo.body2" Class="@HelperTextClasses"><strong>@Username</strong></MudText>
-			</div>
+			<MudText Typo="Typo.body2" Class="@HelperTextClasses"><strong>@Username</strong></MudText>
 		}
 		<MudStack Row Wrap="Wrap.NoWrap" Spacing="0" Class="@BubbleJustifyClasses" AlignItems="AlignItems.Center">
 			<div class="@BubbleStyleClasses">
@@ -35,7 +33,7 @@ else
 	[Parameter]
 	public bool Animate { get; set; } = false;
 
-	
+
 	string Username => Message.IsMine ? "You" : Message.Owner ?? "(unknown)";
 
 	bool ShowUsername => PreviousMessage == null || Message.Owner != PreviousMessage.Owner;
@@ -69,6 +67,7 @@ else
 				if (ShowBubbleTail)
 				{
 					result.Add("bubble-tail-mine");
+					result.Add("mb-1");
 				}
 			}
 			else
@@ -77,6 +76,7 @@ else
 				if (ShowBubbleTail)
 				{
 					result.Add("bubble-tail-theirs");
+					result.Add("mb-1");
 				}
 			}
 

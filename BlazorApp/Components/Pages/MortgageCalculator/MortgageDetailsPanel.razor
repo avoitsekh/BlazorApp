@@ -1,0 +1,355 @@
+﻿@using System.Text
+@using System.Text.Json
+
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject JSExtensionsService JS
+
+
+<Panel>
+	<TitleContent>
+		<InfoLabel Title="Mortgage Details">
+			<MessageContent>
+				<MudStack Spacing="4">
+					<MudText>
+						This mortgage calculator helps evaluate how adding extra payments can save on interest and shorten your mortgage term. It supports many options, fixed and variable interest rates and projects payment (amortization) schedule.
+						Click on the <MudIcon Icon="@Icons.Material.Filled.MoreVert" Class="text-icon" /> button and try sample presets to get a feel on what can be done.
+					</MudText>
+					<MudText><b>@Constants.LoanAmount:</b><br />The amount that is borrowed, not the sale price of the home.</MudText>
+					<MudText><b>@Constants.AnnualPercent:</b><br />The annual interest rate quoted by the lender. For variable-rate mortgages (ARM and VRM) click on the <MudIcon Icon="@Icons.Material.Filled.Percent" Class="text-icon" /> button to add variable interest rates.</MudText>
+					<MudText><b>@Constants.AmortizationPeriod:</b><br />The total number of years it will take to pay off the mortgage. Typical values: 30, 25, 20, 15.</MudText>
+					<MudText><b>@Constants.AdvanceDate:</b><br />The date mortgage funds are released by the lender. In other words, mortgage start date.</MudText>
+					<MudText>
+						<b>@Constants.CompoundPeriod:</b><br />The number of times per year that the quoted annual interest rate is compounded.
+						<ul>
+							<li>Semi-Annually: 2 times per year (mostly applies to Canadian Mortgages)</li>
+							<li>Monthly: 12 times per year (mostly applies to US Mortgages)</li>
+							<li>Annually: 1 time per year</li>
+						</ul>
+					</MudText>
+					<MudText>
+						<b>@Constants.PaymentFrequency:</b><br />Determines the number of payments per year.
+						<ul>
+							<li>Monthly: 12 times per year</li>
+							<li>Semi-Monthly: 24 times per year (2 times per month)</li>
+							<li>Weekly: 52 times per year (once a week)</li>
+							<li>Bi-Weekly: 26 times per year (once every two weeks)</li>
+							@* <li>Acc Weekly: 52 times per year, including a predefined extra payment. An Accelerated Weekly payment is 1/4 the normal Monthly payment.</li>
+							<li>Acc Bi-Weekly: 26 times per year, including a predefined extra payment. An Accelerated Bi-Weekly payment is 1/2 the normal Monthly payment.</li> *@
+						</ul>
+					</MudText>
+					<MudText><b>@Constants.InterestAccrualMethod:</b><br />Determines whether interest rate is calculated on a daily basis or per payment. If per payment option is chosen, the @Constants.AnnualPercent is divided by the number of payments per year (@Constants.PaymentFrequency).</MudText>
+					<MudText><b>@Constants.FiscalYear:</b><br />Determines how many days in a given year there is to calculate daily interest. Some lenders do not bother with normal and leap years and calculate interest based on 360 days.</MudText>
+					<MudText>
+						<b>@Constants.RateType:</b><br />Determines whether mortgage interest changes during the mortgage term or not.
+						<ul>
+							<li>Fixed: Interest rate does not change throughout the mortgage term.</li>
+							<li>ARM: Adjustable Rate Mortgage, a type of variable-rate mortgage with payment amounts adjusting based on fluctuations in the lender's prime rate.</li>
+							<li>
+								VRM: Variable Rate Mortgage, a type of variable-rate mortgage with fixed payment amounts throughout the term. When the lender's prime rate changes, the mortgage payment amount stays the same, but the interest portion of that payment can go up or down depending on
+								the prime rate fluctuations. If the prime rate has risen significantly, it might be required to make extra payments or refinance to avoid negative amortization.
+							</li>
+						</ul>
+					</MudText>
+					<MudText><b>@Constants.ExtraPayments:</b><br />Option to add additional payments to the mortgage principal balance in a form of lump sum or recurring payments. Click on the <MudIcon Icon="@Icons.Material.Outlined.AttachMoney" Class="text-icon" /> button to add extra payments.</MudText>
+				</MudStack>
+			</MessageContent>
+		</InfoLabel>
+	</TitleContent>
+	<HeaderContent>
+		<MudFileUpload T="IBrowserFile" Accept=".json,.*" OnFilesChanged="OnDetailsLoadClicked">
+			<CustomContent>
+				<MudMenu Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.TopRight">
+					<MudMenu Label="Presets" StartIcon="@Icons.Material.Filled.Tune">
+						@foreach (var keyValuePair in presets)
+						{
+							<MudMenuItem Label="@keyValuePair.Key" Icon="@Icons.Material.Outlined.CheckCircle" IconColor="Color.Info" OnClick="@(() => OnPresetChanged(keyValuePair.Key, keyValuePair.Value))" />
+						}
+					</MudMenu>
+					<MudDivider />
+					<MudMenuItem Label="Load..." OnClick="@context.OpenFilePickerAsync" Icon="@Icons.Material.Filled.OpenInBrowser" />
+					<MudMenuItem Label="Save..." OnClick="OnDetailsSaveClicked" Icon="@Icons.Material.Filled.Save" />
+				</MudMenu>
+			</CustomContent>
+			<SelectedTemplate />
+		</MudFileUpload>
+	</HeaderContent>
+	<MainContent>
+		<MudForm @ref="mortgageDetailsForm" Spacing="4">
+			<MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Stretch" StretchItems="StretchItems.All">
+				<MudGrid Spacing="6">
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.LoanAmount" Label="@Constants.LoanAmount" Variant="Variant.Text" Min="0" Max="1000000000" FullWidth Format="@MortgageDetails.ConditionalFormat(details.LoanAmount)"
+							Validation="ValidateLoanAmount" Margin="Margin.Dense" />
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudNumericField T="double" HideSpinButtons="true" @bind-Value="details.InterestRates.InitialRate" Label="@Constants.AnnualPercent" Variant="Variant.Text" Min="0" Max="100" FullWidth Format="0.##" Margin="Margin.Dense"
+							Adornment="@(!details.IsFixed ? Adornment.End : Adornment.None)" AdornmentIcon="@Icons.Material.Filled.Percent" AdornmentColor="@(details.InterestRates.HasAdditionalInterestRates ? Color.Error : Color.Default)" OnAdornmentClick="OpenVariableInterestRatesDialogAsync"
+							Validation="ValidateInterestRate" />
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudNumericField T="int" HideSpinButtons="true" @bind-Value="details.AmortizationPeriod" Label="@Constants.AmortizationPeriod" Variant="Variant.Text" Min="0" Max="100" FullWidth Margin="Margin.Dense" Validation="ValidateAmortizationPeriod" />
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudDatePicker Label="@Constants.AdvanceDate" Editable="true" @bind-Date="AdvanceDateNullable" DateFormat="yyyy-MM-dd" Placeholder="yyyy-mm-dd" Variant="Variant.Text" OpenTo="OpenTo.Month" ShowToolbar="false" MinDate="new DateTime(1900, 01, 01)" Margin="Margin.Dense"
+							Validation="ValidateAdvanceDate" />
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudSelect T="int" Label="@Constants.CompoundPeriod" @bind-Value="details.CompoundPeriod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+							@foreach (var keyValuePair in Constants.CompoundPeriodValues)
+							{
+								<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudSelect T="int" Label="@Constants.PaymentFrequency" @bind-Value="details.PaymentFrequency" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+							@foreach (var keyValuePair in Constants.PaymentFrequencyValues)
+							{
+								<MudSelectItem T="int" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudSelect T="MortgageDetails.InterestAccrualMethods" Label="@Constants.InterestAccrualMethod" @bind-Value="details.InterestAccrualMethod" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+							@foreach (var keyValuePair in Constants.InterestAccrualMethodValues)
+							{
+								<MudSelectItem T="MortgageDetails.InterestAccrualMethods" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudSelect T="MortgageDetails.FiscalYears" Label="@Constants.FiscalYear" @bind-Value="details.FiscalYear" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit"
+							Disabled="@(details.InterestAccrualMethod != MortgageDetails.InterestAccrualMethods.PerDay)">
+							@foreach (var keyValuePair in Constants.FiscalYearValues)
+							{
+								<MudSelectItem T="MortgageDetails.FiscalYears" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudSelect T="MortgageDetails.InterestRateTypes" Label="@Constants.RateType" @bind-Value="details.InterestRateType" @bind-Value:after="OnInterestRateTypeChanged" Variant="Variant.Text" Margin="Margin.Dense" AdornmentColor="Color.Inherit">
+							@foreach (var keyValuePair in Constants.InterestRateTypeValues)
+							{
+								<MudSelectItem T="MortgageDetails.InterestRateTypes" Value="@keyValuePair.Value">@keyValuePair.Key</MudSelectItem>
+							}
+						</MudSelect>
+					</MudItem>
+
+					<MudItem xs="6" sm="3" md="6">
+						<MudTextField T="string" Label="@Constants.ExtraPayments" Variant="Variant.Text" Margin="Margin.Dense" ReadOnly Value="@ExtraPaymentsFieldDescription" ShrinkLabel
+							AdornmentIcon="@Icons.Material.Outlined.AttachMoney" AdornmentColor="@(details.ExtraPayments.HasExtraPayments ? Color.Error : Color.Default)" Adornment="Adornment.End" OnAdornmentClick="OpenExtraPaymentsDialogAsync" />
+					</MudItem>
+
+				</MudGrid>
+			</MudStack>
+			<MudButton Variant="Variant.Filled" OnClick="OnCalculateClicked" Size="Size.Large" Color="Color.Dark" Class="rounded-pill">Calculate</MudButton>
+		</MudForm>
+	</MainContent>
+</Panel>
+
+
+@code {
+
+	[Parameter]
+	public EventCallback<PaymentCollection> OnCalculated { get; set; }
+
+	DateTime? AdvanceDateNullable
+	{	// Workaround for MudDatePicker requiring DateTime? instead of DateTime
+		get => details.AdvanceDate != DateTime.MinValue ? details.AdvanceDate : null;
+		set => details.AdvanceDate = value.HasValue ? value.Value : DateTime.MinValue;
+	}
+
+	MortgageDetails details = new();
+	PresetCollection presets = new();
+	const int maxUploadFileSize = 4 * 1024;		// 4 KB
+	MudForm? mortgageDetailsForm;
+
+	string ExtraPaymentsFieldDescription
+	{
+		get
+		{
+			if (details.ExtraPayments.Count == 0)
+			{
+				return "None";
+			}
+
+			var list = new List<string>(10);
+			list.AddRange(details.ExtraPayments.LumpSums.Select(x => Format(x.Amount)));
+			list.AddRange(details.ExtraPayments.Recurring.Select(x => Format(x.Amount, "+")));
+			return string.Join(" ", list);
+
+			string Format(double value, string suffix = default) 
+				=> string.Format("({0:" + MortgageDetails.ConditionalFormat(value) + "}" + suffix + ")", value);
+		}
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await OnCalculateClicked();
+		}
+	}
+
+	async Task OnCalculateClicked()
+	{
+		await mortgageDetailsForm!.ValidateAsync();
+
+		if (mortgageDetailsForm.IsValid)
+		{
+			var payments = PaymentCollection.Create(details);
+			await OnCalculated.InvokeAsync(payments);
+		}
+	}
+
+	async Task OnDetailsLoadClicked(InputFileChangeEventArgs arg)
+	{
+		var file = arg.File;
+		var error = string.Empty;
+
+		if (file != null)
+		{
+			try
+			{
+				if (file.Size > maxUploadFileSize)
+				{
+					throw new Exception($"File exceeds maximum allowed size of {maxUploadFileSize} bytes.");
+				}
+
+				using var reader = new StreamReader(file.OpenReadStream(maxAllowedSize: maxUploadFileSize));
+				string jsonText = await reader.ReadToEndAsync();
+				details = JsonSerializer.Deserialize<MortgageDetails>(jsonText, new JsonSerializerOptions { IgnoreReadOnlyProperties = true });
+
+				await OnCalculateClicked();
+			}
+			catch (JsonException)
+			{
+				error = "File appears to be corrupted or invalid.";
+			}
+			catch (Exception ex)
+			{
+				error = ex.GetBaseException().Message;
+			}
+			finally
+			{
+				if (error != string.Empty)
+				{
+					Snackbar.Add($"Error loading from '{file.Name}'. {error}", Severity.Error);
+				}
+				else
+				{
+					Snackbar.Add($"Successfully loaded from '{file.Name}'", Severity.Success);
+				}
+			}
+		}
+	}
+
+	async Task OnDetailsSaveClicked()
+	{
+		var filename = Constants.MortgageDetailsSettingsFilename;
+
+		try
+		{
+			var jsonText = JsonSerializer.Serialize(details, new JsonSerializerOptions { WriteIndented = true, IgnoreReadOnlyProperties = true });
+			await JS.DownloadFileAsync(filename, "text/json", Encoding.UTF8.GetBytes(jsonText));
+		}
+		catch (Exception ex)
+		{
+			await OnDownloadError((ex, filename));
+		}
+	}
+
+	async Task OnDownloadError((Exception Exception, string Filename) args)
+	{
+		Snackbar.Add($"Error saving to '{args.Filename}'. {args.Exception.GetBaseException().Message}", Severity.Error);
+	}
+
+	async Task OnInterestRateTypeChanged()
+	{
+		if (details.IsFixed)
+		{
+			details.InterestRates.Clear();
+			StateHasChanged();
+		}
+	}
+
+	async Task OpenVariableInterestRatesDialogAsync()
+	{
+		var options = new DialogOptions()
+		{
+			MaxWidth = MaxWidth.ExtraSmall,
+			BackdropClick = false,
+			CloseOnEscapeKey = true
+		};
+
+		var parameters = new DialogParameters<VariableInterestRatesDialog>
+		{
+			{ x => x.Details, details }
+		};
+
+		var dialogReference = await DialogService.ShowAsync<VariableInterestRatesDialog>(parameters, options);
+		await dialogReference.Result;
+
+		StateHasChanged();
+	}
+
+	async Task OpenExtraPaymentsDialogAsync()
+	{
+		var options = new DialogOptions()
+		{
+			MaxWidth = MaxWidth.Medium,
+			BackdropClick = false,
+			CloseOnEscapeKey = true
+		};
+
+		var parameters = new DialogParameters<ExtraPaymentsDialog>
+		{
+			{ x => x.Details, details }
+		};
+
+		var dialogReference = await DialogService.ShowAsync<ExtraPaymentsDialog>(parameters, options);
+		await dialogReference.Result;
+
+		StateHasChanged();
+	}
+
+	async Task OnPresetChanged(string presetName, Func<MortgageDetails> preset)
+	{
+		details = preset();
+		Snackbar.Add($"Loaded preset '{presetName}'", Severity.Success);
+
+		await OnCalculateClicked();
+	}
+
+	Func<double, string> ValidateLoanAmount => amount => amount switch
+	{
+		< 1000D => "Value cannot be less than 1,000",
+		_ => string.Empty
+	};
+
+	Func<double, string> ValidateInterestRate => rate => rate switch
+	{
+		0D => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	Func<int, string> ValidateAmortizationPeriod => years => years switch
+	{
+		0 => "Value cannot be 0",
+		_ => string.Empty
+	};
+
+	Func<DateTime?, string> ValidateAdvanceDate => date =>
+		!date.HasValue || date == DateTime.MinValue ? "Value cannot be empty" : string.Empty;
+
+}

@@ -1,7 +1,7 @@
 ﻿@typeparam T
 
 <MudField Label="@Label" Underline="false" Margin="Margin.Dense">
-	@string.Format("{0:" + Format + "}", Value)
+	@string.Format("{0:" + Format + "}", Value is null ?  "--" : Value)
 </MudField>
 
 @code {

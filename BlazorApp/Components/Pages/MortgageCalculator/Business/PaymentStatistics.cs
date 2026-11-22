@@ -8,21 +8,21 @@ public sealed class PaymentStatistics(PaymentCollection? payments)
 	{
 	}
 
-	public double InterestPaid;
-	public double PrincipalPaid;
-	public double ExtraPaid;
-	public double TotalPaid;
-	public double RemainingBalance;
-	public DateTime LastPaymentDate;
-	public int NumberOfPayments;
-	public double InterestSavings;
+	public double? InterestPaid;
+	public double? PrincipalPaid;
+	public double? ExtraPaid;
+	public double? TotalPaid;
+	public double? RemainingBalance;
+	public DateTime? LastPaymentDate;
+	public int? NumberOfPayments;
+	public double? InterestSavings;
 
-	public double PaymentAmount;
-	public double InterestAmount;
-	public double PrincipalAmount;
-	public double EffectiveAnnualRate;
-	public double YearsToPayOff;
-	public double AmortizationOffset;
+	public double? PaymentAmount;
+	public double? InterestAmount;
+	public double? PrincipalAmount;
+	public double? EffectiveAnnualRate;
+	public double? YearsToPayOff;
+	public double? AmortizationOffset;
 
 	const double yearAverageDays = 365.2425D;
 
@@ -73,7 +73,7 @@ public sealed class PaymentStatistics(PaymentCollection? payments)
 					}
 					else
 					{
-						InterestSavings = default;
+						InterestSavings = 0D;
 					}
 				}
 			}
