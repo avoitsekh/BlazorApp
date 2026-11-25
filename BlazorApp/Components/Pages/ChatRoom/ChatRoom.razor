@@ -30,6 +30,7 @@
 }
 else
 {
+	@* <div class="background-svg"> *@
 	<div class="chat-container">
 		<CascadingValue Value="Client">
 
@@ -37,16 +38,17 @@ else
 				<ChatHeader />
 			</div>
 
-			<div class="chat-messages py-7 z-1" id="messageContainer">
+			<div class="chat-messages py-7 z-1 " id="messageContainer">
 				<ChatMessages />
 			</div>
 
 			<div class="chat-footer mt-n6 z-10">
-				<ChatFooter @ref="chatFooter" />
+				<ChatFooter />
 			</div>
 
 		</CascadingValue>
 	</div>
+	@* </div> *@
 }
 
 
@@ -77,6 +79,18 @@ else
 
 
 <style>
+
+	/* .background-svg {
+		background-color: transparent;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='109' height='109' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23d3d3d0' fill-opacity='0.13'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.13'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
+	} */
+
+	/* .aaa {
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' version='1.1' xmlns:xlink='http://www.w3.org/1999/xlink' xmlns:svgjs='http://svgjs.dev/svgjs' width='1440' height='560' preserveAspectRatio='none' viewBox='0 0 1440 560'%3e%3cg mask='url(%26quot%3b%23SvgjsMask1013%26quot%3b)' fill='none'%3e%3cpath d='M -722.4571926275871%2c387 C -626.46%2c346 -434.46%2c169.8 -242.45719262758715%2c182 C -50.46%2c194.2 45.54%2c460 237.54280737241285%2c448 C 429.54%2c436 525.54%2c133.4 717.5428073724129%2c122 C 909.54%2c110.6 1053.05%2c360 1197.5428073724129%2c391 C 1342.03%2c422 1391.51%2c299.8 1440%2c277' stroke='rgba(146%2c 146%2c 159%2c 1)' stroke-width='2'%3e%3c/path%3e%3cpath d='M -67.21597617676116%2c84 C 28.78%2c144.6 220.78%2c375 412.78402382323884%2c387 C 604.78%2c399 700.78%2c141 892.7840238232388%2c144 C 1084.78%2c147 1180.78%2c375.6 1372.7840238232388%2c402 C 1564.78%2c428.4 1839.34%2c298.8 1852.7840238232388%2c276 C 1866.23%2c253.2 1522.56%2c285.6 1440%2c288' stroke='rgba(146%2c 146%2c 159%2c 1)' stroke-width='2'%3e%3c/path%3e%3cpath d='M -291.20266126778415%2c404 C -195.2%2c365.4 -3.2%2c221.6 188.79733873221582%2c211 C 380.8%2c200.4 476.8%2c369.8 668.7973387322158%2c351 C 860.8%2c332.2 956.8%2c100.4 1148.7973387322158%2c117 C 1340.8%2c133.6 1570.56%2c440.4 1628.7973387322158%2c434 C 1687.04%2c427.6 1477.76%2c154.8 1440%2c85' stroke='rgba(146%2c 146%2c 159%2c 1)' stroke-width='2'%3e%3c/path%3e%3cpath d='M -311.14331746662043%2c282 C -215.14%2c261.2 -23.14%2c166.4 168.85668253337957%2c178 C 360.86%2c189.6 456.86%2c336.6 648.8566825333796%2c340 C 840.86%2c343.4 936.86%2c190 1128.8566825333796%2c195 C 1320.86%2c200 1546.63%2c377.6 1608.8566825333796%2c365 C 1671.09%2c352.4 1473.77%2c178.6 1440%2c132' stroke='rgba(146%2c 146%2c 159%2c 1)' stroke-width='2'%3e%3c/path%3e%3c/g%3e%3cdefs%3e%3cmask id='SvgjsMask1013'%3e%3crect width='1440' height='560' fill='white'%3e%3c/rect%3e%3c/mask%3e%3c/defs%3e%3c/svg%3e");
+		background-size: cover;
+		background-attachment: fixed;
+		background-origin: content-box;
+	} */
 
 	.chat-container {
 		display: flex;
@@ -121,7 +135,6 @@ else
 	TimeZoneInfo? timeZone;
 
 	MudTextField<string>? usernameToJoinTextBox;
-	ChatFooter? chatFooter;
 
 	const string personCheck =
 @"<svg xmlns=""http://www.w3.org/2000/svg"" width=""24"" height=""24"" fill=""currentColor"" class=""bi bi-person-check-fill"" viewBox=""0 0 16 16"">
@@ -221,7 +234,6 @@ else
 			_ = JSR.InvokeVoidAsync("registerTabCloseHandler", dotNetRef);
 		}
 		InvokeAsync(StateHasChanged);
-		chatFooter?.SetFocus();
 	}
 
 	void OnExited(object? sender, EventArgs e)

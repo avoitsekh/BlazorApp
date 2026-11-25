@@ -1,5 +1,4 @@
-﻿
-namespace BlazorApp.Components.Pages.MortgageCalculator;
+﻿namespace BlazorApp.Components.Pages.MortgageCalculator;
 
 public sealed class PaymentStatistics(PaymentCollection? payments)
 {

@@ -46,8 +46,8 @@
 	}
 
 	.bubble-color-theirs {
-		background-color: var(--mud-palette-text-primary);
-		color: var(--mud-palette-background);
+		background-color: var(--mud-palette-dark);
+		color: var(--mud-palette-primary-text);
 	}
 
 	.bubble-tail-mine {
@@ -66,7 +66,7 @@
 		--h: .5em;		/* tail height */
 		--p: 0%;		/* tail position (0%: left, 100%: right) */
 		--r: 2.6em;		/* border radius */
-		--c: var(--mud-palette-text-primary);
+		--c: var(--mud-palette-dark);
 		clip-path: polygon(0 100%,0 0,100% 0,100% 100%, min(100%,var(--p) + var(--b)/2) 100%, var(--p) calc(100% + var(--h)), max(0%,var(--p) - var(--b)/2) 100%);
 		border-image: conic-gradient(var(--c) 0 0) fill 0/ var(--r) calc(100% - var(--p) - var(--b)/2) 0 calc(var(--p) - var(--b)/2)/ 0 0 var(--h) 0;
 		border-bottom-left-radius: 0 !important;

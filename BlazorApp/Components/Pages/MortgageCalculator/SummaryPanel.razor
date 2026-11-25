@@ -97,7 +97,8 @@
 					</MudGrid>
 					<MudStack Row Spacing="1" Justify="Justify.Center" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Breakpoint="Breakpoint.Xs">
 						<YearField @ref="yearField" MaxYear="BalanceMaxYear" YearChanged="OnYearChanged" />
-						<BalanceDonutChart Statistics="statistics" />
+						<BalanceDonutChart PrincipalPaid="statistics.PrincipalPaid" ExtraPaid="statistics.ExtraPaid" 
+							InterestPaid="statistics.InterestPaid" RemainingBalance="statistics.RemainingBalance" />
 					</MudStack>
 				</MudStack>
 			</MudCarouselItem>

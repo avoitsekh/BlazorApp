@@ -4,6 +4,8 @@ namespace BlazorApp.Components.Pages.GuidGenerator;
 
 public partial class GuidGenerator
 {
+	const int MaxGuids = 500;
+
 	readonly GuidFormat format;
 	readonly GuidFactory factory;
 

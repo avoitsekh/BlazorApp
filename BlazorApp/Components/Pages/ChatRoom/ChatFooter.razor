@@ -7,10 +7,9 @@
 		}
 		else
 		{
-			<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" />
-			@* <div contenteditable="true" onkeydown="if(event.target==this) return false" style="outline: none;"> *@
-				<MudIconButton Icon="@send" Size="Size.Medium" OnClick="OnSendMessageClicked" />
-			@* </div> *@
+			<MudTextField @ref="messageTextBox" T="string" Immediate Placeholder="Type your message here..." Underline="false" @bind-Value="messageText" MaxLength="2000" AutoFocus />
+			<MudIconButton Icon="@send" Size="Size.Medium" OnClick="OnSendMessageClicked" 
+				contenteditable="true" Style="outline: none; caret-color: transparent;" onkeydown="if(event.target==this) return false;" />
 		}
 	</MudPaper>
 </MudForm>
@@ -35,11 +34,6 @@
 </svg>
 ";
 
-	public void SetFocus()
-	{
-		messageTextBox?.FocusAsync();
-	}
-
 	async Task OnSendMessageClicked()
 	{
 		if (!string.IsNullOrWhiteSpace(messageText) && Client.IsJoined)
@@ -47,6 +41,6 @@
 			await Client.SendMessage(new() { Body = messageText });
 			messageText = null;
 		}
-		SetFocus();
+		messageTextBox?.FocusAsync();
 	}
 }

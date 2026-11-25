@@ -4,7 +4,7 @@ namespace BlazorApp.Components.Pages.GuidGenerator;
 
 public class GuidFactory
 {
-	public int GuidsToGenerate { get; set; } = 1;
+	public int GuidsToGenerate { get; set; } = 100;
 	
 	readonly GuidFormat format;
 

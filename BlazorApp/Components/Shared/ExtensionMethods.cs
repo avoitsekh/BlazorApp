@@ -4,7 +4,7 @@ public static class ExtensionMethods
 {
 	public static Action Debounce(this Action action, int milliseconds)
 	{
-		CancellationTokenSource lastToken = null;
+		CancellationTokenSource? lastToken = null;
 
 		return () =>
 		{
@@ -20,6 +20,27 @@ public static class ExtensionMethods
 
 			var token = lastToken = new CancellationTokenSource();
 			Task.Delay(milliseconds).ContinueWith(task => action(), token.Token);
+		};
+	}
+
+	public static Action Debounce<T>(this Action<T> action, int milliseconds, T param)
+	{
+		CancellationTokenSource? lastToken = null;
+
+		return () =>
+		{
+			lastToken?.Cancel();
+
+			try
+			{
+				lastToken?.Dispose();
+			}
+			catch
+			{
+			}
+
+			var token = lastToken = new CancellationTokenSource();
+			Task.Delay(milliseconds).ContinueWith(task => action(param), token.Token);
 		};
 	}
 }

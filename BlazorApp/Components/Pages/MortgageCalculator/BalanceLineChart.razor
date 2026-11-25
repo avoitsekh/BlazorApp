@@ -4,7 +4,7 @@
 <div style="position: relative;">
 	<MudOverlay Visible="true" Absolute="true" Style="@overlayStyle" />
 	<MudChart id="balance-line-chart" ChartType="ChartType.Line" ChartSeries="@series" ChartLabels="@XAxisLabels" Class="apply-to-this-line-chart-only pointer-events-none"
-		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@chartStyle" />
+		ChartOptions="@options" Width="100%" Height="260px" MatchBoundsToSize Style="@chartStyle"  />
 </div>
 
 @code {
@@ -14,7 +14,9 @@
 
 	PaymentCollection? PaymentsNoExtras => Payments?.WithNoExtraPayments;
 
-	LineChartOptions options = new()
+	const string chartStyleForXs = "padding: 40px 0px 0px 0px;";
+	const string chartStyleForSmAndUp = "padding: 10px 20px 0px 20px;";
+	static readonly LineChartOptions options = new ()
 	{
 		XAxisTitle = "Balance",
 		YAxisTitle = "",
@@ -25,58 +27,47 @@
 		ShowToolTips = false,
 	};
 
+
 	List<ChartSeries<double>> series = [];
 	string[] XAxisLabels = [];
-	string chartStyle = "padding: 10px 20px 0px 20px;";
+	string chartStyle = chartStyleForSmAndUp;
 	string overlayStyle = "background-color: var(--mud-palette-surface); transition: none; height: 120%;";
-	Action? debounceDraw = null;
 
+
+	protected override bool ShouldRender()
+	{
+		return Payments.HasData() && base.ShouldRender();
+	}
 
 	protected override void OnAfterRender(bool firstRender)
 	{
 		if (firstRender)
 		{
-			debounceDraw = new Action(Draw).Debounce(60);
-			new Action(HideOverlay).Debounce(800).Invoke();
+			new Action(() => InvokeAsync(HideOverlay)).Debounce(800).Invoke();
 		}
 	}
 
-	public override Task SetParametersAsync(ParameterView parameters)
+	public override async Task SetParametersAsync(ParameterView parameters)
 	{
 		if (parameters.TryGetValue<PaymentCollection>(nameof(Payments), out var _payments) && Payments != _payments)
 		{
 			Payments = _payments;
-		}
-
-		return base.SetParametersAsync(ParameterView.Empty);
-	}
-
-	protected override void OnParametersSet()
-	{
-		if (Payments.HasData())
-		{
-			debounceDraw?.Invoke();
+			Draw();
 		}
 	}
 
 	void HideOverlay()
 	{
-		InvokeAsync(() =>
-		{
-			overlayStyle = string.Empty;
-			StateHasChanged();
-		});
+		overlayStyle = string.Empty;
+		StateHasChanged();
 	}
 
 	void Draw()
 	{
-		InvokeAsync(() =>
-		{
-			SetGraphValues();
-			SetXAxisLabels();
-			SetYAxisLabels();
-			StateHasChanged();
-		});
+		SetGraphValues();
+		SetXAxisLabels();
+		SetYAxisLabels();
+		StateHasChanged();
 	}
 
 	void SetGraphValues()
@@ -88,7 +79,7 @@
 			series.Add(new()
 			{
 				Name = "Without extra payments",
-				Data = PaymentsNoExtras.Select(x => x.Balance).ToArray(),
+				Data = PaymentsNoExtras!.Select(x => x.Balance).ToArray(),
 			});
 		}
 
@@ -134,6 +125,6 @@
 
 	void OnBreakpointChanged(Breakpoint breakpoint)
 	{
-		chartStyle = breakpoint == Breakpoint.Xs ? "padding: 40px 0px 0px 0px;" : "padding: 10px 20px 0px 20px;";
+		chartStyle = breakpoint == Breakpoint.Xs ? chartStyleForXs : chartStyleForSmAndUp;
 	}
 }
